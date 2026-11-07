@@ -19,22 +19,26 @@ const { label, changes, emptyMessage = "No changes." } = Astro.props;
     <ol class="ds-diff-list">
       {changes.map((change) => (
         <li data-kind={change.kind}>
-          <div class="ds-diff-field">
-            <code>{change.path || "(root)"}</code>
-            <span class="ds-data-note">{change.kind}</span>
-          </div>
+          <code class="ds-diff-field">{change.path || "(root)"}</code>
           <div class="ds-diff-values">
+            <span class="sr-only">
+              {change.kind === "added"
+                ? "Added: "
+                : change.kind === "removed"
+                  ? "Removed: "
+                  : "Before: "}
+            </span>
             {change.kind !== "added" && (
-              <div>
-                <span class="ds-data-note">Before</span>
-                <pre>{formatDataValue(change.before)}</pre>
-              </div>
-            )}
-            {change.kind !== "removed" && (
-              <div>
-                <span class="ds-data-note">After</span>
-                <pre>{formatDataValue(change.after)}</pre>
-              </div>
+              <del class="ds-diff-before">{formatDataValue(change.before)}</del>
+            )}{" "}
+            <span class="ds-diff-arrow" aria-hidden="true">
+              {change.kind === "added" ? "+" : "→"}
+            </span>{" "}
+            {change.kind === "changed" && <span class="sr-only">After: </span>}
+            {change.kind === "removed" ? (
+              <span class="ds-diff-removed">removed</span>
+            ) : (
+              <ins class="ds-diff-after">{formatDataValue(change.after)}</ins>
             )}
           </div>
         </li>
