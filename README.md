@@ -33,6 +33,10 @@ A registry error fails the workflow rather than guessing a version. Consumers
 update their npm dependency explicitly; tarballs are no longer copied into
 consumer repositories.
 
+The workflow waits for npm to expose a processed package before selecting a
+version, and holds the release queue until its publication becomes visible.
+If npm processing exceeds the wait limit, rerun the workflow once it finishes.
+
 Initial setup requires publishing the package once, then authorizing the npm
 trusted publisher for `sierragridteam/sierra-ds`, workflow `publish.yml`, with
 publish permission and no environment name.
