@@ -1,0 +1,15 @@
+{
+  "name": "sierra-ds",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "demo-site"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w demo-site",
+    "build": "npm run build -w demo-site",
+    "check": "npm run check -w demo-site",
+    "pack:library": "npm pack -w @sierra/design-system --pack-destination releases"
+  }
+}

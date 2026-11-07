@@ -1,0 +1,886 @@
+---
+/**
+ * /styleguide — living reference for the members design system.
+ * Public and static; contains no member data. Every class in
+ * src/styles/components.css should appear here at least once.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '@sierra/design-system/components/Button.astro';
+import Card from '@sierra/design-system/components/Card.astro';
+import Badge from '@sierra/design-system/components/Badge.astro';
+import Field from '@sierra/design-system/components/Field.astro';
+import Callout from '@sierra/design-system/components/Callout.astro';
+import EmptyState from '@sierra/design-system/components/EmptyState.astro';
+import Icon from '@sierra/design-system/components/Icon.astro';
+import Logo from '@sierra/design-system/components/Logo.astro';
+
+const swatches = [
+  ['--surface-page', 'Page'],
+  ['--surface-card', 'Card'],
+  ['--surface-banner', 'Banner / sidebar'],
+  ['--surface-raised', 'Raised / inputs'],
+  ['--surface-hero', 'Hero tint'],
+  ['--surface-deep', 'Deep'],
+  ['--brand-green', 'Brand green'],
+  ['--brand-green-tint', 'Green tint'],
+  ['--brand-brass', 'Brass'],
+  ['--brand-brass-tint', 'Brass tint'],
+  ['--signal-orange', 'Signal orange'],
+  ['--signal-orange-tint', 'Orange tint'],
+  ['--ink-strong', 'Ink strong'],
+  ['--ink-body', 'Ink body'],
+  ['--ink-secondary', 'Ink secondary'],
+  ['--ink-muted', 'Ink muted'],
+  ['--line', 'Line'],
+  ['--line-control', 'Line control'],
+];
+const icons = [
+  'home',
+  'grid',
+  'folder',
+  'file',
+  'note',
+  'external',
+  'users',
+  'receipt',
+  'user',
+  'logout',
+  'menu',
+  'x',
+  'check',
+  'download',
+  'chevron-right',
+  'chevron-left',
+  'chevron-down',
+  'alert',
+  'mail',
+  'shield',
+  'info',
+  'refresh',
+  'clock',
+  'inbox',
+  'search',
+  'plus',
+  'ban',
+  'edit',
+  'arrow-up',
+  'arrow-down',
+  'link',
+  'bold',
+  'italic',
+  'heading',
+  'list',
+  'list-ordered',
+  'quote',
+  'code',
+];
+---
+
+<BaseLayout title="Style guide" description="Design system reference for the members site.">
+  <a class="skip-link" href="#main">
+    Skip to content
+  </a>
+  <div class="sg">
+    <header class="sg__header">
+      <Logo height={30} />
+      <span class="kicker">Design system · v1</span>
+    </header>
+    <section style="padding: var(--space-4) var(--gutter)" aria-label="Preview configuration">
+<label>Density <select id="density" class="select"><option value="">Default</option><option value="compact">Compact</option><option value="comfortable">Comfortable</option></select></label>
+<label>Preview width <select id="width" class="select"><option value="100%">Fluid</option><option value="860px">Tablet</option><option value="390px">Phone</option></select></label>
+<button class="btn btn--secondary" id="dialog-demo">Open dialog</button>
+<button class="btn btn--outline" id="toast-demo">Show toast</button>
+</section>
+<main class="sg__main" id="main">
+      <nav class="sg__toc" aria-label="Sections">
+        <a href="#principles">Principles</a>
+        <a href="#colour">Colour</a>
+        <a href="#type">Type</a>
+        <a href="#buttons">Buttons</a>
+        <a href="#forms">Forms</a>
+        <a href="#lists">Lists & tables</a>
+        <a href="#status">Status</a>
+        <a href="#surfaces">Surfaces</a>
+        <a href="#states">States</a>
+        <a href="#editors">Editors</a>
+        <a href="#icons">Icons</a>
+        <a href="#shell">Shell</a>
+      </nav>
+
+      <div class="sg__content stack">
+        <section id="principles">
+          <span class="kicker">01 Principles</span>
+          <h1>The public site's brand, tuned for a tool.</h1>
+          <p class="lead">
+            Same parchment, same forest green and brass, same three typefaces. What changes is the
+            job: a member comes here to find a file, check a roster, approve a request. So the body
+            is sans, the density is higher, corners soften by a couple of pixels, and the page is a
+            shell with a sidebar instead of a sequence of marketing sections.
+          </p>
+          <ul class="sg__rules">
+            <li>
+              <strong>Tokens only.</strong> Raw colours live in <code>src/styles/tokens.css</code>{' '}
+              and nowhere else.
+            </li>
+            <li>
+              <strong>Serif for titles, sans for everything else.</strong> Newsreader at h1 and h2;
+              IBM Plex Sans for body, controls and labels; Plex Mono for codes, call signs and
+              numbers.
+            </li>
+            <li>
+              <strong>Flat surfaces.</strong> Cards are a tan rule on a lighter fill. Shadows only
+              on things that float.
+            </li>
+            <li>
+              <strong>Orange means risk or destruction.</strong> Suspending a member is orange.
+              Nothing else is.
+            </li>
+            <li>
+              <strong>Calm copy.</strong> Sentence case, no exclamation marks, "S.I.E.R.R.A" with
+              periods.
+            </li>
+          </ul>
+        </section>
+
+        <section id="colour">
+          <div class="section-header">
+            <h2>Colour</h2>
+            <p>Inherited from the main site; tints added for selection states.</p>
+          </div>
+          <div class="sg__swatches">
+            {swatches.map(([token, label]) => (
+              <div class="sg__swatch">
+                <div class="sg__chip" style={`background: var(${token})`}></div>
+                <span class="sg__swatch-label">{label}</span>
+                <code class="sg__swatch-token">{token}</code>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="type">
+          <div class="section-header">
+            <h2>Type</h2>
+            <p>Body is 16px sans; UI text 14px; labels 11px uppercase tracked.</p>
+          </div>
+          <Card>
+            <div class="sg__type">
+              <span class="kicker">Kicker · Brass, 0.22em tracking</span>
+              <h1>Page title in Newsreader, medium weight.</h1>
+              <h2>Section heading, also serif</h2>
+              <h3>Card title in Plex Sans semibold</h3>
+              <p class="lead">
+                Lead paragraph at 17px in secondary ink, for the sentence under a page title.
+              </p>
+              <p>
+                Body text at 16px. The practice net runs Tuesdays at 19:00 PT on the Ebbetts Pass
+                repeater. Check in with your call sign and whether you are on battery or mains
+                power.
+              </p>
+              <p class="meta">Meta text at 13px, muted · Updated Sep 24, 2026</p>
+              <p>
+                <span class="label">Label</span> &nbsp;{' '}
+                <span class="mono">KN6ABC · 146.520 · 14:32 PT</span>
+              </p>
+            </div>
+          </Card>
+        </section>
+
+        <section id="buttons">
+          <div class="section-header">
+            <h2>Buttons</h2>
+            <p>Uppercase tracked labels. One primary per view.</p>
+          </div>
+          <Card>
+            <div class="sg__row">
+              <Button>Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="outline">Outline</Button>
+              <Button variant="ghost">Ghost</Button>
+              <Button variant="danger">Suspend</Button>
+            </div>
+            <div class="sg__row">
+              <Button icon="download">Download</Button>
+              <Button variant="secondary" icon="refresh" size="sm">
+                Small
+              </Button>
+              <Button variant="outline" size="sm">
+                Small outline
+              </Button>
+              <Button disabled>Disabled</Button>
+              <button class="btn btn--primary is-busy" type="button">
+                Busy
+              </button>
+              <Button variant="ghost" href="/styleguide" icon="external">
+                Link button
+              </Button>
+            </div>
+          </Card>
+        </section>
+
+        <section id="forms">
+          <div class="section-header">
+            <h2>Forms</h2>
+            <p>Inputs sit on the raised surface with a control-line border.</p>
+          </div>
+          <Card>
+            <form class="form" onsubmit="return false">
+              <div class="form__row">
+                <Field label="Full name" for="sg-name" help="As it should appear on the roster.">
+                  <input class="input" id="sg-name" type="text" placeholder="Jay Goldberg" />
+                </Field>
+                <Field label="Call sign" for="sg-call" optional>
+                  <input class="input mono" id="sg-call" type="text" placeholder="KN6ABC" />
+                </Field>
+              </div>
+              <Field label="Email" for="sg-email">
+                <input
+                  class="input"
+                  id="sg-email"
+                  type="email"
+                  value="not-an-email"
+                  aria-invalid="true"
+                />
+                <p class="field__error">Enter a valid email address.</p>
+              </Field>
+              <Field label="Sign-in code" for="sg-code" help="Six digits from the email.">
+                <input
+                  class="input input--code"
+                  id="sg-code"
+                  inputmode="numeric"
+                  maxlength="6"
+                  placeholder="······"
+                />
+              </Field>
+              <Field label="Section" for="sg-select">
+                <select class="select" id="sg-select">
+                  <option>Training</option>
+                  <option>Operations</option>
+                </select>
+              </Field>
+              <div class="form__error">
+                We could not send the code. Check the address and try again.
+              </div>
+              <div class="form__actions">
+                <Button type="submit">Save changes</Button>
+                <Button variant="ghost">Cancel</Button>
+              </div>
+            </form>
+          </Card>
+        </section>
+
+        <section id="lists">
+          <div class="section-header">
+            <h2>Lists & tables</h2>
+            <p>Rows are 48px; the icon colours on hover.</p>
+          </div>
+          <div class="toolbar">
+            <div class="crumbs">
+              <a href="#lists">Files</a>
+              <span class="crumbs__sep">/</span>
+              <a href="#lists">Training</a>
+              <span class="crumbs__sep">/</span>
+              <span class="crumbs__current">Exercises</span>
+            </div>
+            <span class="toolbar__spacer"></span>
+            <input class="input" type="search" placeholder="Filter" aria-label="Filter" />
+          </div>
+          <ul class="list">
+            <li>
+              <a class="row" href="#lists">
+                <Icon name="folder" class="row__icon" />
+                <span class="row__main">
+                  <span class="row__title">Exercises</span>
+                  <span class="row__desc">Tabletop and field exercise plans</span>
+                </span>
+                <span class="row__aside">4 items</span>
+                <Icon name="chevron-right" class="row__chevron" />
+              </a>
+            </li>
+            <li>
+              <button class="row" type="button">
+                <Icon name="file" class="row__icon" />
+                <span class="row__main">
+                  <span class="row__title">Net control script.pdf</span>
+                </span>
+                <span class="row__aside">212 KB · Sep 12, 2026</span>
+                <Icon name="download" class="row__chevron" />
+              </button>
+            </li>
+            <li>
+              <a class="row" href="#lists">
+                <Icon name="external" class="row__icon" />
+                <span class="row__main">
+                  <span class="row__title">NWS Sacramento</span>
+                  <span class="row__desc">Forecast office for the service area</span>
+                </span>
+              </a>
+            </li>
+            <li>
+              <div class="row row--static">
+                <Icon name="note" class="row__icon" />
+                <span class="row__main">
+                  <span class="row__title">Practice net</span>
+                  <span class="row__desc">Tuesdays at 19:00 PT on the Ebbetts Pass repeater.</span>
+                </span>
+              </div>
+            </li>
+          </ul>
+          <div class="table-wrap" style="margin-top: var(--space-4)">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Call sign</th>
+                  <th>Status</th>
+                  <th>Joined</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <div class="user-chip">
+                      <span class="avatar">JG</span>
+                      <span>
+                        <div class="user-chip__name">Jay Goldberg</div>
+                        <div class="user-chip__sub">jay@example.com</div>
+                      </span>
+                    </div>
+                  </td>
+                  <td class="mono">KN6ABC</td>
+                  <td>
+                    <Badge tone="ok">Active</Badge> <Badge tone="deep">Admin</Badge>
+                  </td>
+                  <td>Sep 1, 2026</td>
+                  <td class="is-actions">
+                    <Button variant="ghost" size="sm">
+                      Edit
+                    </Button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="user-chip">
+                      <span class="avatar">M</span>
+                      <span>
+                        <div class="user-chip__name">member@example.com</div>
+                      </span>
+                    </div>
+                  </td>
+                  <td class="mono muted">—</td>
+                  <td>
+                    <Badge tone="elevated">Pending</Badge>
+                  </td>
+                  <td>Sep 20, 2026</td>
+                  <td class="is-actions">
+                    <Button size="sm" icon="check">
+                      Approve
+                    </Button>{' '}
+                    <Button variant="ghost" size="sm">
+                      Decline
+                    </Button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="user-chip">
+                      <span class="avatar">RS</span>
+                      <span>
+                        <div class="user-chip__name">Robin Smith</div>
+                      </span>
+                    </div>
+                  </td>
+                  <td class="mono">W6XYZ</td>
+                  <td>
+                    <Badge tone="alarm">Suspended</Badge>
+                  </td>
+                  <td>Aug 3, 2026</td>
+                  <td class="is-actions">
+                    <Button variant="outline" size="sm">
+                      Reinstate
+                    </Button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="status">
+          <div class="section-header">
+            <h2>Status</h2>
+            <p>Badges carry a dot; the deep badge marks roles.</p>
+          </div>
+          <Card>
+            <div class="sg__row">
+              <Badge tone="ok">Active</Badge>
+              <Badge tone="elevated">Pending</Badge>
+              <Badge tone="alarm">Suspended</Badge>
+              <Badge tone="deep">Admin</Badge>
+              <Badge>Unknown</Badge>
+              <Badge tone="ok" dot={false}>
+                No dot
+              </Badge>
+              <span class="pill">Pill · 12 items</span>
+            </div>
+            <div class="stats" style="margin-top: var(--space-5)">
+              <div class="stat">
+                <span class="stat__label">Members</span>
+                <span class="stat__value">42</span>
+                <span class="stat__sub">3 pending</span>
+              </div>
+              <a class="stat" href="#status">
+                <span class="stat__label">Resources</span>
+                <span class="stat__value">17</span>
+                <span class="stat__sub">across 3 sections</span>
+              </a>
+              <div class="stat">
+                <span class="stat__label">Last sign-in</span>
+                <span class="stat__value mono">14:32</span>
+                <span class="stat__sub">PT · today</span>
+              </div>
+            </div>
+          </Card>
+        </section>
+
+        <section id="surfaces">
+          <div class="section-header">
+            <h2>Surfaces & callouts</h2>
+            <p>Cards, banner panels and the three callout rules.</p>
+          </div>
+          <div class="sg__grid">
+            <Card title="Card with header">
+              <p class="meta">Body content. Header takes a title and an actions slot.</p>
+              <Button slot="actions" variant="ghost" size="sm">
+                Action
+              </Button>
+              <span slot="footer" class="meta">
+                Footer strip on banner surface.
+              </span>
+            </Card>
+            <Card surface="banner">
+              <p>Banner surface for secondary panels.</p>
+            </Card>
+            <Card surface="raised">
+              <p>Raised surface for floating overlays and inputs only.</p>
+            </Card>
+          </div>
+          <div class="sg__grid" style="margin-top: var(--space-4)">
+            <Callout title="Note">
+              Codes expire after 15 minutes. Request a new one from the sign-in page.
+            </Callout>
+            <Callout tone="brass" title="Waiting for approval">
+              An admin will review your request. You will get an email.
+            </Callout>
+            <Callout tone="orange" title="Careful">
+              Suspending removes access immediately.
+            </Callout>
+          </div>
+        </section>
+
+        <section id="states">
+          <div class="section-header">
+            <h2>Empty, loading, toasts</h2>
+            <p>Nothing is ever blank: a skeleton, then content or a calm empty state.</p>
+          </div>
+          <div class="sg__grid">
+            <EmptyState title="No files here yet" icon="folder">
+              <p>When the board adds documents to this folder, they will appear here.</p>
+              <Button variant="secondary" size="sm" href="#states">
+                Back to resources
+              </Button>
+            </EmptyState>
+            <div class="list">
+              <div class="skeleton skeleton--row"></div>
+              <div class="skeleton skeleton--row"></div>
+              <div class="skeleton skeleton--row"></div>
+            </div>
+          </div>
+          <div class="sg__row" style="margin-top: var(--space-4)">
+            <div class="toast" style="position: static">
+              <span>Link ready. Your download should start.</span>
+            </div>
+            <div class="toast toast--warn" style="position: static">
+              <span>That code has expired.</span>
+            </div>
+            <div class="toast toast--error" style="position: static">
+              <span>The file service is not responding.</span>
+              <button class="toast__close" type="button" aria-label="Dismiss">
+                <Icon name="x" />
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="editors">
+          <div class="section-header">
+            <h2>Editors</h2>
+            <p>
+              Admin wizards: a stepper, choice cards, the Markdown editor, and notes rendered as
+              <code>.prose</code>. Opened in a <code>.dialog</code> (native{' '}
+              <code>&lt;dialog&gt;</code>).
+            </p>
+          </div>
+          <div class="stack">
+            <Card>
+              <ol class="steps" aria-label="Steps">
+                <li class="steps__item is-done">
+                  <span class="steps__btn">
+                    <span class="steps__num">
+                      <Icon name="check" />
+                    </span>
+                    <span class="steps__label">Type</span>
+                  </span>
+                </li>
+                <li class="steps__item is-current" aria-current="step">
+                  <span class="steps__btn">
+                    <span class="steps__num">2</span>
+                    <span class="steps__label">Details</span>
+                  </span>
+                </li>
+                <li class="steps__item">
+                  <span class="steps__btn">
+                    <span class="steps__num">3</span>
+                    <span class="steps__label">Placement</span>
+                  </span>
+                </li>
+                <li class="steps__item">
+                  <span class="steps__btn">
+                    <span class="steps__num">4</span>
+                    <span class="steps__label">Review</span>
+                  </span>
+                </li>
+              </ol>
+              <div class="choices">
+                <button class="choice is-selected" type="button" aria-pressed="true">
+                  <span class="choice__icon">
+                    <Icon name="external" size="lg" />
+                  </span>
+                  <span class="choice__label">Link</span>
+                  <span class="choice__text">A web page or another page of this site.</span>
+                </button>
+                <button class="choice" type="button" aria-pressed="false">
+                  <span class="choice__icon">
+                    <Icon name="folder" size="lg" />
+                  </span>
+                  <span class="choice__label">File reference</span>
+                  <span class="choice__text">A file or folder in the shared Dropbox.</span>
+                </button>
+                <button class="choice" type="button" aria-pressed="false">
+                  <span class="choice__icon">
+                    <Icon name="note" size="lg" />
+                  </span>
+                  <span class="choice__label">Note</span>
+                  <span class="choice__text">Text written here, in Markdown.</span>
+                </button>
+              </div>
+            </Card>
+            <div class="sg__grid">
+              <div class="md-editor">
+                <div class="md-editor__bar">
+                  <div class="md-editor__tabs" role="tablist" aria-label="Editor mode">
+                    <button class="md-editor__tab" type="button" role="tab" aria-selected="true">
+                      Write
+                    </button>
+                    <button class="md-editor__tab" type="button" role="tab" aria-selected="false">
+                      Preview
+                    </button>
+                  </div>
+                  <div class="md-editor__tools" role="toolbar" aria-label="Formatting">
+                    {['heading', 'bold', 'italic', 'list', 'list-ordered', 'quote', 'link'].map(
+                      (name) => (
+                        <button class="md-editor__tool" type="button" aria-label={name}>
+                          <Icon name={name} />
+                        </button>
+                      )
+                    )}
+                  </div>
+                </div>
+                <textarea class="textarea md-editor__input" aria-label="Note" rows="6">
+The practice net runs **Tuesdays at 19:00 PT**.
+
+### Checking in
+
+1. Wait for net control.
+2. Give your call sign.</textarea>
+                <p class="md-editor__help">
+                  Markdown: <code>**bold**</code> <code>- list</code>
+                </p>
+              </div>
+              <div class="prose">
+                <p>
+                  The practice net runs <strong>Tuesdays at 19:00 PT</strong>.
+                </p>
+                <h3>Checking in</h3>
+                <ol>
+                  <li>Wait for net control.</li>
+                  <li>Give your call sign.</li>
+                </ol>
+                <blockquote>
+                  <p>Keep transmissions short.</p>
+                </blockquote>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Pack</th>
+                      <th>Volts</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>A</td>
+                      <td>13.2</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="icons">
+          <div class="section-header">
+            <h2>Icons</h2>
+            <p>
+              24px stroke set in <code>IconSprite.astro</code>.
+            </p>
+          </div>
+          <Card>
+            <div class="sg__icons">
+              {icons.map((name) => (
+                <div class="sg__icon">
+                  <Icon name={name} size="lg" />
+                  <code>{name}</code>
+                </div>
+              ))}
+            </div>
+          </Card>
+        </section>
+
+        <section id="shell">
+          <div class="section-header">
+            <h2>Shell</h2>
+            <p>Sidebar at ≥ 861px, drawer below. See any member page.</p>
+          </div>
+          <Card padded={false}>
+            <div class="sg__shell">
+              <div class="sg__shell-side">
+                <span class="sidebar__group-label">Navigation</span>
+                <ul class="sidebar__list">
+                  <li>
+                    <a class="nav-link is-active" href="#shell">
+                      <Icon name="home" />
+                      Home
+                    </a>
+                  </li>
+                  <li>
+                    <a class="nav-link" href="#shell">
+                      <Icon name="grid" />
+                      Resources
+                    </a>
+                  </li>
+                  <li>
+                    <a class="nav-link" href="#shell">
+                      <Icon name="folder" />
+                      Files
+                    </a>
+                  </li>
+                </ul>
+                <span class="sidebar__group-label" style="margin-top: var(--space-4)">
+                  Admin
+                </span>
+                <ul class="sidebar__list">
+                  <li>
+                    <a class="nav-link" href="#shell">
+                      <Icon name="users" />
+                      Members
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div class="sg__shell-main">
+                <div class="page-header">
+                  <div class="page-header__text">
+                    <span class="kicker">Members</span>
+                    <h1>Good evening, Jay.</h1>
+                    <p class="lead">Three sections, seventeen resources.</p>
+                  </div>
+                  <div class="page-header__actions">
+                    <Button variant="secondary" size="sm">
+                      Account
+                    </Button>
+                  </div>
+                </div>
+                <dl class="dl">
+                  <dt>Status</dt>
+                  <dd>
+                    <Badge tone="ok">Active</Badge>
+                  </dd>
+                  <dt>Call sign</dt>
+                  <dd class="mono">KN6ABC</dd>
+                  <dt>Member since</dt>
+                  <dd>Sep 1, 2026</dd>
+                </dl>
+              </div>
+            </div>
+          </Card>
+        </section>
+      </div>
+    </main>
+  </div>
+</BaseLayout>
+
+<style>
+  .sg__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    min-height: var(--topbar-h);
+    padding: 0 var(--gutter);
+    border-bottom: var(--border);
+    background: var(--surface-banner);
+  }
+  .sg__main {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: var(--space-8);
+    max-width: 1200px;
+    margin-inline: auto;
+    padding: var(--space-7) var(--gutter) var(--space-10);
+  }
+  .sg__toc {
+    position: sticky;
+    top: var(--space-6);
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: var(--fs-ui);
+  }
+  .sg__toc a {
+    padding: var(--space-1) var(--space-2);
+    border-left: 2px solid var(--line-soft);
+    color: var(--ink-secondary);
+  }
+  .sg__toc a:hover {
+    border-left-color: var(--brand-green);
+    color: var(--brand-green);
+    text-decoration: none;
+  }
+  .sg__rules {
+    margin-top: var(--space-5);
+    padding-left: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    font-size: var(--fs-ui);
+  }
+  .sg__rules li::marker {
+    color: var(--brand-brass-text);
+  }
+  .sg__swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-3);
+  }
+  .sg__swatch {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: var(--fs-small);
+  }
+  .sg__chip {
+    height: 56px;
+    border: var(--border);
+    border-radius: var(--radius);
+  }
+  .sg__swatch-label {
+    color: var(--ink-strong);
+    font-weight: var(--fw-medium);
+  }
+  .sg__swatch-token {
+    color: var(--ink-muted);
+    font-size: var(--fs-label-lg);
+  }
+  .sg__type > * + * {
+    margin-top: var(--space-3);
+  }
+  .sg__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .sg__row + .sg__row {
+    margin-top: var(--space-4);
+  }
+  .sg__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-4);
+  }
+  .sg__icons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: var(--space-3);
+  }
+  .sg__icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border: var(--border-soft);
+    border-radius: var(--radius);
+    font-size: var(--fs-label-lg);
+    color: var(--ink-secondary);
+  }
+  .sg__shell {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    min-height: 260px;
+  }
+  .sg__shell-side {
+    padding: var(--space-4) var(--space-3);
+    background: var(--surface-banner);
+    border-right: var(--border);
+  }
+  .sg__shell-main {
+    padding: var(--space-6);
+  }
+  @media (max-width: 860px) {
+    .sg__main {
+      grid-template-columns: 1fr;
+    }
+    .sg__toc {
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .sg__shell {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+import {openDialog} from '@sierra/design-system/lib/dialog';
+import {toast} from '@sierra/design-system/lib/toast';
+import {el} from '@sierra/design-system/lib/dom';
+document.querySelector('#density')?.addEventListener('change', (event) => {
+ const value = (event.target as HTMLSelectElement).value;
+ document.documentElement.style.setProperty('--space-4', value === 'compact' ? '12px' : value === 'comfortable' ? '24px' : '16px');
+});
+document.querySelector('#width')?.addEventListener('change', (event) => {
+ const main = document.querySelector<HTMLElement>('.sg__main')!;
+ main.style.maxWidth = (event.target as HTMLSelectElement).value;
+ main.style.gridTemplateColumns = (event.target as HTMLSelectElement).value === '390px' ? '1fr' : '';
+});
+document.querySelector('#dialog-demo')?.addEventListener('click', () => {
+ const dialog = openDialog({title: 'Review changes', kicker: 'Design system'});
+ dialog.body.append(el('p', {}, 'Native dialog with keyboard dismissal and focus handling.'));
+});
+document.querySelector('#toast-demo')?.addEventListener('click', () => toast('Changes saved.'));
+</script>
