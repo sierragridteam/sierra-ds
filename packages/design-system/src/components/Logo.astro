@@ -1,24 +1,42 @@
 ---
 /**
- * Logo — the S.I.E.R.R.A mark with a "Members" wordmark.
+ * Logo — the S.I.E.R.R.A mark with a configurable site wordmark.
  * The mark is the main site's raster asset, placed on parchment, never recoloured.
  */
 interface Props {
   href?: string;
+  /** Site name shown beneath S.I.E.R.R.A and used in the home link label. */
+  siteName?: string;
   height?: number;
   wordmark?: boolean;
   class?: string;
 }
-const { href = '/', height = 28, wordmark = true, class: cls } = Astro.props;
+const {
+  href = "/",
+  siteName = "Members",
+  height = 28,
+  wordmark = true,
+  class: cls,
+} = Astro.props;
 const width = Math.round((height * 271) / 154);
 ---
 
-<a class:list={['logo', cls]} href={href} aria-label="S.I.E.R.R.A Members home">
-  <img src="/brand/sierra-mark.png" alt="" width={width} height={height} decoding="async" />
+<a
+  class:list={["logo", cls]}
+  href={href}
+  aria-label={["S.I.E.R.R.A", siteName, "home"].filter(Boolean).join(" ")}
+>
+  <img
+    src="/brand/sierra-mark.png"
+    alt=""
+    width={width}
+    height={height}
+    decoding="async"
+  />
   {wordmark && (
     <span class="logo__text">
       <span class="logo__org">S.I.E.R.R.A</span>
-      <span class="logo__app">Members</span>
+      {siteName && <span class="logo__app">{siteName}</span>}
     </span>
   )}
 </a>
