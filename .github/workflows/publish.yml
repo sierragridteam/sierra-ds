@@ -16,7 +16,7 @@ jobs:
   publish:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: read
       id-token: write
@@ -33,8 +33,15 @@ jobs:
       - run: pnpm build
       # npm handles OIDC publishing; pnpm remains the project package manager.
       - run: npm install --global npm@12.2.2
+      # The first publication must exist before automatic releases can start.
+      - run: node scripts/wait-for-registry.mjs
       - id: release
         run: node scripts/prepare-release.mjs
       - if: steps.release.outputs.publish == 'true'
         run: npm publish --access public --provenance --ignore-scripts
         working-directory: packages/design-system
+      # Hold the release queue until npm exposes this version to the next run.
+      - if: steps.release.outputs.publish == 'true'
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: node scripts/wait-for-registry.mjs "$RELEASE_VERSION"

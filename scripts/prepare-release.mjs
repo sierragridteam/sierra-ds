@@ -16,7 +16,7 @@ if (response.ok) {
     throw new Error('Registry response is missing versions');
   }
   versions = metadata.versions;
-} else if (response.status !== 404) {
+} else {
   throw new Error(`Registry lookup failed: HTTP ${response.status}`);
 }
 const version = releaseVersion(pkg.version, versions, process.env.GITHUB_SHA);
