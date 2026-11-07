@@ -1,15 +1,19 @@
 ---
+import ValueTable from "@sierra/design-system/components/ValueTable.astro";
+import MetricGrid from "@sierra/design-system/components/MetricGrid.astro";
+import IdentifierList from "@sierra/design-system/components/IdentifierList.astro";
+import DataDiff from "@sierra/design-system/components/DataDiff.astro";
+import Card from "@sierra/design-system/components/Card.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Logo from "@sierra/design-system/components/Logo.astro";
 import PageHeader from "@sierra/design-system/components/PageHeader.astro";
+import DataRow from "@sierra/design-system/components/DataRow.astro";
 import DataTable from "@sierra/design-system/components/DataTable.astro";
 import DataStatus from "@sierra/design-system/components/DataStatus.astro";
-import FilterBar from "@sierra/design-system/components/FilterBar.astro";
-import Field from "@sierra/design-system/components/Field.astro";
-import Select from "@sierra/design-system/components/Select.astro";
 import Badge from "@sierra/design-system/components/Badge.astro";
 import MapFrame from "@sierra/design-system/components/MapFrame.astro";
 import GeoJSONMap from "@sierra/design-system/components/GeoJSONMap.astro";
+import { diffValues } from "@sierra/design-system/lib/data-values";
 import type { FeatureCollection, Geometry } from "geojson";
 const features: FeatureCollection<Geometry | null> = {
   type: "FeatureCollection",
@@ -68,7 +72,31 @@ const features: FeatureCollection<Geometry | null> = {
     },
   ],
 };
-const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
+const ids = Array.from(
+  { length: 12 },
+  (_, i) =>
+    `${(i + 1).toString(16).padStart(8, "0")}a71f049e2b38c6d05f912a8e47b03c6d19e245f8037a6b19d2e4c508`,
+);
+const changes = diffValues(
+  {
+    name: "Example relay",
+    enabled: false,
+    hops: 0,
+    signal: { snr: 8.4, rssi: -102 },
+    gateways: [ids[0]],
+    note: "Previous operator note",
+    optional: null,
+  },
+  {
+    name: "Example relay",
+    enabled: true,
+    hops: 3,
+    signal: { snr: 11.2, rssi: -94 },
+    gateways: [ids[0], ids[1]],
+    optional: "",
+    location: { lat: 38.1, lng: -120.4 },
+  },
+);
 ---
 
 <BaseLayout
@@ -87,48 +115,11 @@ const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
     />
     <section class="stack" aria-labelledby="tables-title">
       <h2 id="tables-title">Road conditions</h2>
-      <FilterBar>
-        <Field label="Data state" for="data-state">
-          <Select
-            id="data-state"
-            options={states.map((value) => ({
-              value,
-              label: value[0].toUpperCase() + value.slice(1),
-            }))}
-          />
-        </Field>
-        <Field label="Road status" for="road-filter">
-          <Select
-            id="road-filter"
-            options={[
-              { value: "all", label: "All roads" },
-              { value: "open", label: "Open" },
-              { value: "restricted", label: "Restricted" },
-            ]}
-          />
-        </Field>
-      </FilterBar>
-      {states.map((state) => (
-        <div data-status-panel={state} hidden={state !== "fresh"}>
-          <DataStatus
-            state={state}
-            message={
-              state === "stale"
-                ? "Refresh failed. These are the previous successful results."
-                : state === "unavailable"
-                  ? "No reliable count can be shown."
-                  : state === "empty"
-                    ? "The query succeeded and returned no records."
-                    : "Synthetic fixture data."
-            }
-            updatedAt={
-              ["fresh", "stale"].includes(state)
-                ? "2026-11-07T17:00:00Z"
-                : undefined
-            }
-          />
-        </div>
-      ))}
+      <DataStatus
+        state="fresh"
+        message="Synthetic fixture data. All road-status examples are shown below."
+        updatedAt="2026-11-07T17:00:00Z"
+      />
       <div id="road-results">
         <DataTable
           caption="Road conditions · sample records"
@@ -139,32 +130,75 @@ const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
             { label: "Delay", numeric: true },
           ]}
         >
-          <tr data-road-status="open">
-            <th scope="row">
-              SR 4 <span class="meta">· example west segment</span>
-            </th>
+          <DataRow label="SR 4" description="Example west segment">
             <td>
               <Badge tone="ok">Open</Badge>
             </td>
             <td class="ds-numeric">18 min</td>
             <td class="ds-numeric">0 min</td>
-          </tr>
-          <tr data-road-status="restricted">
-            <th scope="row">
-              SR 108 <span class="meta">· example east segment</span>
-            </th>
+          </DataRow>
+          <DataRow
+            label="SR 108"
+            description="Example east segment"
+            note="One lane available. Example advisory for this road segment."
+            noteTone="caution"
+          >
             <td>
               <Badge tone="elevated">Restricted</Badge>
             </td>
             <td class="ds-numeric">32 min</td>
             <td class="ds-numeric">12 min</td>
-          </tr>
-          <tr data-road-status="restricted">
-            <td colspan="4">
-              One lane available. Example advisory attached to the record.
+          </DataRow>
+          <DataRow label="SR 49" description="Example north segment">
+            <td>
+              <Badge tone="alarm">Closed</Badge>
             </td>
-          </tr>
+            <td class="ds-numeric">Not available</td>
+            <td class="ds-numeric">Not available</td>
+          </DataRow>
         </DataTable>
+      </div>
+    </section>
+    <section class="stack" aria-labelledby="states-title">
+      <h2 id="states-title">Data-state variants</h2>
+      <div class="variant-grid">
+        <Card title="Loading">
+          <DataStatus
+            state="loading"
+            message="Waiting for the first response."
+          />
+          <div class="skeleton skeleton--row" aria-hidden="true"></div>
+        </Card>
+        <Card title="Stale">
+          <DataStatus
+            state="stale"
+            message="Refresh failed. Keep the last successful readings visible."
+            updatedAt="2026-11-07T17:00:00Z"
+          />
+          <MetricGrid
+            label="Last known travel time"
+            items={[
+              {
+                label: "Travel",
+                value: 32,
+                unit: "min",
+                description: "Last known reading, not current",
+              },
+            ]}
+          />
+        </Card>
+        <Card title="Unavailable">
+          <DataStatus
+            state="unavailable"
+            message="No reliable reading is available. Counts and travel times are unknown."
+          />
+        </Card>
+        <Card title="Empty">
+          <DataStatus
+            state="empty"
+            message="The request succeeded. No records match this query."
+          />
+        </Card>
       </div>
     </section>
     <section class="stack" aria-labelledby="sources-title">
@@ -178,8 +212,7 @@ const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
           { label: "Records", numeric: true },
         ]}
       >
-        <tr>
-          <th scope="row">Road incidents</th>
+        <DataRow label="Road incidents">
           <td>
             <Badge tone="ok">Fresh</Badge>
           </td>
@@ -187,9 +220,12 @@ const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
             <time datetime="2026-11-07T17:00:00Z">17:00 UTC</time>
           </td>
           <td class="ds-numeric">2</td>
-        </tr>
-        <tr>
-          <th scope="row">Weather alerts</th>
+        </DataRow>
+        <DataRow
+          label="Weather alerts"
+          note="Showing the last known weather result. Freshness is not guaranteed."
+          noteTone="caution"
+        >
           <td>
             <Badge tone="elevated">Stale</Badge>
           </td>
@@ -197,24 +233,135 @@ const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
             <time datetime="2026-11-07T15:00:00Z">15:00 UTC</time>
           </td>
           <td class="ds-numeric">1</td>
-        </tr>
-        <tr>
-          <td colspan="4">
-            <DataStatus
-              state="stale"
-              message="Last known result retained; freshness is not guaranteed."
-            />
-          </td>
-        </tr>
-        <tr>
-          <th scope="row">Power outages</th>
+        </DataRow>
+
+        <DataRow label="Power outages">
           <td>
             <Badge>Unavailable</Badge>
           </td>
           <td>Unknown</td>
           <td class="ds-numeric">Unknown</td>
-        </tr>
+        </DataRow>
       </DataTable>
+    </section>
+    <section class="stack" aria-labelledby="dense-title">
+      <h2 id="dense-title">Dense record detail</h2>
+      <p class="meta">
+        Synthetic examples modeled on the event-detail structure. These
+        components accept domain-neutral labels and values.
+      </p>
+      <Card>
+        <ValueTable
+          label="Record fields"
+          rows={[
+            {
+              label: "name",
+              value: "Example relay",
+              description: "Human-readable name reported by the source.",
+            },
+            {
+              label: "publicKey",
+              value: ids[0],
+              description:
+                "Full identifier. Long values wrap without widening the page.",
+            },
+            {
+              label: "enabled",
+              value: false,
+              description: "False is a known value, not missing data.",
+            },
+            {
+              label: "hopCount",
+              value: 0,
+              description: "Zero represents a direct observation.",
+            },
+            {
+              label: "description",
+              value: "",
+              description: "An explicitly empty string.",
+            },
+            {
+              label: "expires",
+              value: null,
+              description: "Explicit null supplied by the source.",
+            },
+            {
+              label: "lastSeen",
+              missing: "Not reported",
+              description: "The source did not supply this field.",
+            },
+          ]}
+        />
+      </Card>
+      <h3>Gateway-reported signal</h3>
+      <MetricGrid
+        label="Gateway-reported signal"
+        items={[
+          {
+            label: "SNR",
+            value: 11.2,
+            unit: "dB",
+            description: "Gateway-reported",
+          },
+          {
+            label: "RSSI",
+            value: -94,
+            unit: "dBm",
+            description: "Gateway-reported",
+          },
+          { label: "Hops", value: 0, description: "Heard directly" },
+          {
+            label: "Last advert",
+            value: "14:32",
+            unit: "UTC",
+            description: "Example observation time",
+          },
+        ]}
+      />
+      <h3>Other metric uses</h3>
+      <MetricGrid
+        label="Device health"
+        items={[
+          {
+            label: "Battery",
+            value: 82,
+            unit: "%",
+            description: "Latest device reading",
+          },
+          {
+            label: "Temperature",
+            value: 0,
+            unit: "°C",
+            description: "A valid zero reading",
+          },
+          {
+            label: "Voltage",
+            value: null,
+            missing: "Not read",
+            description: "Device did not report voltage",
+          },
+        ]}
+      />
+      <Card>
+        <IdentifierList
+          label="Gateway identifiers"
+          values={ids}
+          previewCount={4}
+        />
+      </Card>
+      <Card>
+        <IdentifierList
+          label="Related records"
+          values={[]}
+          emptyMessage="No related identifiers were supplied."
+        />
+      </Card>
+      <Card>
+        <DataDiff label="Changes between observations" changes={changes} />
+      </Card>
+      <Card>
+        <DataDiff label="Unchanged observation" changes={[]} />
+      </Card>
     </section>
     <section class="stack" aria-labelledby="map-title">
       <h2 id="map-title">Map treatments</h2>
@@ -242,6 +389,11 @@ const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
   </main>
 </BaseLayout>
 <style>
+  .variant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: var(--space-4);
+  }
   .data-demo {
     max-width: 1200px;
     margin: auto;
@@ -260,27 +412,3 @@ const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
     justify-content: flex-start;
   }
 </style>
-<script>
-  const state = document.querySelector<HTMLButtonElement>("#data-state")!;
-  const filter = document.querySelector<HTMLButtonElement>("#road-filter")!;
-  const update = () => {
-    document
-      .querySelectorAll<HTMLElement>("[data-status-panel]")
-      .forEach(
-        (panel) => (panel.hidden = panel.dataset.statusPanel !== state.value),
-      );
-    document.querySelector<HTMLElement>("#road-results")!.hidden = ![
-      "fresh",
-      "stale",
-    ].includes(state.value);
-    document
-      .querySelectorAll<HTMLElement>("[data-road-status]")
-      .forEach(
-        (row) =>
-          (row.hidden =
-            filter.value !== "all" && row.dataset.roadStatus !== filter.value),
-      );
-  };
-  state.addEventListener("change", update);
-  filter.addEventListener("change", update);
-</script>

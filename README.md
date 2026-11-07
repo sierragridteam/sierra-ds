@@ -40,8 +40,8 @@ filter controls, and a single map showing point, line and polygon treatments tog
 These are library examples, not a migrated `sierra-data` site or a prescribed page layout.
 
 - `DataTable` supplies semantic column headings, caption and a scrollable region;
-  consumers slot rows and own filtering/sorting/pagination. Use `ds-numeric` for
-  numeric cells and ordinary colspan rows for record-level notes.
+  consumers slot `DataRow` components and own filtering/sorting/pagination. Use
+  `ds-numeric` for numeric cells. Pass record-level notices through `DataRow.note`.
 - `DataStatus` distinguishes loading, fresh, stale, unavailable and empty. Consumers
   decide when to retain last-good data; unknown counts must not become zero.
 - `FilterBar` arranges labelled controls; it does not own query or URL state.
@@ -65,3 +65,36 @@ Current scope: initial/static GeoJSON props, point selection emphasis, and list
 selection events. Advanced layer controls, camera URL persistence, dynamic data
 updates and domain-specific feature details are subsequent work. Existing consumers
 remain on their packaged release until an explicit library release/migration.
+
+## Dense records
+
+The `/data` catalog displays states side by side, with no filter configuration
+required. Its dense-data examples are synthetic and inspired by the shape of
+`sierra-data`'s event detail, without importing that site's styles.
+
+- `ValueTable`: `label` and `rows` of `{label, value?, description?, missing?}`.
+  Values support JSON. Secondary descriptions sit beneath values; long IDs wrap.
+  `undefined` means missing; `null`, `false`, zero and an empty string are distinct.
+- `MetricGrid`: `label` and `items` of `{label, value?, unit?, description?, missing?}`.
+  Null/undefined use the missing label; zero is a valid reading. Measurement origin
+  belongs in the description (for example gateway-reported versus device-measured).
+- `IdentifierList`: `label`, `values`, optional `previewCount` and `emptyMessage`.
+  Full IDs remain readable and selectable. Overflow uses a disclosure. Individual
+  copy and Copy all use complete values; Copy all includes collapsed entries, one
+  per line. Clipboard failures show a manual-copy fallback.
+- `DataDiff`: `label`, `changes`, and optional `emptyMessage`. Changes contain
+  `path`, `kind` (added/removed/changed), and `before`/`after` JSON values.
+  It wraps full values and labels change direction in words, not color alone.
+  Optional `diffValues(before, after)` from `lib/data-values` computes changes for
+  JSON values, using escaped JSON Pointer paths and index-based array comparison.
+  Revision fetching and domain-specific comparison policies stay with consumers.
+
+Run `pnpm test` for value and diff semantics; `pnpm check` includes the library
+components as well as the demo. Table-specific notices should live within their
+own row, beneath the relevant label/value, rather than as detached status banners.
+
+`DataRow` takes `label`, optional `description`, `note` and `noteTone`
+(`neutral` or `caution`), with remaining `<td>` cells in its slot. It owns the
+row header and note placement: annotations stay inside the record's header cell,
+including on narrow screens. Do not create separate colspan rows for a record's
+advisory. Use `DataStatus` for an entire dataset's state instead.
