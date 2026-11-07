@@ -111,3 +111,11 @@ so its hover and dividers reach the card edges.
 
 Demo pages share `demo-site/src/layouts/DemoLayout.astro`: one header, primary
 navigation, section navigation, content width and responsive shell.
+
+## License and usage
+
+Copyright © 2026 Signal Integrity & Emergency Radio Response Alliance. All rights
+reserved. This design system is derived from the organization's website and
+members site; public source availability does not grant permission to reuse the
+code, design, name, or brand assets. Third-party dependencies retain their own
+licenses. Contact `info@sierragridteam.org` for permission.
