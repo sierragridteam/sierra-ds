@@ -4,8 +4,7 @@ import MetricGrid from "@sierra/design-system/components/MetricGrid.astro";
 import IdentifierList from "@sierra/design-system/components/IdentifierList.astro";
 import DataDiff from "@sierra/design-system/components/DataDiff.astro";
 import Card from "@sierra/design-system/components/Card.astro";
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Logo from "@sierra/design-system/components/Logo.astro";
+import DemoLayout from "../layouts/DemoLayout.astro";
 import PageHeader from "@sierra/design-system/components/PageHeader.astro";
 import DataRow from "@sierra/design-system/components/DataRow.astro";
 import DataTable from "@sierra/design-system/components/DataTable.astro";
@@ -99,15 +98,18 @@ const changes = diffValues(
 );
 ---
 
-<BaseLayout
+<DemoLayout
+  sections={[
+    { id: "tables-title", label: "Road conditions" },
+    { id: "states-title", label: "Data states" },
+    { id: "sources-title", label: "Source health" },
+    { id: "dense-title", label: "Dense records" },
+    { id: "map-title", label: "Map treatments" },
+  ]}
   title="Data and maps · Sierra design system"
   description="Fixture-based tables and map components."
 >
-  <main class="data-demo stack">
-    <nav class="demo-nav" aria-label="Demo pages">
-      <Logo siteName="Design system" />
-      <a href="/">Component catalog</a>
-    </nav>
+  <div class="data-demo stack">
     <PageHeader
       title="Data and maps"
       kicker="Component laboratory"
@@ -250,7 +252,7 @@ const changes = diffValues(
         Synthetic examples modeled on the event-detail structure. These
         components accept domain-neutral labels and values.
       </p>
-      <Card>
+      <Card padded={false}>
         <ValueTable
           label="Record fields"
           rows={[
@@ -357,7 +359,24 @@ const changes = diffValues(
         />
       </Card>
       <Card>
-        <DataDiff label="Changes between observations" changes={changes} />
+        <DataDiff
+          label="Changes between observations"
+          changes={[
+            {
+              path: "provenance.attribution",
+              kind: "changed",
+              before: "Example community mesh",
+              after: "Example community mesh via a new gateway provider",
+            },
+            {
+              path: "provenance.fetchedAt",
+              kind: "changed",
+              before: "2026-11-07T05:34:07.12113261Z",
+              after: "2026-11-07T06:33:01.263357378Z",
+            },
+            ...changes,
+          ]}
+        />
       </Card>
       <Card>
         <DataDiff label="Unchanged observation" changes={[]} />
@@ -386,8 +405,8 @@ const changes = diffValues(
         </span>
       </MapFrame>
     </section>
-  </main>
-</BaseLayout>
+  </div>
+</DemoLayout>
 <style>
   .variant-grid {
     display: grid;
@@ -395,12 +414,8 @@ const changes = diffValues(
     gap: var(--space-4);
   }
   .data-demo {
-    max-width: 1200px;
-    margin: auto;
-    padding: var(--space-6) var(--gutter);
     gap: var(--space-8);
   }
-  .demo-nav,
   .legend {
     display: flex;
     flex-wrap: wrap;

@@ -1,0 +1,113 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Logo from "@sierra/design-system/components/Logo.astro";
+interface Props {
+  title: string;
+  description?: string;
+  sections: { id: string; label: string }[];
+}
+const { title, description, sections } = Astro.props;
+const current = Astro.url.pathname.replace(/\/$/, "") || "/";
+---
+
+<BaseLayout title={title} description={description}>
+  <a class="skip-link" href="#main">
+    Skip to content
+  </a>
+  <header class="demo-header">
+    <div class="demo-header-inner">
+      <Logo height={30} siteName="Design system" />
+      <nav class="demo-pages" aria-label="Demo pages">
+        <a href="/" aria-current={current === "/" ? "page" : undefined}>
+          Component catalog
+        </a>
+        <a href="/data" aria-current={current === "/data" ? "page" : undefined}>
+          Data and maps
+        </a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="demo-shell">
+    <nav class="demo-sections" aria-label="Sections">
+      {sections.map((section) => (
+        <a href={`#${section.id}`}>{section.label}</a>
+      ))}
+    </nav>
+    <div class="demo-content">
+      <slot />
+    </div>
+  </main>
+</BaseLayout>
+<style>
+  .demo-header {
+    border-bottom: var(--border);
+    background: var(--surface-banner);
+  }
+  .demo-header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    max-width: 1200px;
+    margin: auto;
+    min-height: var(--topbar-h);
+    padding: var(--space-3) var(--gutter);
+  }
+  .demo-pages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    font-size: var(--fs-ui);
+  }
+  .demo-pages a {
+    padding: var(--space-2) var(--space-3);
+    color: var(--ink-secondary);
+    border-radius: var(--radius-sm);
+  }
+  .demo-pages a[aria-current="page"] {
+    background: var(--brand-green-tint);
+    color: var(--brand-green);
+    font-weight: var(--fw-semibold);
+  }
+  .demo-shell {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: var(--space-8);
+    max-width: 1200px;
+    margin: auto;
+    padding: var(--space-7) var(--gutter) var(--space-10);
+  }
+  .demo-content {
+    min-width: 0;
+  }
+  .demo-sections {
+    position: sticky;
+    top: var(--space-6);
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    font-size: var(--fs-ui);
+  }
+  .demo-sections a {
+    padding: var(--space-1) var(--space-2);
+    border-left: 2px solid var(--line-soft);
+    color: var(--ink-secondary);
+  }
+  .demo-sections a:hover {
+    border-left-color: var(--brand-green);
+    color: var(--brand-green);
+    text-decoration: none;
+  }
+  @media (max-width: 860px) {
+    .demo-shell {
+      grid-template-columns: 1fr;
+    }
+    .demo-sections {
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+</style>

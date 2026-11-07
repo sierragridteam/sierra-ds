@@ -98,3 +98,16 @@ own row, beneath the relevant label/value, rather than as detached status banner
 row header and note placement: annotations stay inside the record's header cell,
 including on narrow screens. Do not create separate colspan rows for a record's
 advisory. Use `DataStatus` for an entire dataset's state instead.
+
+`CopyButton` owns clipboard behavior: pass `value` and an accessible `label`.
+The icon changes to a check only after the write succeeds, resets after 1.8 seconds,
+and preserves button dimensions. Failure shows an explicit manual-copy message.
+`IdentifierList` composes this control for individual and bulk copies.
+
+`DataDiff` aligns field names beside flowing old → new values, with muted struck
+old values, plus signs for additions, and explicit removal text. Narrow containers
+stack the field above its change. `ValueTable` should sit in `Card padded={false}`
+so its hover and dividers reach the card edges.
+
+Demo pages share `demo-site/src/layouts/DemoLayout.astro`: one header, primary
+navigation, section navigation, content width and responsive shell.
