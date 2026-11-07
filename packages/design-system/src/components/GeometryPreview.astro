@@ -1,0 +1,11 @@
+---
+import GeoJSONMap from "./GeoJSONMap.astro";
+import type { FeatureCollection, Geometry } from "geojson";
+interface Props {
+  data: FeatureCollection<Geometry | null>;
+  label: string;
+}
+const { data, label } = Astro.props;
+---
+
+<GeoJSONMap data={data} label={label} compact />

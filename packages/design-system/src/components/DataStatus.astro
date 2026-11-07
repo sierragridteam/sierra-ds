@@ -1,0 +1,26 @@
+---
+interface Props {
+  state: "loading" | "fresh" | "stale" | "unavailable" | "empty";
+  message?: string;
+  updatedAt?: string;
+}
+const { state, message, updatedAt } = Astro.props;
+const labels = {
+  loading: "Loading data",
+  fresh: "Data available",
+  stale: "Showing last known data",
+  unavailable: "Data unavailable — state unknown",
+  empty: "No matching records",
+};
+---
+
+<div class="ds-data-status" data-state={state} role="status">
+  <strong>{labels[state]}</strong>
+  {message && <span>{message}</span>}
+  {updatedAt && (
+    <span>
+      Last success: <time datetime={updatedAt}>{updatedAt}</time>
+    </span>
+  )}
+  <slot />
+</div>

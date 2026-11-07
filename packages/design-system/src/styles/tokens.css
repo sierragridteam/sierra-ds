@@ -66,9 +66,13 @@
   /* ---------------------------------------------------------------------- */
   /* Typography — same faces, app roles                                       */
   /* ---------------------------------------------------------------------- */
-  --font-display: 'Newsreader Variable', 'Newsreader', Georgia, 'Times New Roman', serif;
-  --font-ui: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  --font-display:
+    "Newsreader Variable", "Newsreader", Georgia, "Times New Roman", serif;
+  --font-ui:
+    "IBM Plex Sans Variable", "IBM Plex Sans", system-ui, -apple-system,
+    sans-serif;
+  --font-mono:
+    "IBM Plex Mono", ui-monospace, "SF Mono", "Cascadia Code", monospace;
 
   /* Serif is reserved for page titles and section headings. */
   --fs-h1: clamp(1.625rem, 1.4rem + 1vw, 2rem); /* 26 → 32px */
@@ -138,9 +142,12 @@
 
   /* Shadows: none on cards; only floating things */
   --shadow-overlay: 0 1px 0 var(--line);
-  --shadow-popover: 0 6px 20px rgb(22 39 30 / 14%), 0 1px 3px rgb(22 39 30 / 10%);
+  --shadow-popover:
+    0 6px 20px rgb(22 39 30 / 14%), 0 1px 3px rgb(22 39 30 / 10%);
   --shadow-drawer: 0 12px 32px rgb(22 39 30 / 22%);
-  --backdrop: rgb(20 40 29 / 45%); /* behind modal dialogs: --surface-deep, translucent */
+  --backdrop: rgb(
+    20 40 29 / 45%
+  ); /* behind modal dialogs: --surface-deep, translucent */
 
   /* Motion */
   --transition: 120ms ease;
@@ -152,4 +159,14 @@
     --transition: 0s;
     --transition-slow: 0s;
   }
+}
+
+/* Map ground: aligned with sierragridteam.org, independent of page layout. */
+:root {
+  --map-water: #dde3da;
+  --map-road: #f8f6ef;
+  --map-road-casing: #ddd4bd;
+  --map-county-line: #c9c1a9;
+  --map-place: #9a906f;
+  --map-shield-text: #7d7459;
 }

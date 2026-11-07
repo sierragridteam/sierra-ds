@@ -1885,3 +1885,88 @@ sierra-select {
   visibility: visible;
   color: var(--brand-green);
 }
+
+.ds-data-table caption {
+  text-align: left;
+  padding: var(--space-3);
+  font-weight: var(--fw-semibold);
+}
+.ds-numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ds-data-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-left: 3px solid var(--brand-green);
+  background: var(--surface-banner);
+  font-size: var(--fs-ui);
+}
+.ds-data-status[data-state="stale"] {
+  border-color: var(--brand-brass);
+}
+.ds-data-status[data-state="unavailable"] {
+  border-color: var(--signal-orange);
+}
+.ds-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-4);
+}
+.ds-filter-bar > * {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+.ds-map-frame {
+  margin: 0;
+  border: var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-hero);
+}
+.ds-map-toolbar,
+.ds-map-frame figcaption {
+  padding: var(--space-3);
+  background: var(--surface-card);
+  font-size: var(--fs-small);
+}
+.ds-map-frame figcaption {
+  display: grid;
+  gap: var(--space-2);
+}
+.ds-map-canvas {
+  height: 380px;
+}
+.ds-map-compact .ds-map-canvas {
+  height: 220px;
+}
+.ds-map-frame .maplibregl-ctrl-group {
+  background: var(--surface-raised);
+  border: var(--border);
+  box-shadow: none;
+}
+.ds-map-fallback {
+  padding: var(--space-3);
+}
+.ds-map-feature-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.ds-data-table .ds-numeric {
+  text-align: right;
+}
+.ds-data-table tbody th {
+  background: transparent;
+  font-size: var(--fs-body);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink-strong);
+}

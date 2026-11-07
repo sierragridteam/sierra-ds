@@ -1,0 +1,25 @@
+---
+interface Props {
+  caption: string;
+  columns: { label: string; numeric?: boolean }[];
+}
+const { caption, columns } = Astro.props;
+---
+
+<div class="table-wrap" tabindex="0" role="region" aria-label={caption}>
+  <table class="table ds-data-table">
+    <caption>{caption}</caption>
+    <thead>
+      <tr>
+        {columns.map((column) => (
+          <th scope="col" class:list={{ "ds-numeric": column.numeric }}>
+            {column.label}
+          </th>
+        ))}
+      </tr>
+    </thead>
+    <tbody>
+      <slot />
+    </tbody>
+  </table>
+</div>

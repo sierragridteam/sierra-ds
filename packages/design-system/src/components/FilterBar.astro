@@ -1,0 +1,10 @@
+---
+interface Props {
+  label?: string;
+}
+const { label = "Filters" } = Astro.props;
+---
+
+<div class="ds-filter-bar" role="group" aria-label={label}>
+  <slot />
+</div>

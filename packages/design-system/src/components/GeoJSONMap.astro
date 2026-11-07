@@ -1,0 +1,227 @@
+---
+import type { FeatureCollection, Geometry } from "geojson";
+interface Props {
+  data: FeatureCollection<Geometry | null>;
+  label: string;
+  compact?: boolean;
+  basemap?: boolean;
+}
+const { data, label, compact = false, basemap = false } = Astro.props;
+---
+
+<sierra-geo-map
+  class:list={["ds-geo-map", compact && "ds-map-compact"]}
+  data-features={JSON.stringify(data)}
+  data-basemap={String(basemap)}
+>
+  <div class="ds-map-canvas" aria-label={label}></div>
+  <p class="ds-map-fallback" role="status">
+    Loading map. Feature details are available below.
+  </p>
+  <div class="ds-map-feature-list" aria-label="Map features">
+    {data.features.map((feature, index) => (
+      <button
+        type="button"
+        class="btn btn--outline btn--sm"
+        data-feature-index={index}
+      >
+        {String(feature.properties?.label ?? `Feature ${index + 1}`)}
+        {!feature.geometry && " · unlocated"}
+      </button>
+    ))}
+  </div>
+  <p class="ds-map-fallback" data-selection aria-live="polite">
+    Select a feature on the map or in the list.
+  </p>
+</sierra-geo-map>
+<script>
+  import maplibregl from "maplibre-gl";
+  import type { FeatureCollection, Geometry } from "geojson";
+  import "maplibre-gl/dist/maplibre-gl.css";
+  import { restyleBasemap, type StyleDoc } from "../lib/basemap-style";
+  class SierraGeoMap extends HTMLElement {
+    map?: maplibregl.Map;
+    observer?: ResizeObserver;
+    abort?: AbortController;
+    async connectedCallback() {
+      this.abort = new AbortController();
+      const { signal } = this.abort;
+      const data = JSON.parse(
+        this.dataset.features!,
+      ) as FeatureCollection<Geometry | null>;
+      const status = this.querySelector<HTMLElement>("[role=status]")!;
+      const selection = this.querySelector<HTMLElement>("[data-selection]")!;
+      const colors = getComputedStyle(this);
+      const token = (name: string) => colors.getPropertyValue(name).trim();
+      const select = (index: number) => {
+        const feature = data.features[index];
+        if (!feature) return;
+        selection.textContent = `${feature.properties?.label ?? "Feature"} — ${feature.properties?.description ?? (feature.geometry ? feature.geometry.type : "Location unavailable")}`;
+        this.querySelectorAll<HTMLButtonElement>(
+          "[data-feature-index]",
+        ).forEach((button, i) =>
+          button.setAttribute("aria-pressed", String(i === index)),
+        );
+        if (this.map?.getLayer("ds-points"))
+          this.map.setPaintProperty("ds-points", "circle-radius", [
+            "case",
+            ["==", ["id"], index],
+            10,
+            6,
+          ]);
+        this.dispatchEvent(
+          new CustomEvent("feature-select", {
+            detail: { feature, index },
+            bubbles: true,
+          }),
+        );
+      };
+      this.querySelectorAll<HTMLButtonElement>("[data-feature-index]").forEach(
+        (button) =>
+          button.addEventListener(
+            "click",
+            () => select(Number(button.dataset.featureIndex)),
+            { signal },
+          ),
+      );
+      let style: maplibregl.StyleSpecification = {
+        version: 8,
+        sources: {},
+        layers: [
+          {
+            id: "ground",
+            type: "background",
+            paint: { "background-color": token("--surface-hero") },
+          },
+        ],
+      };
+      let fallback = true;
+      if (this.dataset.basemap === "true") {
+        try {
+          const response = await fetch(
+            "https://tiles.openfreemap.org/styles/positron",
+            { signal: AbortSignal.any([signal, AbortSignal.timeout(5000)]) },
+          );
+          if (!response.ok) throw Error("Basemap failed");
+          const original = (await response.json()) as StyleDoc;
+          const styled = restyleBasemap(original, {
+            land: token("--surface-hero"),
+            water: token("--map-water"),
+            road: token("--map-road"),
+            roadCasing: token("--map-road-casing"),
+            countyLine: token("--map-county-line"),
+            place: token("--map-place"),
+            shieldText: token("--map-shield-text"),
+          });
+          style = (styled ??
+            original) as unknown as maplibregl.StyleSpecification;
+          // Route-shield artwork belongs to the engine adapter; retain road labels without missing sprite images.
+          style.layers = style.layers.filter(
+            (layer) =>
+              !(layer.type === "symbol" && layer.layout?.["icon-image"]),
+          );
+          fallback = false;
+        } catch {
+          /* Explicit fallback message below. */
+        }
+      }
+      if (signal.aborted) return;
+      try {
+        const map = (this.map = new maplibregl.Map({
+          container: this.querySelector<HTMLElement>(".ds-map-canvas")!,
+          style,
+          center: [-120.4, 38.1],
+          zoom: 8,
+          scrollZoom: false,
+          attributionControl: false,
+        }));
+        map.addControl(
+          new maplibregl.NavigationControl({ showCompass: false }),
+          "bottom-right",
+        );
+        map.on("error", () => {
+          status.textContent =
+            "Some map resources are unavailable. Use the feature list for details.";
+        });
+        map.on("load", () => {
+          status.textContent = fallback
+            ? "Geometry only — geographic basemap is not loaded."
+            : "Basemap © OpenStreetMap contributors · © OpenFreeMap";
+          const located = data.features.flatMap((f, i) =>
+            f.geometry ? [{ ...f, geometry: f.geometry, id: i }] : [],
+          );
+          map.addSource("features", {
+            type: "geojson",
+            data: { type: "FeatureCollection", features: located },
+          });
+          const color: maplibregl.ExpressionSpecification = [
+            "match",
+            ["get", "tone"],
+            "alarm",
+            token("--signal-orange"),
+            "brass",
+            token("--brand-brass"),
+            token("--brand-green"),
+          ];
+          map.addLayer({
+            id: "ds-areas",
+            type: "fill",
+            source: "features",
+            filter: ["==", ["geometry-type"], "Polygon"],
+            paint: { "fill-color": color, "fill-opacity": 0.12 },
+          });
+          map.addLayer({
+            id: "ds-lines",
+            type: "line",
+            source: "features",
+            filter: ["!=", ["geometry-type"], "Point"],
+            paint: { "line-color": color, "line-width": 2 },
+          });
+          map.addLayer({
+            id: "ds-points",
+            type: "circle",
+            source: "features",
+            filter: ["==", ["geometry-type"], "Point"],
+            paint: {
+              "circle-color": color,
+              "circle-radius": 6,
+              "circle-stroke-color": token("--surface-raised"),
+              "circle-stroke-width": 2,
+            },
+          });
+          for (const layer of ["ds-areas", "ds-lines", "ds-points"])
+            map.on("click", layer, (event) => {
+              const id = event.features?.[0]?.id;
+              if (typeof id === "number") select(id);
+            });
+          const bounds = new maplibregl.LngLatBounds();
+          const positions = (value: unknown): void => {
+            if (!Array.isArray(value)) return;
+            if (typeof value[0] === "number" && typeof value[1] === "number")
+              bounds.extend([value[0], value[1]]);
+            else value.forEach(positions);
+          };
+          const geometry = (g: Geometry): void => {
+            if (g.type === "GeometryCollection") g.geometries.forEach(geometry);
+            else positions(g.coordinates);
+          };
+          located.forEach((f) => geometry(f.geometry!));
+          if (!bounds.isEmpty())
+            map.fitBounds(bounds, { padding: 40, maxZoom: 12, duration: 0 });
+        });
+        this.observer = new ResizeObserver(() => map.resize());
+        this.observer.observe(this);
+      } catch {
+        status.textContent =
+          "Interactive map unavailable. Use the feature list for details.";
+      }
+    }
+    disconnectedCallback() {
+      this.abort?.abort();
+      this.observer?.disconnect();
+      this.map?.remove();
+    }
+  }
+  if (!customElements.get("sierra-geo-map"))
+    customElements.define("sierra-geo-map", SierraGeoMap);
+</script>

@@ -13,6 +13,15 @@
     "./assets/*": "./assets/*"
   },
   "peerDependencies": {
-    "astro": "^7.3.4"
+    "astro": "^7.3.4",
+    "maplibre-gl": "^5.24.0"
+  },
+  "peerDependenciesMeta": {
+    "maplibre-gl": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@types/geojson": "^7946.0.16"
   }
 }
