@@ -1,0 +1,298 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Logo from "@sierra/design-system/components/Logo.astro";
+import PageHeader from "@sierra/design-system/components/PageHeader.astro";
+import DataTable from "@sierra/design-system/components/DataTable.astro";
+import DataStatus from "@sierra/design-system/components/DataStatus.astro";
+import FilterBar from "@sierra/design-system/components/FilterBar.astro";
+import Field from "@sierra/design-system/components/Field.astro";
+import Select from "@sierra/design-system/components/Select.astro";
+import Badge from "@sierra/design-system/components/Badge.astro";
+import MapFrame from "@sierra/design-system/components/MapFrame.astro";
+import GeoJSONMap from "@sierra/design-system/components/GeoJSONMap.astro";
+import GeometryPreview from "@sierra/design-system/components/GeometryPreview.astro";
+import type { FeatureCollection, Geometry } from "geojson";
+const features: FeatureCollection<Geometry | null> = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      properties: {
+        label: "Example incident",
+        description: "Fixture only. One lane closed.",
+        tone: "alarm",
+      },
+      geometry: { type: "Point", coordinates: [-120.55, 38.07] },
+    },
+    {
+      type: "Feature",
+      properties: {
+        label: "Example corridor",
+        description: "Fixture only. Road alignment is illustrative.",
+      },
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [-120.6, 38.02],
+          [-120.5, 38.1],
+          [-120.4, 38.18],
+        ],
+      },
+    },
+    {
+      type: "Feature",
+      properties: {
+        label: "Example area",
+        description: "Fixture only. Not an official boundary.",
+        tone: "brass",
+      },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [-120.45, 38.04],
+            [-120.28, 38.04],
+            [-120.28, 38.16],
+            [-120.45, 38.16],
+            [-120.45, 38.04],
+          ],
+        ],
+      },
+    },
+    {
+      type: "Feature",
+      properties: {
+        label: "Unlocated report",
+        description: "Location not supplied; retained in the feature list.",
+      },
+      geometry: null,
+    },
+  ],
+};
+const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
+---
+
+<BaseLayout
+  title="Data and maps · Sierra design system"
+  description="Fixture-based tables and map components."
+>
+  <main class="data-demo stack">
+    <nav class="demo-nav" aria-label="Demo pages">
+      <Logo siteName="Design system" />
+      <a href="/">Component catalog</a>
+    </nav>
+    <PageHeader
+      title="Data and maps"
+      kicker="Component laboratory"
+      lead="Synthetic records for reviewing data states and geographic presentation. Not live operational data."
+    />
+    <section class="stack" aria-labelledby="tables-title">
+      <h2 id="tables-title">Road conditions</h2>
+      <FilterBar>
+        <Field label="Data state" for="data-state">
+          <Select
+            id="data-state"
+            options={states.map((value) => ({
+              value,
+              label: value[0].toUpperCase() + value.slice(1),
+            }))}
+          />
+        </Field>
+        <Field label="Road status" for="road-filter">
+          <Select
+            id="road-filter"
+            options={[
+              { value: "all", label: "All roads" },
+              { value: "open", label: "Open" },
+              { value: "restricted", label: "Restricted" },
+            ]}
+          />
+        </Field>
+      </FilterBar>
+      {states.map((state) => (
+        <div data-status-panel={state} hidden={state !== "fresh"}>
+          <DataStatus
+            state={state}
+            message={
+              state === "stale"
+                ? "Refresh failed. These are the previous successful results."
+                : state === "unavailable"
+                  ? "No reliable count can be shown."
+                  : state === "empty"
+                    ? "The query succeeded and returned no records."
+                    : "Synthetic fixture data."
+            }
+            updatedAt={
+              ["fresh", "stale"].includes(state)
+                ? "2026-11-07T17:00:00Z"
+                : undefined
+            }
+          />
+        </div>
+      ))}
+      <div id="road-results">
+        <DataTable
+          caption="Road conditions · sample records"
+          columns={[
+            { label: "Road" },
+            { label: "Status" },
+            { label: "Travel", numeric: true },
+            { label: "Delay", numeric: true },
+          ]}
+        >
+          <tr data-road-status="open">
+            <th scope="row">
+              SR 4 <span class="meta">· example west segment</span>
+            </th>
+            <td>
+              <Badge tone="ok">Open</Badge>
+            </td>
+            <td class="ds-numeric">18 min</td>
+            <td class="ds-numeric">0 min</td>
+          </tr>
+          <tr data-road-status="restricted">
+            <th scope="row">
+              SR 108 <span class="meta">· example east segment</span>
+            </th>
+            <td>
+              <Badge tone="elevated">Restricted</Badge>
+            </td>
+            <td class="ds-numeric">32 min</td>
+            <td class="ds-numeric">12 min</td>
+          </tr>
+          <tr data-road-status="restricted">
+            <td colspan="4">
+              One lane available. Example advisory attached to the record.
+            </td>
+          </tr>
+        </DataTable>
+      </div>
+    </section>
+    <section class="stack" aria-labelledby="sources-title">
+      <h2 id="sources-title">Source health</h2>
+      <DataTable
+        caption="Source health · sample records"
+        columns={[
+          { label: "Source" },
+          { label: "Health" },
+          { label: "Last success" },
+          { label: "Records", numeric: true },
+        ]}
+      >
+        <tr>
+          <th scope="row">Road incidents</th>
+          <td>
+            <Badge tone="ok">Fresh</Badge>
+          </td>
+          <td>
+            <time datetime="2026-11-07T17:00:00Z">17:00 UTC</time>
+          </td>
+          <td class="ds-numeric">2</td>
+        </tr>
+        <tr>
+          <th scope="row">Weather alerts</th>
+          <td>
+            <Badge tone="elevated">Stale</Badge>
+          </td>
+          <td>
+            <time datetime="2026-11-07T15:00:00Z">15:00 UTC</time>
+          </td>
+          <td class="ds-numeric">1</td>
+        </tr>
+        <tr>
+          <td colspan="4">
+            <DataStatus
+              state="stale"
+              message="Last known result retained; freshness is not guaranteed."
+            />
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Power outages</th>
+          <td>
+            <Badge>Unavailable</Badge>
+          </td>
+          <td>Unknown</td>
+          <td class="ds-numeric">Unknown</td>
+        </tr>
+      </DataTable>
+    </section>
+    <section class="stack" aria-labelledby="map-title">
+      <h2 id="map-title">Selectable GeoJSON</h2>
+      <MapFrame
+        label="Example geographic features"
+        caption="Illustrative geometry near the Sierra foothills. Select a feature on the map or use the buttons below it."
+      >
+        <GeoJSONMap
+          data={features}
+          label="Synthetic points, corridor and area"
+          basemap
+        />
+        <div slot="legend" class="legend">
+          <Badge tone="ok">Corridor</Badge>
+          <Badge tone="elevated">Area</Badge>
+          <Badge tone="alarm">Incident</Badge>
+        </div>
+        <span slot="attribution">
+          Map styling follows sierragridteam.org. Features are synthetic
+          fixtures.
+        </span>
+      </MapFrame>
+    </section>
+    <section class="stack" aria-labelledby="geometry-title">
+      <h2 id="geometry-title">Geometry preview</h2>
+      <MapFrame
+        label="Example area geometry"
+        caption="Compact geometry-only view, with no external tile requests."
+      >
+        <GeometryPreview
+          data={{ type: "FeatureCollection", features: [features.features[2]] }}
+          label="Example polygon"
+        />
+      </MapFrame>
+    </section>
+  </main>
+</BaseLayout>
+<style>
+  .data-demo {
+    max-width: 1200px;
+    margin: auto;
+    padding: var(--space-6) var(--gutter);
+    gap: var(--space-8);
+  }
+  .demo-nav,
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .legend {
+    justify-content: flex-start;
+  }
+</style>
+<script>
+  const state = document.querySelector<HTMLButtonElement>("#data-state")!;
+  const filter = document.querySelector<HTMLButtonElement>("#road-filter")!;
+  const update = () => {
+    document
+      .querySelectorAll<HTMLElement>("[data-status-panel]")
+      .forEach(
+        (panel) => (panel.hidden = panel.dataset.statusPanel !== state.value),
+      );
+    document.querySelector<HTMLElement>("#road-results")!.hidden = ![
+      "fresh",
+      "stale",
+    ].includes(state.value);
+    document
+      .querySelectorAll<HTMLElement>("[data-road-status]")
+      .forEach(
+        (row) =>
+          (row.hidden =
+            filter.value !== "all" && row.dataset.roadStatus !== filter.value),
+      );
+  };
+  state.addEventListener("change", update);
+  filter.addEventListener("change", update);
+</script>

@@ -32,3 +32,36 @@ Use `Field` with the same `for` value to label it. An optional `name` submits th
 selected value through a hidden input. The trigger exposes `.value` and emits
 bubbling `input` and `change` events. It supports arrow keys, Home/End, typeahead,
 Enter/Space selection, Escape cancellation, and outside-click dismissal.
+
+## Data and maps
+
+Open `/data` in the demo for synthetic road/source tables, five data states,
+filter controls, a selectable GeoJSON map, and a compact geometry preview.
+These are library examples, not a migrated `sierra-data` site or a prescribed page layout.
+
+- `DataTable` supplies semantic column headings, caption and a scrollable region;
+  consumers slot rows and own filtering/sorting/pagination. Use `ds-numeric` for
+  numeric cells and ordinary colspan rows for record-level notes.
+- `DataStatus` distinguishes loading, fresh, stale, unavailable and empty. Consumers
+  decide when to retain last-good data; unknown counts must not become zero.
+- `FilterBar` arranges labelled controls; it does not own query or URL state.
+- `MapFrame` provides toolbar, legend, attribution and caption slots.
+- `GeoJSONMap` accepts a GeoJSON FeatureCollection (including null geometry), a label,
+  and optional `compact` / `basemap` flags. Features can supply `label`, `description`
+  and `tone` (`alarm`, `brass`, or default green). `feature-select` emits the feature
+  and index. Every feature has a keyboard-accessible selection button, including
+  unlocated records. `GeometryPreview` is its compact, geometry-only variant.
+
+Maps require the optional `maplibre-gl` peer. Only pages importing map components
+load the engine. `basemap` opts into OpenFreeMap requests and visible attribution;
+otherwise no tiles are fetched. Basemap failures retain geometry with an explicit
+notice; WebGL failures retain the feature list. The shared restyling function and
+map palette derive from `sierragridteam.org/src/lib/basemap-style.ts` and its map
+colors only. No page styles from either site were adopted. Map status, data-source
+status, and hazard severity remain separate. The data site's hazard-map suppression
+policy, API fetching, polling and URL state belong to its consuming application.
+
+Current scope: initial/static GeoJSON props, point selection emphasis, and list
+selection events. Advanced layer controls, camera URL persistence, dynamic data
+updates and domain-specific feature details are subsequent work. Existing consumers
+remain on their packaged release until an explicit library release/migration.
