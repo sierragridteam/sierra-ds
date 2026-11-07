@@ -1,0 +1,17 @@
+---
+/** Callout — banner surface with a coloured left rule. Orange is for risk only. */
+interface Props {
+  tone?: 'green' | 'brass' | 'orange';
+  title?: string;
+  class?: string;
+}
+const { tone = 'green', title, class: cls } = Astro.props;
+---
+
+<div
+  class:list={['callout', tone !== 'green' && `callout--${tone}`, cls]}
+  role={tone === 'orange' ? 'alert' : undefined}
+>
+  {title && <span class="callout__title">{title}</span>}
+  <slot />
+</div>

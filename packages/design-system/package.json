@@ -1,0 +1,18 @@
+{
+  "name": "@sierra/design-system",
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "src",
+    "assets"
+  ],
+  "exports": {
+    "./components/*": "./src/components/*",
+    "./styles/*": "./src/styles/*",
+    "./lib/*": "./src/lib/*.ts",
+    "./assets/*": "./assets/*"
+  },
+  "peerDependencies": {
+    "astro": "^7.3.4"
+  }
+}

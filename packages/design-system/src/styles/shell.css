@@ -1,0 +1,501 @@
+/**
+ * App shell: sidebar + topbar + content. Desktop shows the sidebar; below
+ * 860px it becomes a drawer opened from the top bar.
+ */
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  min-height: 100dvh;
+}
+
+.sidebar {
+  position: sticky;
+  view-transition-name: sidebar;
+  top: 0;
+  align-self: start;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface-banner);
+  border-right: var(--border);
+}
+
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  min-height: var(--topbar-h);
+  padding: 0 var(--space-5);
+  border-bottom: var(--border);
+}
+
+.sidebar__nav {
+  flex: 1 1 auto;
+  padding: var(--space-4) var(--space-3);
+  overflow-y: auto;
+}
+
+.sidebar__group + .sidebar__group {
+  margin-top: var(--space-5);
+}
+
+.sidebar__group-label {
+  display: block;
+  padding: 0 var(--space-3);
+  margin-bottom: var(--space-2);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--brand-brass-text);
+}
+
+.sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-h);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-medium);
+  color: var(--ink-body);
+  text-decoration: none;
+  transition:
+    background-color var(--transition),
+    color var(--transition);
+}
+
+.nav-link .icon {
+  color: var(--ink-muted);
+}
+
+.nav-link:hover {
+  background: var(--surface-card);
+  color: var(--brand-green);
+  text-decoration: none;
+}
+
+.nav-link:hover .icon {
+  color: var(--brand-green);
+}
+
+.nav-link.is-active {
+  background: var(--brand-green-tint);
+  color: var(--brand-green);
+  box-shadow: inset 3px 0 0 var(--brand-green);
+}
+
+.nav-link.is-active .icon {
+  color: var(--brand-green);
+}
+
+.sidebar__footer {
+  padding: var(--space-3) var(--space-3);
+  border-top: var(--border);
+}
+
+/* Compact chip: 240px has to fit avatar, email, and the sign-out button. */
+.sidebar__footer .avatar {
+  width: 28px;
+  height: 28px;
+  font-size: var(--fs-label-lg);
+}
+
+.sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.sidebar__footer .user-chip {
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+  border-radius: var(--radius-sm);
+  color: inherit;
+  text-decoration: none;
+}
+
+.sidebar__footer a.user-chip:hover {
+  background: var(--surface-card);
+  text-decoration: none;
+}
+
+/* Icon-only sign-out beside the chip; the label is the accessible name. */
+.sidebar__signout {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink-muted);
+  transition:
+    background-color var(--transition),
+    color var(--transition);
+}
+
+.sidebar__signout:hover {
+  background: var(--surface-card);
+  color: var(--brand-green);
+}
+
+/* Top bar: only visible on narrow screens */
+.topbar {
+  display: none;
+  view-transition-name: topbar;
+  position: sticky;
+  top: 0;
+  z-index: var(--z-topbar);
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--topbar-h);
+  padding: 0 var(--gutter);
+  background: color-mix(in srgb, var(--surface-page) 92%, transparent);
+  backdrop-filter: saturate(1.1) blur(6px);
+  border-bottom: var(--border);
+}
+
+.topbar__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  margin-left: calc(var(--space-2) * -1);
+  background: none;
+  border: 0;
+  color: var(--ink-secondary);
+}
+
+.topbar__toggle:hover {
+  color: var(--brand-green);
+}
+
+.topbar__title {
+  font-family: var(--font-display);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.04em;
+  color: var(--ink-strong);
+}
+
+.main {
+  min-width: 0;
+  view-transition-name: main;
+  padding: var(--space-7) var(--gutter) var(--space-10);
+}
+
+.main__inner {
+  max-width: var(--content-max);
+  margin-inline: auto;
+}
+
+.main__inner--narrow {
+  max-width: var(--content-narrow);
+}
+
+.scrim {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background: rgb(22 39 30 / 40%);
+}
+
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .topbar {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: var(--z-drawer);
+    width: min(var(--sidebar-w), 84vw);
+    transform: translateX(-100%);
+    transition: transform var(--transition-slow);
+    box-shadow: none;
+  }
+
+  .shell[data-drawer='open'] .sidebar {
+    transform: none;
+    box-shadow: var(--shadow-drawer);
+  }
+
+  .shell[data-drawer='open'] .scrim {
+    display: block;
+  }
+
+  .main {
+    padding-top: var(--space-5);
+  }
+}
+
+/* Auth layout: centred narrow card on the cool hero tint */
+.auth {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--surface-hero);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--brand-green) 4.5%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--brand-green) 4.5%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 52px 52px;
+}
+
+.auth__header {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-7) var(--gutter) 0;
+}
+
+.auth__main {
+  display: grid;
+  place-items: center;
+  padding: var(--space-7) var(--gutter);
+}
+
+.auth__card {
+  width: 100%;
+  max-width: 420px;
+  padding: var(--space-7);
+  background: var(--surface-card);
+  border: var(--border);
+  border-radius: var(--radius);
+}
+
+.auth__card h1 {
+  margin-bottom: var(--space-2);
+}
+
+.auth__card > p {
+  color: var(--ink-secondary);
+  font-size: var(--fs-ui);
+  margin-bottom: var(--space-5);
+}
+
+.auth__footer {
+  padding: 0 var(--gutter) var(--space-6);
+  text-align: center;
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}
+
+/* Boot screen: holds auth-dependent pages until the session is known (src/lib/boot.ts) */
+html[data-boot='loading'] body > :not(.boot) {
+  visibility: hidden;
+}
+
+/* Dialogs are appended to <body> later and have their own entrance (components.css). */
+html[data-boot='ready'] body > :not(.boot, .dialog) {
+  animation: boot-in var(--transition-slow) both;
+}
+
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+  background: var(--surface-hero);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--brand-green) 4.5%, transparent) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--brand-green) 4.5%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 52px 52px;
+  transition: opacity var(--transition-slow);
+}
+
+html[data-boot='ready'] .boot {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.boot__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+/* A fast session never shows the loader; a slow one fades it in. */
+[data-boot-working] {
+  animation: boot-in 400ms ease 180ms both;
+}
+
+.boot__mark {
+  height: 38px;
+  width: auto;
+}
+
+.boot__track {
+  position: relative;
+  width: 120px;
+  height: 2px;
+  overflow: hidden;
+  background: var(--line-soft);
+  border-radius: var(--radius-pill);
+}
+
+.boot__bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  background: var(--brand-green);
+  border-radius: inherit;
+  animation: boot-sweep 1.3s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+.boot__hint {
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+  animation: boot-in 400ms ease 6s both;
+}
+
+.boot__failed {
+  gap: var(--space-3);
+  max-width: 36ch;
+}
+
+.boot__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-heading);
+  color: var(--ink-strong);
+}
+
+.boot__message {
+  margin: 0 0 var(--space-3);
+  font-size: var(--fs-ui);
+  color: var(--ink-secondary);
+}
+
+/* Without JavaScript nothing would ever call reveal(); show the page as it is. */
+@media (scripting: none) {
+  .boot {
+    display: none;
+  }
+
+  html[data-boot='loading'] body > :not(.boot) {
+    visibility: visible;
+  }
+}
+
+@keyframes boot-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes boot-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The global rule would stop the sweep after one pass; pulse gently instead. */
+  .boot__bar {
+    width: 100%;
+    animation: boot-pulse 1.6s ease-in-out infinite !important;
+  }
+}
+
+@keyframes boot-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Client-side navigation (src/lib/navigation.ts). The sidebar, top bar, toasts and content
+   column are named view-transition groups (view-transition-name on each rule), so they leave
+   the page's crossfade: the shell stays put while the content swaps with a short fade and lift.
+   The names live here rather than in transition:name / transition:animate directives because
+   those emit an inline <style> the CSP hashes do not cover. */
+::view-transition-group(main) {
+  animation-duration: 0s;
+}
+
+::view-transition-old(main) {
+  animation: content-out 90ms ease-in both;
+}
+
+::view-transition-new(main) {
+  animation: content-in 220ms ease-out both;
+}
+
+@keyframes content-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes content-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* A thin sweep along the top while the next page is fetched; the delay keeps it off the
+   screen for the usual instant (prefetched) navigation. */
+html[data-navigating] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: var(--z-skiplink);
+  width: 25vw;
+  height: 2px;
+  background: var(--brand-green);
+  animation: nav-sweep 1.1s cubic-bezier(0.65, 0, 0.35, 1) 150ms infinite backwards;
+}
+
+@keyframes nav-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(400vw);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

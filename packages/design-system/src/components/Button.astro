@@ -1,0 +1,36 @@
+---
+/** Button — renders <a> when href is given, else <button>. Emits the global .btn classes. */
+interface Props {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger';
+  size?: 'md' | 'sm';
+  href?: string;
+  type?: 'button' | 'submit';
+  block?: boolean;
+  icon?: string;
+  disabled?: boolean;
+  class?: string;
+  [key: string]: unknown;
+}
+const {
+  variant = 'primary',
+  size = 'md',
+  href,
+  type = 'button',
+  block = false,
+  icon,
+  disabled,
+  class: cls,
+  ...rest
+} = Astro.props;
+const Tag = href ? 'a' : 'button';
+const classes = ['btn', `btn--${variant}`, size === 'sm' && 'btn--sm', block && 'btn--block', cls];
+---
+
+<Tag class:list={classes} href={href} type={href ? undefined : type} disabled={disabled} {...rest}>
+  {icon && (
+    <svg class="icon" aria-hidden="true">
+      <use href={`#i-${icon}`} />
+    </svg>
+  )}
+  <slot />
+</Tag>

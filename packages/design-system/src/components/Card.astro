@@ -1,0 +1,33 @@
+---
+/** Card — flat panel: card surface, tan border, 4px radius, never a shadow. */
+interface Props {
+  title?: string;
+  padded?: boolean;
+  surface?: 'card' | 'raised' | 'banner';
+  as?: 'div' | 'section' | 'article';
+  class?: string;
+  id?: string;
+}
+const { title, padded = true, surface = 'card', as: Tag = 'div', class: cls, id } = Astro.props;
+---
+
+<Tag class:list={['card', surface !== 'card' && `card--${surface}`, cls]} id={id}>
+  {(title || Astro.slots.has('actions')) && (
+    <div class="card__header">
+      {title && <h3 class="card__title">{title}</h3>}
+      <slot name="actions" />
+    </div>
+  )}
+  {padded ? (
+    <div class="card__body">
+      <slot />
+    </div>
+  ) : (
+    <slot />
+  )}
+  {Astro.slots.has('footer') && (
+    <div class="card__footer">
+      <slot name="footer" />
+    </div>
+  )}
+</Tag>

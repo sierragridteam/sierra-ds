@@ -1,0 +1,19 @@
+---
+/** Icon — references a symbol from IconSprite. Decorative by default; pass `label` to make it meaningful. */
+interface Props {
+  name: string;
+  label?: string;
+  size?: 'md' | 'lg';
+  class?: string;
+}
+const { name, label, size = 'md', class: cls } = Astro.props;
+---
+
+<svg
+  class:list={['icon', size === 'lg' && 'icon--lg', cls]}
+  aria-hidden={label ? undefined : 'true'}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+>
+  <use href={`#i-${name}`}></use>
+</svg>

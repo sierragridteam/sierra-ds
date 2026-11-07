@@ -1,0 +1,155 @@
+/**
+ * Design tokens — S.I.E.R.R.A Members.
+ *
+ * A derivative of the main site's "Civic Direction" system (sierragridteam.org,
+ * src/styles/tokens.css). Palette, typefaces, rules and status colours are
+ * inherited unchanged so the two sites read as one institution. Type roles,
+ * spacing, radii and layout are re-tuned for an application: denser, sans-serif
+ * body, sidebar shell. Rationale and the full comparison: docs/design-system.md.
+ *
+ * This is the ONLY file allowed to contain raw hex colours and raw px font
+ * sizes (stylelint enforces it). Everything else uses var(--…).
+ */
+
+:root {
+  /* ---------------------------------------------------------------------- */
+  /* Surfaces — warm parchment neutrals (inherited)                           */
+  /* ---------------------------------------------------------------------- */
+  --surface-page: #f3efe4; /* app background */
+  --surface-card: #f6f2e7; /* cards, panels, table headers */
+  --surface-banner: #efe9da; /* sidebar, callouts, code, footer strips */
+  --surface-raised: #fdfcf7; /* inputs, hovered rows, popovers */
+  --surface-hero: #edefe7; /* cool tint — auth screens, empty states */
+  --surface-deep: #14281d; /* the one dark ground — admin badge, toasts */
+  --surface-deep-line: #2c4536;
+
+  /* ---------------------------------------------------------------------- */
+  /* Ink (inherited)                                                          */
+  /* ---------------------------------------------------------------------- */
+  --ink-strong: #16271e;
+  --ink-body: #3c453c;
+  --ink-secondary: #5a5e4f;
+  --ink-muted: #6f6750;
+  --ink-on-deep: #f1ece0;
+  --ink-on-deep-muted: #9db3a4;
+
+  /* ---------------------------------------------------------------------- */
+  /* Brand & signal (inherited)                                               */
+  /* ---------------------------------------------------------------------- */
+  --brand-green: #1d5b3f; /* primary: actions, links, focus, active nav */
+  --brand-green-hover: #16472f;
+  --brand-green-tint: #e4ebe4; /* selected row / active nav ground */
+  --brand-brass: #b08a3e; /* rules, secondary outline, pending state */
+  --brand-brass-text: #785d20;
+  --brand-brass-tint: #f1e8d3;
+  --signal-orange: #c2410c; /* risk / destructive only */
+  --signal-orange-hover: #9a330a;
+  --signal-orange-text: #b03808;
+  --signal-orange-tint: #f6e2d6;
+
+  /* Status dots & badges */
+  --state-ok: #1d5b3f;
+  --state-elevated: #b08a3e;
+  --state-alarm: #c2410c;
+  --state-muted: #9a906f;
+
+  /* ---------------------------------------------------------------------- */
+  /* Lines (inherited — always warm tan, never grey)                          */
+  /* ---------------------------------------------------------------------- */
+  --line: #d8d0bd;
+  --line-soft: #e5ddca;
+  --line-control: #928869; /* ≥ 3:1 against inputs */
+  --border-w: 1px;
+  --border: var(--border-w) solid var(--line);
+  --border-soft: var(--border-w) solid var(--line-soft);
+
+  /* ---------------------------------------------------------------------- */
+  /* Typography — same faces, app roles                                       */
+  /* ---------------------------------------------------------------------- */
+  --font-display: 'Newsreader Variable', 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-ui: 'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+
+  /* Serif is reserved for page titles and section headings. */
+  --fs-h1: clamp(1.625rem, 1.4rem + 1vw, 2rem); /* 26 → 32px */
+  --fs-h2: 1.375rem; /* 22px */
+  --fs-h3: 1rem; /* 16px, sans, semibold */
+  --fs-lead: 1.0625rem; /* 17px intro text */
+  --fs-body: 1rem; /* 16px — reading text, floor for prose */
+  --fs-ui: 0.875rem; /* 14px — controls, table cells, meta */
+  --fs-small: 0.8125rem; /* 13px — help text, timestamps */
+  --fs-label: 0.6875rem; /* 11px uppercase labels */
+  --fs-label-lg: 0.75rem; /* 12px */
+  --fs-stat: 1.75rem; /* 28px numbers */
+  --fs-code: 1.75rem; /* OTP entry */
+
+  --fw-regular: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+
+  --lh-heading: 1.15;
+  --lh-body: 1.55;
+  --lh-ui: 1.4;
+  --tracking-tight: -0.01em;
+  --tracking-label: 0.14em;
+  --tracking-kicker: 0.22em;
+
+  /* ---------------------------------------------------------------------- */
+  /* Geometry — the app diverges here: soft corners, 4px spacing grid         */
+  /* ---------------------------------------------------------------------- */
+  --radius-sm: 2px; /* controls, badges */
+  --radius: 4px; /* cards, panels, rows */
+  --radius-pill: 999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+  --space-9: 48px;
+  --space-10: 64px;
+
+  --control-h: 36px; /* inputs, buttons, selects */
+  --control-h-sm: 28px;
+  --row-h: 48px; /* list rows */
+  --icon: 18px;
+  --icon-lg: 22px;
+
+  /* ---------------------------------------------------------------------- */
+  /* Layout — app shell                                                       */
+  /* ---------------------------------------------------------------------- */
+  --sidebar-w: 240px;
+  --topbar-h: 56px;
+  --content-max: 960px;
+  --content-narrow: 560px;
+  --dialog-w: 560px;
+  --dialog-w-wide: 760px;
+  --gutter: clamp(16px, 3vw, 32px);
+  --section-gap: var(--space-8);
+
+  --z-skiplink: 100;
+  --z-toast: 90;
+  --z-topbar: 50;
+  --z-drawer: 60;
+  --z-overlay: 40;
+
+  /* Shadows: none on cards; only floating things */
+  --shadow-overlay: 0 1px 0 var(--line);
+  --shadow-popover: 0 6px 20px rgb(22 39 30 / 14%), 0 1px 3px rgb(22 39 30 / 10%);
+  --shadow-drawer: 0 12px 32px rgb(22 39 30 / 22%);
+  --backdrop: rgb(20 40 29 / 45%); /* behind modal dialogs: --surface-deep, translucent */
+
+  /* Motion */
+  --transition: 120ms ease;
+  --transition-slow: 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transition: 0s;
+    --transition-slow: 0s;
+  }
+}

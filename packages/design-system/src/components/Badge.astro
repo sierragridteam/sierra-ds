@@ -1,0 +1,13 @@
+---
+/** Badge — status label with a dot. Tones map to the shared state colours. */
+interface Props {
+  tone?: 'ok' | 'elevated' | 'alarm' | 'deep' | 'muted';
+  dot?: boolean;
+  class?: string;
+}
+const { tone = 'muted', dot = true, class: cls } = Astro.props;
+---
+
+<span class:list={['badge', tone !== 'muted' && `badge--${tone}`, !dot && 'badge--plain', cls]}>
+  <slot />
+</span>

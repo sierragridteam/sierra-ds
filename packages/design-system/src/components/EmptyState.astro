@@ -1,0 +1,17 @@
+---
+/** EmptyState — for lists with nothing in them. Calm, on the hero tint. */
+interface Props {
+  title: string;
+  icon?: string;
+  class?: string;
+}
+const { title, icon = 'inbox', class: cls } = Astro.props;
+---
+
+<div class:list={['empty', cls]}>
+  <svg class="icon" aria-hidden="true">
+    <use href={`#i-${icon}`}></use>
+  </svg>
+  <p class="empty__title">{title}</p>
+  <slot />
+</div>

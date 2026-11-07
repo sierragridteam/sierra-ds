@@ -1,0 +1,24 @@
+---
+/** PageHeader — kicker, h1, lead and an actions slot. One per page. */
+interface Props {
+  title: string;
+  kicker?: string;
+  lead?: string;
+}
+const { title, kicker, lead } = Astro.props;
+---
+
+<header class="page-header">
+  <div class="page-header__text">
+    {kicker && <span class="kicker">{kicker}</span>}
+    <h1>
+      <slot name="title">{title}</slot>
+    </h1>
+    {lead && <p class="lead">{lead}</p>}
+  </div>
+  {Astro.slots.has('actions') && (
+    <div class="page-header__actions">
+      <slot name="actions" />
+    </div>
+  )}
+</header>
