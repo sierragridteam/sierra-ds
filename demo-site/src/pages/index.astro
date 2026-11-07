@@ -4,15 +4,15 @@
  * Public and static; contains no member data. Every class in
  * src/styles/components.css should appear here at least once.
  */
-import Select from "@sierra/design-system/components/Select.astro";
+import Select from "@sierragridteam/design-system/components/Select.astro";
 import DemoLayout from "../layouts/DemoLayout.astro";
-import Button from "@sierra/design-system/components/Button.astro";
-import Card from "@sierra/design-system/components/Card.astro";
-import Badge from "@sierra/design-system/components/Badge.astro";
-import Field from "@sierra/design-system/components/Field.astro";
-import Callout from "@sierra/design-system/components/Callout.astro";
-import EmptyState from "@sierra/design-system/components/EmptyState.astro";
-import Icon from "@sierra/design-system/components/Icon.astro";
+import Button from "@sierragridteam/design-system/components/Button.astro";
+import Card from "@sierragridteam/design-system/components/Card.astro";
+import Badge from "@sierragridteam/design-system/components/Badge.astro";
+import Field from "@sierragridteam/design-system/components/Field.astro";
+import Callout from "@sierragridteam/design-system/components/Callout.astro";
+import EmptyState from "@sierragridteam/design-system/components/EmptyState.astro";
+import Icon from "@sierragridteam/design-system/components/Icon.astro";
 
 const swatches = [
   ["--surface-page", "Page"],
@@ -986,9 +986,9 @@ The practice net runs **Tuesdays at 19:00 PT**.
 </style>
 
 <script>
-  import { openDialog } from "@sierra/design-system/lib/dialog";
-  import { toast } from "@sierra/design-system/lib/toast";
-  import { el } from "@sierra/design-system/lib/dom";
+  import { openDialog } from "@sierragridteam/design-system/lib/dialog";
+  import { toast } from "@sierragridteam/design-system/lib/toast";
+  import { el } from "@sierragridteam/design-system/lib/dom";
   document.querySelector("#density")?.addEventListener("change", (event) => {
     const value = (event.target as HTMLButtonElement).value;
     document.querySelector<HTMLElement>(".sg__preview")!.dataset.density =

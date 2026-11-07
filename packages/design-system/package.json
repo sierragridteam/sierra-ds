@@ -1,6 +1,6 @@
 {
-  "name": "@sierra/design-system",
-  "version": "0.2.0",
+  "name": "@sierragridteam/design-system",
+  "version": "0.3.0",
   "type": "module",
   "files": [
     "src",
@@ -23,5 +23,15 @@
   },
   "dependencies": {
     "@types/geojson": "^7946.0.16"
+  },
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sierragridteam/sierra-ds.git",
+    "directory": "packages/design-system"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
