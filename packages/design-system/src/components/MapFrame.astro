@@ -16,6 +16,10 @@ const { label, caption } = Astro.props;
   <figcaption>
     {caption && <p>{caption}</p>}
     <slot name="legend" />
-    <slot name="attribution" />
+    {Astro.slots.has("attribution") && (
+      <div class="ds-map-attribution">
+        <slot name="attribution" />
+      </div>
+    )}
   </figcaption>
 </figure>

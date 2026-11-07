@@ -1970,3 +1970,22 @@ sierra-select {
   text-transform: none;
   color: var(--ink-strong);
 }
+
+/* Row headers and numeric cells share the same full-row hover surface. */
+.table tbody tr:hover > :is(th, td) {
+  background: var(--surface-raised);
+}
+.ds-map-attribution {
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  font-family: var(--font-ui);
+  font-size: var(--fs-label);
+  line-height: 1.4;
+  color: var(--ink-secondary);
+}
+.ds-map-attribution a {
+  color: inherit;
+}
+.ds-map-frame figcaption .ds-map-attribution {
+  padding: 0;
+}

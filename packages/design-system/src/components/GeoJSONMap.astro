@@ -5,34 +5,77 @@ interface Props {
   label: string;
   compact?: boolean;
   basemap?: boolean;
+  /** Disable feature selection for a treatment overview; pan and zoom remain available. */
+  selectable?: boolean;
 }
-const { data, label, compact = false, basemap = false } = Astro.props;
+const {
+  data,
+  label,
+  compact = false,
+  basemap = false,
+  selectable = true,
+} = Astro.props;
 ---
 
 <sierra-geo-map
   class:list={["ds-geo-map", compact && "ds-map-compact"]}
   data-features={JSON.stringify(data)}
   data-basemap={String(basemap)}
+  data-selectable={String(selectable)}
 >
   <div class="ds-map-canvas" aria-label={label}></div>
   <p class="ds-map-fallback" role="status">
-    Loading map. Feature details are available below.
+    Loading map.
   </p>
-  <div class="ds-map-feature-list" aria-label="Map features">
-    {data.features.map((feature, index) => (
-      <button
-        type="button"
-        class="btn btn--outline btn--sm"
-        data-feature-index={index}
-      >
-        {String(feature.properties?.label ?? `Feature ${index + 1}`)}
-        {!feature.geometry && " · unlocated"}
-      </button>
-    ))}
-  </div>
-  <p class="ds-map-fallback" data-selection aria-live="polite">
+  {selectable && (
+    <div class="ds-map-feature-list" aria-label="Map features">
+      {data.features.map((feature, index) => (
+        <button
+          type="button"
+          class="btn btn--outline btn--sm"
+          data-feature-index={index}
+        >
+          {String(feature.properties?.label ?? `Feature ${index + 1}`)}
+          {!feature.geometry && " · unlocated"}
+        </button>
+      ))}
+    </div>
+  )}
+  <p
+    hidden={!selectable}
+    class="ds-map-fallback"
+    data-selection
+    aria-live="polite"
+  >
     Select a feature on the map or in the list.
   </p>
+  {!selectable && (
+    <ul class="sr-only" aria-label="Map features">
+      {data.features.map((feature) => (
+        <li>
+          {feature.properties?.label}: {feature.properties?.description}
+        </li>
+      ))}
+    </ul>
+  )}
+  {!selectable && data.features.some((feature) => !feature.geometry) && (
+    <p class="ds-map-fallback">
+      Unlocated:{" "}
+      {data.features
+        .filter((feature) => !feature.geometry)
+        .map((feature) => feature.properties?.label)
+        .join(", ")}
+      . Location not supplied.
+    </p>
+  )}
+  {basemap && (
+    <p class="ds-map-attribution">
+      <a href="https://www.openstreetmap.org/copyright">
+        © OpenStreetMap contributors
+      </a>{" "}
+      · <a href="https://openfreemap.org/">OpenFreeMap</a>
+    </p>
+  )}
 </sierra-geo-map>
 <script>
   import maplibregl from "maplibre-gl";
@@ -140,13 +183,15 @@ const { data, label, compact = false, basemap = false } = Astro.props;
           "bottom-right",
         );
         map.on("error", () => {
+          status.hidden = false;
           status.textContent =
-            "Some map resources are unavailable. Use the feature list for details.";
+            "Some map resources are unavailable. Geographic context may be incomplete.";
         });
         map.on("load", () => {
           status.textContent = fallback
             ? "Geometry only — geographic basemap is not loaded."
-            : "Basemap © OpenStreetMap contributors · © OpenFreeMap";
+            : "";
+          status.hidden = !fallback;
           const located = data.features.flatMap((f, i) =>
             f.geometry ? [{ ...f, geometry: f.geometry, id: i }] : [],
           );
@@ -189,11 +234,12 @@ const { data, label, compact = false, basemap = false } = Astro.props;
               "circle-stroke-width": 2,
             },
           });
-          for (const layer of ["ds-areas", "ds-lines", "ds-points"])
-            map.on("click", layer, (event) => {
-              const id = event.features?.[0]?.id;
-              if (typeof id === "number") select(id);
-            });
+          if (this.dataset.selectable !== "false")
+            for (const layer of ["ds-areas", "ds-lines", "ds-points"])
+              map.on("click", layer, (event) => {
+                const id = event.features?.[0]?.id;
+                if (typeof id === "number") select(id);
+              });
           const bounds = new maplibregl.LngLatBounds();
           const positions = (value: unknown): void => {
             if (!Array.isArray(value)) return;
@@ -213,7 +259,7 @@ const { data, label, compact = false, basemap = false } = Astro.props;
         this.observer.observe(this);
       } catch {
         status.textContent =
-          "Interactive map unavailable. Use the feature list for details.";
+          "Interactive map unavailable. Feature descriptions remain available.";
       }
     }
     disconnectedCallback() {

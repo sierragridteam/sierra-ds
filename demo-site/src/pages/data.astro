@@ -10,7 +10,6 @@ import Select from "@sierra/design-system/components/Select.astro";
 import Badge from "@sierra/design-system/components/Badge.astro";
 import MapFrame from "@sierra/design-system/components/MapFrame.astro";
 import GeoJSONMap from "@sierra/design-system/components/GeoJSONMap.astro";
-import GeometryPreview from "@sierra/design-system/components/GeometryPreview.astro";
 import type { FeatureCollection, Geometry } from "geojson";
 const features: FeatureCollection<Geometry | null> = {
   type: "FeatureCollection",
@@ -218,15 +217,16 @@ const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
       </DataTable>
     </section>
     <section class="stack" aria-labelledby="map-title">
-      <h2 id="map-title">Selectable GeoJSON</h2>
+      <h2 id="map-title">Map treatments</h2>
       <MapFrame
         label="Example geographic features"
-        caption="Illustrative geometry near the Sierra foothills. Select a feature on the map or use the buttons below it."
+        caption="Point markers, corridor lines and translucent areas shown together. Illustrative geometry, not live conditions."
       >
         <GeoJSONMap
           data={features}
           label="Synthetic points, corridor and area"
           basemap
+          selectable={false}
         />
         <div slot="legend" class="legend">
           <Badge tone="ok">Corridor</Badge>
@@ -237,18 +237,6 @@ const states = ["fresh", "stale", "unavailable", "empty", "loading"] as const;
           Map styling follows sierragridteam.org. Features are synthetic
           fixtures.
         </span>
-      </MapFrame>
-    </section>
-    <section class="stack" aria-labelledby="geometry-title">
-      <h2 id="geometry-title">Geometry preview</h2>
-      <MapFrame
-        label="Example area geometry"
-        caption="Compact geometry-only view, with no external tile requests."
-      >
-        <GeometryPreview
-          data={{ type: "FeatureCollection", features: [features.features[2]] }}
-          label="Example polygon"
-        />
       </MapFrame>
     </section>
   </main>

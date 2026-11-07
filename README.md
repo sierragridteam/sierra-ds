@@ -36,7 +36,7 @@ Enter/Space selection, Escape cancellation, and outside-click dismissal.
 ## Data and maps
 
 Open `/data` in the demo for synthetic road/source tables, five data states,
-filter controls, a selectable GeoJSON map, and a compact geometry preview.
+filter controls, and a single map showing point, line and polygon treatments together.
 These are library examples, not a migrated `sierra-data` site or a prescribed page layout.
 
 - `DataTable` supplies semantic column headings, caption and a scrollable region;
@@ -47,7 +47,7 @@ These are library examples, not a migrated `sierra-data` site or a prescribed pa
 - `FilterBar` arranges labelled controls; it does not own query or URL state.
 - `MapFrame` provides toolbar, legend, attribution and caption slots.
 - `GeoJSONMap` accepts a GeoJSON FeatureCollection (including null geometry), a label,
-  and optional `compact` / `basemap` flags. Features can supply `label`, `description`
+  and optional `compact` / `basemap` flags. Set `selectable={false}` for a treatment overview without feature buttons; pan and zoom remain available. Features can supply `label`, `description`
   and `tone` (`alarm`, `brass`, or default green). `feature-select` emits the feature
   and index. Every feature has a keyboard-accessible selection button, including
   unlocated records. `GeometryPreview` is its compact, geometry-only variant.
