@@ -4,6 +4,7 @@
  * Public and static; contains no member data. Every class in
  * src/styles/components.css should appear here at least once.
  */
+import Select from "@sierra/design-system/components/Select.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Button from "@sierra/design-system/components/Button.astro";
 import Card from "@sierra/design-system/components/Card.astro";
@@ -108,18 +109,25 @@ const icons = [
         <Card title="Preview configuration" class="sg__controls">
           <div class="sg__control-grid">
             <Field label="Density" for="density">
-              <select id="density" class="select">
-                <option value="">Default</option>
-                <option value="compact">Compact</option>
-                <option value="comfortable">Comfortable</option>
-              </select>
+              <Select
+                id="density"
+                options={[
+                  { value: "", label: "Default" },
+                  { value: "compact", label: "Compact" },
+                  { value: "comfortable", label: "Comfortable" },
+                ]}
+              />
             </Field>
             <Field label="Content width" for="width">
-              <select id="width" class="select" aria-describedby="preview-help">
-                <option value="fluid">Fluid</option>
-                <option value="tablet">Tablet · 860px</option>
-                <option value="phone">Phone · 390px</option>
-              </select>
+              <Select
+                id="width"
+                aria-describedby="preview-help"
+                options={[
+                  { value: "fluid", label: "Fluid" },
+                  { value: "tablet", label: "Tablet · 860px" },
+                  { value: "phone", label: "Phone · 390px" },
+                ]}
+              />
             </Field>
             <div class="sg__control-actions">
               <Button variant="secondary" id="dialog-demo">
@@ -316,10 +324,13 @@ const icons = [
                     />
                   </Field>
                   <Field label="Section" for="sg-select">
-                    <select class="select" id="sg-select">
-                      <option>Training</option>
-                      <option>Operations</option>
-                    </select>
+                    <Select
+                      id="sg-select"
+                      options={[
+                        { value: "training", label: "Training" },
+                        { value: "operations", label: "Operations" },
+                      ]}
+                    />
                   </Field>
                   <div class="form__error">
                     We could not send the code. Check the address and try again.
@@ -1052,13 +1063,13 @@ The practice net runs **Tuesdays at 19:00 PT**.
   import { toast } from "@sierra/design-system/lib/toast";
   import { el } from "@sierra/design-system/lib/dom";
   document.querySelector("#density")?.addEventListener("change", (event) => {
-    const value = (event.target as HTMLSelectElement).value;
+    const value = (event.target as HTMLButtonElement).value;
     document.querySelector<HTMLElement>(".sg__preview")!.dataset.density =
       value;
   });
   document.querySelector("#width")?.addEventListener("change", (event) => {
     document.querySelector<HTMLElement>(".sg__preview")!.dataset.width = (
-      event.target as HTMLSelectElement
+      event.target as HTMLButtonElement
     ).value;
   });
   document.querySelector("#dialog-demo")?.addEventListener("click", () => {

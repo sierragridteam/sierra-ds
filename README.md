@@ -25,3 +25,10 @@ pnpm is pinned in `package.json`. To activate it with Corepack, run
 Commit `pnpm-lock.yaml`; CI installs with `pnpm install --frozen-lockfile`.
 The workspace pins `@emnapi/runtime` to 1.11.3 because the 2.0 beta selected during
 import is incompatible with Astro's WASM bridge. Revisit that override when upgrading Astro.
+
+`Select.astro` provides a single-choice styled popover. Pass a unique `id`, an
+`options` array of `{ value, label, disabled? }`, and an optional initial `value`.
+Use `Field` with the same `for` value to label it. An optional `name` submits the
+selected value through a hidden input. The trigger exposes `.value` and emits
+bubbling `input` and `change` events. It supports arrow keys, Home/End, typeahead,
+Enter/Space selection, Escape cancellation, and outside-click dismissal.

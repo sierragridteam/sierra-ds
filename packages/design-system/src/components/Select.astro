@@ -1,0 +1,202 @@
+---
+import Icon from "./Icon.astro";
+interface Props {
+  id: string;
+  options: { value: string; label: string; disabled?: boolean }[];
+  value?: string;
+  name?: string;
+  disabled?: boolean;
+  "aria-describedby"?: string;
+}
+const {
+  id,
+  options,
+  value = options.find((o) => !o.disabled)?.value ?? "",
+  name,
+  disabled,
+  "aria-describedby": describedBy,
+} = Astro.props;
+const selected = options.find((o) => o.value === value);
+---
+
+<sierra-select>
+  <button
+    id={id}
+    type="button"
+    class="select select-trigger"
+    role="combobox"
+    aria-haspopup="listbox"
+    aria-expanded="false"
+    aria-controls={`${id}-options`}
+    aria-describedby={describedBy}
+    value={value}
+    disabled={disabled}
+  >
+    <span data-select-label>{selected?.label}</span>
+    <Icon name="chevron-down" class="select-chevron" />
+  </button>
+  <input type="hidden" name={name} value={value} disabled={disabled} />
+  <div
+    id={`${id}-options`}
+    class="select-popover"
+    popover="auto"
+    role="listbox"
+    aria-labelledby={id}
+  >
+    {options.map((option, index) => (
+      <div
+        id={`${id}-option-${index}`}
+        class="select-option"
+        role="option"
+        aria-selected={option.value === value}
+        aria-disabled={option.disabled || undefined}
+        data-value={option.value}
+      >
+        <span>{option.label}</span>
+        <Icon name="check" class="select-check" />
+      </div>
+    ))}
+  </div>
+</sierra-select>
+<script>
+  class SierraSelect extends HTMLElement {
+    cleanup?: AbortController;
+    connectedCallback() {
+      this.cleanup?.abort();
+      this.cleanup = new AbortController();
+      const { signal } = this.cleanup;
+      const trigger = this.querySelector<HTMLButtonElement>("button")!;
+      const input = this.querySelector<HTMLInputElement>("input")!;
+      const panel = this.querySelector<HTMLElement>("[popover]")!;
+      const options = [...panel.querySelectorAll<HTMLElement>("[role=option]")];
+      const enabled = options.filter(
+        (o) => o.getAttribute("aria-disabled") !== "true",
+      );
+      let active = enabled.findIndex((o) => o.dataset.value === trigger.value);
+      let search = "";
+      let searchedAt = 0;
+      const isOpen = () => panel.matches(":popover-open");
+      const highlight = (index: number) => {
+        active = Math.max(0, Math.min(index, enabled.length - 1));
+        options.forEach((o) =>
+          o.classList.toggle("is-active", o === enabled[active]),
+        );
+        if (enabled[active]) {
+          trigger.setAttribute("aria-activedescendant", enabled[active].id);
+          enabled[active].scrollIntoView({ block: "nearest" });
+        }
+      };
+      const position = () => {
+        const box = trigger.getBoundingClientRect();
+        panel.style.width = `${Math.min(box.width, innerWidth - 16)}px`;
+        panel.style.left = `${Math.max(8, Math.min(box.left, innerWidth - panel.offsetWidth - 8))}px`;
+        const below = innerHeight - box.bottom - 8;
+        const above = box.top - 8;
+        const up = below < Math.min(panel.scrollHeight, 240) && above > below;
+        panel.style.maxHeight = `${Math.max(0, Math.min(240, up ? above : below))}px`;
+        panel.style.top = `${up ? box.top - panel.offsetHeight - 4 : box.bottom + 4}px`;
+      };
+      const open = () => {
+        panel.showPopover();
+        position();
+        trigger.setAttribute("aria-expanded", "true");
+        highlight(enabled.findIndex((o) => o.dataset.value === trigger.value));
+      };
+      const close = () => {
+        if (isOpen()) panel.hidePopover();
+      };
+      const choose = (option: HTMLElement) => {
+        if (!enabled.includes(option)) return;
+        trigger.value = input.value = option.dataset.value!;
+        this.querySelector("[data-select-label]")!.textContent =
+          option.querySelector("span")!.textContent;
+        options.forEach((o) =>
+          o.setAttribute("aria-selected", String(o === option)),
+        );
+        close();
+        trigger.focus();
+        trigger.dispatchEvent(new Event("input", { bubbles: true }));
+        trigger.dispatchEvent(new Event("change", { bubbles: true }));
+      };
+      trigger.addEventListener("click", () => (isOpen() ? close() : open()), {
+        signal,
+      });
+      panel.addEventListener(
+        "toggle",
+        () => {
+          trigger.setAttribute("aria-expanded", String(isOpen()));
+          if (!isOpen()) trigger.removeAttribute("aria-activedescendant");
+        },
+        { signal },
+      );
+      panel.addEventListener(
+        "click",
+        (event) => {
+          const option = (event.target as Element).closest<HTMLElement>(
+            "[role=option]",
+          );
+          if (option) choose(option);
+        },
+        { signal },
+      );
+      trigger.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.key === "Tab" || event.key === "Escape") {
+            close();
+            return;
+          }
+          if (["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
+            event.preventDefault();
+            const wasOpen = isOpen();
+            if (!wasOpen) open();
+            highlight(
+              event.key === "Home"
+                ? 0
+                : event.key === "End"
+                  ? enabled.length - 1
+                  : active +
+                    (wasOpen ? (event.key === "ArrowDown" ? 1 : -1) : 0),
+            );
+          } else if ((event.key === "Enter" || event.key === " ") && isOpen()) {
+            event.preventDefault();
+            if (enabled[active]) choose(enabled[active]);
+          } else if (
+            event.key.length === 1 &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.altKey &&
+            event.key !== " "
+          ) {
+            event.preventDefault();
+            if (!isOpen()) open();
+            search =
+              Date.now() - searchedAt > 600 ? event.key : search + event.key;
+            searchedAt = Date.now();
+            const index = enabled.findIndex((o) =>
+              o.textContent
+                ?.trim()
+                .toLowerCase()
+                .startsWith(search.toLowerCase()),
+            );
+            if (index >= 0) highlight(index);
+          }
+        },
+        { signal },
+      );
+      window.addEventListener("resize", close, { signal });
+      document.addEventListener(
+        "scroll",
+        (event) => {
+          if (!panel.contains(event.target as Node)) close();
+        },
+        { capture: true, signal },
+      );
+    }
+    disconnectedCallback() {
+      this.cleanup?.abort();
+    }
+  }
+  if (!customElements.get("sierra-select"))
+    customElements.define("sierra-select", SierraSelect);
+</script>

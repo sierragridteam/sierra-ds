@@ -125,12 +125,12 @@
 }
 
 /* GitHub-style task lists: "- [ ] item" */
-.prose li:has(> input[type='checkbox']) {
+.prose li:has(> input[type="checkbox"]) {
   list-style: none;
   margin-left: calc(-1 * var(--space-5));
 }
 
-.prose input[type='checkbox'] {
+.prose input[type="checkbox"] {
   margin-right: var(--space-2);
   accent-color: var(--brand-green);
   vertical-align: -1px;
@@ -235,7 +235,7 @@
 }
 
 .btn:disabled,
-.btn[aria-disabled='true'] {
+.btn[aria-disabled="true"] {
   opacity: 0.55;
   cursor: not-allowed;
 }
@@ -325,7 +325,7 @@
 }
 
 .btn.is-busy::after {
-  content: '';
+  content: "";
   position: absolute;
   width: 14px;
   height: 14px;
@@ -694,7 +694,7 @@ button.row:hover .row__icon {
 }
 
 .badge::before {
-  content: '';
+  content: "";
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -824,7 +824,7 @@ button.row:hover .row__icon {
   border-color: var(--brand-green);
 }
 
-.input[aria-invalid='true'] {
+.input[aria-invalid="true"] {
   border-color: var(--signal-orange);
 }
 
@@ -1156,7 +1156,8 @@ button.steps__btn:hover .steps__label {
 }
 
 .wizard__preview .note-body {
-  padding: 0 var(--space-4) var(--space-4) calc(var(--space-4) + var(--icon) + var(--space-3));
+  padding: 0 var(--space-4) var(--space-4)
+    calc(var(--space-4) + var(--icon) + var(--space-3));
 }
 
 /* ------------------------------------------------------------------------ */
@@ -1205,7 +1206,7 @@ button.steps__btn:hover .steps__label {
   cursor: pointer;
 }
 
-.md-editor__tab[aria-selected='true'] {
+.md-editor__tab[aria-selected="true"] {
   border-bottom-color: var(--brand-green);
   color: var(--ink-strong);
 }
@@ -1480,10 +1481,15 @@ a.stat:hover {
 }
 
 .skeleton::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, var(--surface-raised), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--surface-raised),
+    transparent
+  );
   transform: translateX(-100%);
   animation: shimmer 1.4s infinite;
 }
@@ -1739,7 +1745,7 @@ a.stat:hover {
   }
 
   .table--cards td[data-label]::before {
-    content: attr(data-label) ' ';
+    content: attr(data-label) " ";
   }
 
   .table--cards td.is-actions {
@@ -1769,7 +1775,7 @@ a.stat:hover {
 
   /* Line break after that first line, so the badges and dates start on the next. */
   .table--cards tr:has(> td.is-actions > .btn:only-child)::after {
-    content: '';
+    content: "";
     flex-basis: 100%;
     order: -1;
     margin-top: calc(-1 * var(--space-1));
@@ -1804,4 +1810,78 @@ a.stat:hover {
   .dl dd + dt {
     margin-top: var(--space-3);
   }
+}
+
+/* Select: inset chevron stays centered independently of the label. */
+sierra-select {
+  display: block;
+  min-width: 0;
+}
+.select-trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: left;
+  cursor: pointer;
+}
+.select-trigger [data-select-label] {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.select-trigger .select-chevron {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-left: auto;
+  color: var(--ink-secondary);
+}
+.select-trigger[aria-expanded="true"] .select-chevron {
+  transform: rotate(180deg);
+}
+.select-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.select-popover {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: var(--space-1);
+  box-sizing: border-box;
+  overflow-y: auto;
+  background: var(--surface-raised);
+  color: var(--ink-strong);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-ui);
+  font-size: var(--fs-body);
+}
+.select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: var(--control-h);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.select-option:hover,
+.select-option.is-active {
+  background: var(--brand-green-tint);
+}
+.select-option[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.select-check {
+  flex: none;
+  visibility: hidden;
+}
+.select-option[aria-selected="true"] .select-check {
+  visibility: visible;
+  color: var(--brand-green);
 }
