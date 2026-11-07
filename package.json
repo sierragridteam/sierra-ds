@@ -2,14 +2,17 @@
   "name": "sierra-ds",
   "private": true,
   "type": "module",
-  "workspaces": [
-    "packages/*",
-    "demo-site"
-  ],
   "scripts": {
-    "dev": "npm run dev -w demo-site",
-    "build": "npm run build -w demo-site",
-    "check": "npm run check -w demo-site",
-    "pack:library": "npm pack -w @sierra/design-system --pack-destination releases"
+    "dev": "pnpm --filter sierra-ds-demo dev",
+    "build": "pnpm --filter sierra-ds-demo build",
+    "check": "pnpm --filter sierra-ds-demo check",
+    "pack:library": "pnpm --dir packages/design-system pack --pack-destination ../../releases"
+  },
+  "packageManager": "pnpm@10.26.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "devDependencies": {
+    "@emnapi/runtime": "1.11.3"
   }
 }

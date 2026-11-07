@@ -4,9 +4,9 @@ The shared Astro components, CSS tokens and browser UI primitives extracted from
 
 ## Local review
 
-Use Node >=22.12 and npm. Run `npm install`, then `npm run dev` and open the URL Astro prints. The demo catalog includes typography, palette, forms, tables, states, shell patterns and interactive dialog/toast examples. Density and width controls support alternate configurations. Use your browser viewport controls to test actual media-query breakpoints.
+Use Node >=22.12 and pnpm 10.26.0. Run `pnpm install`, then `pnpm run dev` and open the URL Astro prints. The demo catalog includes typography, palette, forms, tables, states, shell patterns and interactive dialog/toast examples. Density and width controls support alternate configurations. Use your browser viewport controls to test actual media-query breakpoints.
 
-`npm run check` checks the demo; `npm run build` produces its static site.
+`pnpm run check` checks the demo; `pnpm run build` produces its static site.
 
 ## Consume
 
@@ -16,6 +16,12 @@ The initial API preserves members' class names and appearance. App routing, auth
 
 ## Releases and first consumer
 
-Bump `packages/design-system/package.json`, run `npm run pack:library`, and commit the release. Copy it to members' `vendor/` and install that tarball there. This keeps CI independent of sibling repositories and avoids registry credentials. Never silently replace a released version. Members now consumes all extracted components, global styles and DOM helpers through this package.
+Bump `packages/design-system/package.json`, run `pnpm run pack:library`, and commit the release. Copy it to members' `vendor/` and install that tarball there. This keeps CI independent of sibling repositories and avoids registry credentials. Never silently replace a released version. Members now consumes all extracted components, global styles and DOM helpers through this package.
 
 See `docs/design-system.md` for inherited visual principles and token rationale.
+
+pnpm is pinned in `package.json`. To activate it with Corepack, run
+`corepack enable && corepack prepare pnpm@10.26.0 --activate`.
+Commit `pnpm-lock.yaml`; CI installs with `pnpm install --frozen-lockfile`.
+The workspace pins `@emnapi/runtime` to 1.11.3 because the 2.0 beta selected during
+import is incompatible with Astro's WASM bridge. Revisit that override when upgrading Astro.
