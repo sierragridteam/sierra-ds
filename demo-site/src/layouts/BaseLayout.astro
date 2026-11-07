@@ -3,8 +3,8 @@ import '@fontsource-variable/newsreader/standard.css';
 import '@fontsource-variable/ibm-plex-sans/standard.css';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
-import '@sierra/design-system/styles/global.css';
-import IconSprite from '@sierra/design-system/components/IconSprite.astro';
+import '@sierragridteam/design-system/styles/global.css';
+import IconSprite from '@sierragridteam/design-system/components/IconSprite.astro';
 const {title, description} = Astro.props;
 ---
 <html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>{title}</title><meta name="description" content={description}/></head><body><IconSprite/><slot/><div id="toasts" class="toasts" aria-live="polite"></div></body></html>

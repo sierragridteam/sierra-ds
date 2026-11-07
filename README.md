@@ -10,13 +10,32 @@ Use Node >=22.12 and pnpm 10.26.0. Run `pnpm install`, then `pnpm run dev` and o
 
 ## Consume
 
-Install a versioned release tarball from `releases/`. Import Astro components from `@sierra/design-system/components/Button.astro`, global CSS from `@sierra/design-system/styles/global.css`, and browser helpers from `@sierra/design-system/lib/controls` (also `dom`, `dialog`, `toast`). Render IconSprite once and supply a `#toasts` live region for toasts. Load Newsreader, IBM Plex Sans and IBM Plex Mono fonts as shown in the demo layout. Copy the package brand assets to `/brand/` in the consuming site's public directory.
+Install with `pnpm add @sierragridteam/design-system`. Import Astro components from `@sierragridteam/design-system/components/Button.astro`, global CSS from `@sierragridteam/design-system/styles/global.css`, and browser helpers from `@sierragridteam/design-system/lib/controls` (also `dom`, `dialog`, `toast`). Render IconSprite once and supply a `#toasts` live region for toasts. Load Newsreader, IBM Plex Sans and IBM Plex Mono fonts as shown in the demo layout. Copy the package brand assets to `/brand/` in the consuming site's public directory.
 
 The initial API preserves members' class names and appearance. App routing, authentication, boot behavior, data access and domain-specific renderers belong to consumers. Override CSS custom properties after the library stylesheet to configure a project. Pass `<Logo siteName="Design system" />` to customize the site wordmark and accessible home link label. `siteName` defaults to `Members` for compatibility; an empty string hides the site wordmark.
 
 ## Releases and first consumer
 
-Bump `packages/design-system/package.json`, run `pnpm run pack:library`, and commit the release. Copy it to members' `vendor/` and install that tarball there. This keeps CI independent of sibling repositories and avoids registry credentials. Never silently replace a released version. Members now consumes all extracted components, global styles and DOM helpers through this package.
+Every push to `main` publishes to npm after tests, type checks, and the demo
+build pass, including documentation-only merges. `publish.yml` queues releases
+without cancelling earlier merges. GitHub authenticates using npm trusted
+publishing (OIDC); no npm token is stored in GitHub.
+
+The package version in source is the minimum release version. CI selects the
+next unused patch above the highest stable npm version, or uses the source
+version when it is higher. To make a minor or major release, raise the source
+version in your PR. CI changes the version only in its checkout, so releases do
+not create bot commits or trigger another release. Each npm version records
+its source commit; rerunning an already published commit is a no-op.
+
+Use the Publish workflow's manual dispatch on `main` to retry a failed release.
+A registry error fails the workflow rather than guessing a version. Consumers
+update their npm dependency explicitly; tarballs are no longer copied into
+consumer repositories.
+
+Initial setup requires publishing the package once, then authorizing the npm
+trusted publisher for `sierragridteam/sierra-ds`, workflow `publish.yml`, with
+publish permission and no environment name.
 
 See `docs/design-system.md` for inherited visual principles and token rationale.
 
