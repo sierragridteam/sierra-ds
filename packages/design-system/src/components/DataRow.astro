@@ -1,0 +1,23 @@
+---
+/** A record and its annotation are always one semantic row. Slot the remaining td cells. */
+interface Props {
+  label: string;
+  description?: string;
+  note?: string;
+  noteTone?: "neutral" | "caution";
+}
+const { label, description, note, noteTone = "neutral" } = Astro.props;
+---
+
+<tr class="ds-data-row">
+  <th scope="row">
+    <span>{label}</span>
+    {description && <p class="ds-data-note">{description}</p>}
+    {note && (
+      <p class="ds-row-note ds-data-note" data-tone={noteTone}>
+        {note}
+      </p>
+    )}
+  </th>
+  <slot />
+</tr>

@@ -1,0 +1,35 @@
+---
+interface Props {
+  label: string;
+  items: {
+    label: string;
+    value?: string | number | null;
+    unit?: string;
+    description?: string;
+    missing?: string;
+  }[];
+}
+const { label, items } = Astro.props;
+---
+
+<dl class="ds-metric-grid" aria-label={label}>
+  {items.map((item) => (
+    <div class="ds-metric">
+      <dt>{item.label}</dt>
+      <dd>
+        <span
+          class:list={[
+            "ds-metric-value",
+            item.value == null && "ds-metric-missing",
+          ]}
+        >
+          {item.value ?? item.missing ?? "Not reported"}
+        </span>
+        {item.value != null && item.unit && (
+          <span class="ds-metric-unit"> {item.unit}</span>
+        )}
+        {item.description && <p class="ds-data-note">{item.description}</p>}
+      </dd>
+    </div>
+  ))}
+</dl>

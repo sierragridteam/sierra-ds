@@ -1,5 +1,6 @@
 ---
 import type { FeatureCollection, Geometry } from "geojson";
+import Callout from "./Callout.astro";
 interface Props {
   data: FeatureCollection<Geometry | null>;
   label: string;
@@ -59,14 +60,20 @@ const {
     </ul>
   )}
   {!selectable && data.features.some((feature) => !feature.geometry) && (
-    <p class="ds-map-fallback">
-      Unlocated:{" "}
-      {data.features
-        .filter((feature) => !feature.geometry)
-        .map((feature) => feature.properties?.label)
-        .join(", ")}
-      . Location not supplied.
-    </p>
+    <div class="ds-map-notice">
+      <Callout tone="brass" title="Reports without a location">
+        <p>
+          These records have no coordinates and cannot be placed on the map.
+        </p>
+        <ul>
+          {data.features
+            .filter((feature) => !feature.geometry)
+            .map((feature) => (
+              <li>{feature.properties?.label ?? "Unnamed report"}</li>
+            ))}
+        </ul>
+      </Callout>
+    </div>
   )}
   {basemap && (
     <p class="ds-map-attribution">

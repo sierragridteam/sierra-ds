@@ -1989,3 +1989,195 @@ sierra-select {
 .ds-map-frame figcaption .ds-map-attribution {
   padding: 0;
 }
+
+/* Dense data primitives: readable values, secondary explanations, no truncation. */
+.ds-data-note {
+  margin: var(--space-1) 0 0;
+  color: var(--ink-secondary);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.ds-values {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.ds-values caption {
+  text-align: left;
+  font-weight: var(--fw-semibold);
+  padding-bottom: var(--space-3);
+}
+.ds-values th,
+.ds-values td {
+  padding: var(--space-3);
+  border-bottom: var(--border-soft);
+  vertical-align: top;
+  text-align: left;
+}
+.ds-values th {
+  width: 30%;
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-medium);
+  overflow-wrap: anywhere;
+}
+.ds-values tr:hover > :is(th, td) {
+  background: var(--surface-raised);
+}
+.ds-value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.ds-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  margin: 0;
+  border: var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ds-metric {
+  padding: var(--space-4);
+  background: var(--surface-card);
+  border: var(--border-soft);
+  min-width: 0;
+}
+.ds-metric dt {
+  color: var(--ink-secondary);
+  font-size: var(--fs-small);
+}
+.ds-metric dd {
+  margin: var(--space-2) 0 0;
+}
+.ds-metric-value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-h3);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.ds-metric-missing,
+.ds-metric-unit {
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+}
+.ds-identifiers {
+  display: block;
+  min-width: 0;
+}
+.ds-identifiers-head,
+.ds-diff-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.ds-identifier-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-1);
+}
+.ds-identifier-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-banner);
+  border-radius: var(--radius-sm);
+}
+.ds-identifier-list code {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--fs-small);
+}
+.ds-identifier-list button {
+  flex: none;
+}
+.ds-identifiers summary {
+  cursor: pointer;
+  padding: var(--space-3) 0;
+  font-size: var(--fs-small);
+  color: var(--brand-green);
+}
+.ds-copy-status {
+  min-height: 1.5em;
+}
+.ds-diff-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ds-diff-list > li {
+  border-left: 3px solid var(--brand-brass);
+  padding: var(--space-3);
+  margin-top: var(--space-2);
+  background: var(--surface-card);
+}
+.ds-diff-list > li[data-kind="added"] {
+  border-color: var(--brand-green);
+}
+.ds-diff-list > li[data-kind="removed"] {
+  border-color: var(--line-control);
+}
+.ds-diff-field {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: baseline;
+  overflow-wrap: anywhere;
+}
+.ds-diff-field code {
+  font-size: var(--fs-small);
+}
+.ds-diff-values {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+.ds-diff-values > div {
+  min-width: 0;
+}
+.ds-diff-values pre {
+  margin: var(--space-1) 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+}
+.ds-map-notice {
+  margin: var(--space-3);
+}
+
+/* Body row headers use body-cell dividers, not the column heading's bottom rule. */
+.ds-data-table tbody th {
+  border-bottom: 0;
+  border-top: var(--border-soft);
+  height: var(--row-h);
+  padding: var(--space-2) var(--space-4);
+  vertical-align: middle;
+}
+.ds-data-table tbody tr:first-child th {
+  border-top: 0;
+}
+.ds-row-note {
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--line-control);
+  font-weight: var(--fw-regular);
+}
+.ds-row-note[data-tone="caution"] {
+  border-left-color: var(--brand-brass);
+}
+.ds-data-table tbody th {
+  white-space: normal;
+}
+.ds-row-note {
+  max-width: 42ch;
+}

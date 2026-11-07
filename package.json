@@ -6,7 +6,8 @@
     "dev": "pnpm --filter sierra-ds-demo dev",
     "build": "pnpm --filter sierra-ds-demo build",
     "check": "pnpm --filter sierra-ds-demo check",
-    "pack:library": "pnpm --dir packages/design-system pack --pack-destination ../../releases"
+    "pack:library": "pnpm --dir packages/design-system pack --pack-destination ../../releases",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "packageManager": "pnpm@10.26.0",
   "engines": {

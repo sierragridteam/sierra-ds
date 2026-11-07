@@ -1,0 +1,110 @@
+---
+interface Props {
+  label: string;
+  values: string[];
+  previewCount?: number;
+  emptyMessage?: string;
+}
+const {
+  label,
+  values,
+  previewCount = 8,
+  emptyMessage = "No identifiers supplied.",
+} = Astro.props;
+const limit = Math.max(1, Math.floor(previewCount));
+---
+
+<sierra-identifiers class="ds-identifiers">
+  <div class="ds-identifiers-head">
+    <strong>
+      {label} <span class="meta">({values.length})</span>
+    </strong>
+    {values.length > 0 && (
+      <button class="btn btn--outline btn--sm" type="button" data-copy-all>
+        Copy all
+      </button>
+    )}
+  </div>
+  {values.length ? (
+    <>
+      <ul class="ds-identifier-list" aria-label={label}>
+        {values.slice(0, limit).map((value) => (
+          <li>
+            <code>{value}</code>
+            <button
+              type="button"
+              class="btn btn--ghost btn--sm"
+              data-copy={value}
+              aria-label={`Copy ${value}`}
+            >
+              Copy
+            </button>
+          </li>
+        ))}
+      </ul>
+      {values.length > limit && (
+        <details>
+          <summary>Show {values.length - limit} more identifiers</summary>
+          <ul class="ds-identifier-list">
+            {values.slice(limit).map((value) => (
+              <li>
+                <code>{value}</code>
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--sm"
+                  data-copy={value}
+                  aria-label={`Copy ${value}`}
+                >
+                  Copy
+                </button>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+    </>
+  ) : (
+    <p class="ds-data-note">{emptyMessage}</p>
+  )}
+  <p class="ds-copy-status ds-data-note" role="status" aria-live="polite"></p>
+</sierra-identifiers>
+<script>
+  class SierraIdentifiers extends HTMLElement {
+    controller?: AbortController;
+    connectedCallback() {
+      this.controller?.abort();
+      this.controller = new AbortController();
+      this.addEventListener(
+        "click",
+        async (event) => {
+          const button = (event.target as Element).closest<HTMLButtonElement>(
+            "button",
+          );
+          if (!button) return;
+          const value = button.hasAttribute("data-copy-all")
+            ? [...this.querySelectorAll<HTMLButtonElement>("[data-copy]")]
+                .map((b) => b.dataset.copy)
+                .join("\n")
+            : button.dataset.copy;
+          if (value === undefined) return;
+          const status = this.querySelector<HTMLElement>("[role=status]")!;
+          try {
+            await navigator.clipboard.writeText(value);
+            status.textContent = button.hasAttribute("data-copy-all")
+              ? "All identifiers copied."
+              : "Identifier copied.";
+          } catch {
+            status.textContent =
+              "Copy unavailable. Select the identifier text to copy manually.";
+          }
+        },
+        { signal: this.controller.signal },
+      );
+    }
+    disconnectedCallback() {
+      this.controller?.abort();
+    }
+  }
+  if (!customElements.get("sierra-identifiers"))
+    customElements.define("sierra-identifiers", SierraIdentifiers);
+</script>

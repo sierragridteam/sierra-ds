@@ -1,0 +1,32 @@
+---
+import { formatDataValue, type DataValue } from "../lib/data-values";
+interface Props {
+  label: string;
+  rows: {
+    label: string;
+    value?: DataValue;
+    description?: string;
+    missing?: string;
+  }[];
+}
+const { label, rows } = Astro.props;
+---
+
+<table class="ds-values">
+  <caption>{label}</caption>
+  <tbody>
+    {rows.map((row) => (
+      <tr>
+        <th scope="row">{row.label}</th>
+        <td>
+          <div class="ds-value">
+            {row.value === undefined
+              ? (row.missing ?? "Not provided")
+              : formatDataValue(row.value)}
+          </div>
+          {row.description && <p class="ds-data-note">{row.description}</p>}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
