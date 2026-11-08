@@ -212,7 +212,7 @@
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
-  background: rgb(22 39 30 / 40%);
+  background: var(--scrim);
 }
 
 @media (max-width: 860px) {

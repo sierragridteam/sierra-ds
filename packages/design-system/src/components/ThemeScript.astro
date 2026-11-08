@@ -1,0 +1,30 @@
+---
+/**
+ * ThemeScript — place once in <head>, before stylesheets render, to apply the
+ * reader's stored colour theme before first paint (no light flash).
+ *
+ * Precedence: stored preference, then a valid data-theme already on <html>,
+ * then `fallback`. Keep `storageKey` equal to the ThemeSwitcher's.
+ */
+import type { ThemePreference } from "../lib/theme";
+interface Props {
+  fallback?: ThemePreference;
+  storageKey?: string;
+}
+const { fallback = "system", storageKey = "sierra-theme" } = Astro.props;
+---
+
+<script is:inline define:vars={{ fallback, storageKey }}>
+  const valid = (value) =>
+    value === "light" || value === "dark" || value === "system";
+  let stored = null;
+  try {
+    stored = localStorage.getItem(storageKey);
+  } catch {}
+  const root = document.documentElement;
+  root.dataset.theme = valid(stored)
+    ? stored
+    : valid(root.dataset.theme)
+      ? root.dataset.theme
+      : fallback;
+</script>

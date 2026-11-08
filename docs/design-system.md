@@ -43,8 +43,32 @@ Rules:
 - **Contrast.** Text tokens meet WCAG AA on every surface they are paired with in the style
   guide. `--line-control` is ≥ 3:1 against inputs. Brass and orange _text_ use the darkened
   `-text` variants; the base accents are for rules and fills only.
+- **Text on fills.** Filled green and orange controls use `--ink-on-brand`, never a surface
+  token: in dark mode the fills lighten and their text darkens.
 - **Motion** is one duration (`--transition`, 120ms) plus a slower one for the drawer; both
   collapse to 0 under `prefers-reduced-motion`.
+
+### Light and dark themes
+
+Light is the default and is unchanged. Every colour token, plus the colour-derived `--border`,
+`--border-soft` and shadow tokens, is defined in a light block and a dark block at the end of
+`tokens.css`. `data-theme` on `<html>` selects `light`, `dark` or `system` (follow
+`prefers-color-scheme`); without the attribute pages stay light, so existing consumers are
+unaffected until they opt in. `data-theme="light"` or `"dark"` on any element scopes a theme to
+that region, which paints its own ground.
+
+The dark palette is "night forest": green-black grounds that get lighter, not greyer, as they
+rise (page → card → banner → raised; the deep toast ground sits above them all). Ink is
+parchment. Green, brass and orange are lifted so they keep their roles as text and rules, and
+fills carry dark `--ink-on-brand`. The raster mark is never recoloured; dark themes seat it on
+a parchment plate (`--logo-plate`). Map grounds have dark values, MapLibre's dark control icons
+are inverted, and `GeoJSONMap` rebuilds when the resolved theme changes because MapLibre needs
+literal colours.
+
+`tests/theme-tokens.test.mjs` keeps the explicit and system dark blocks identical, requires a
+dark value for every light token, and checks the text/control contrast pairs in both themes.
+Status dots are not in that list because they always sit beside a label (the inherited light
+brass dot is below 3:1 on cards).
 
 ## 3. Type roles
 
@@ -130,4 +154,6 @@ this is presentation, not security (RLS decides what an admin can actually do).
 - New component: add the global class(es) with a section in `components.css`, an example on
   `/styleguide`, and an Astro wrapper only if static pages need it.
 - Removing a class: grep `src/lib` too; client code references classes by string.
+- New colour token: give it a value in the light block and both dark blocks; the theme test
+  fails otherwise. Check it in dark mode on the demo pages.
 - Run `make lint` — the token guardrail is the one check that protects the palette.

@@ -1,0 +1,102 @@
+---
+/**
+ * ThemeSwitcher — a light / dark / system radio group that sets data-theme on
+ * <html> and remembers the choice. Pair it with ThemeScript in <head>.
+ *
+ * Native radios supply arrow-key navigation and form semantics. The control is
+ * hidden until its script runs, because without it a choice would do nothing.
+ * Any number of switchers can share a page; they stay in step.
+ */
+import Icon from "./Icon.astro";
+interface Props {
+  /** Accessible group name. */
+  label?: string;
+  /** Icons only; option names remain available to assistive technology. */
+  compact?: boolean;
+  storageKey?: string;
+  class?: string;
+}
+const {
+  label = "Colour theme",
+  compact = false,
+  storageKey = "sierra-theme",
+  class: cls,
+} = Astro.props;
+const options = [
+  { value: "light", label: "Light", icon: "sun" },
+  { value: "dark", label: "Dark", icon: "moon" },
+  { value: "system", label: "System", icon: "monitor" },
+];
+---
+
+<sierra-theme-switcher
+  class:list={["theme-switcher", compact && "theme-switcher--compact", cls]}
+  data-storage-key={storageKey}
+>
+  <fieldset>
+    <legend class="sr-only">{label}</legend>
+    {options.map((option) => (
+      <label
+        class="theme-switcher__option"
+        title={compact ? option.label : undefined}
+      >
+        <input
+          class="theme-switcher__input"
+          type="radio"
+          name="sierra-theme"
+          value={option.value}
+        />
+        <Icon name={option.icon} />
+        <span class:list={[compact && "sr-only"]}>{option.label}</span>
+      </label>
+    ))}
+  </fieldset>
+</sierra-theme-switcher>
+
+<script>
+  import {
+    getThemePreference,
+    isThemePreference,
+    onThemeChange,
+    setThemePreference,
+    syncThemeAcrossTabs,
+  } from "../lib/theme";
+
+  let instances = 0;
+  class SierraThemeSwitcher extends HTMLElement {
+    cleanup?: AbortController;
+    connectedCallback() {
+      this.cleanup?.abort();
+      this.cleanup = new AbortController();
+      const { signal } = this.cleanup;
+      const storageKey = this.dataset.storageKey || undefined;
+      const inputs = [
+        ...this.querySelectorAll<HTMLInputElement>("input[type=radio]"),
+      ];
+      // Each switcher needs its own radio group name.
+      const name = `sierra-theme-${++instances}`;
+      for (const input of inputs) input.name = name;
+      const show = () => {
+        const preference = getThemePreference();
+        for (const input of inputs) input.checked = input.value === preference;
+      };
+      show();
+      this.addEventListener(
+        "change",
+        (event) => {
+          const value = (event.target as HTMLInputElement).value;
+          if (isThemePreference(value))
+            setThemePreference(value, { storageKey });
+        },
+        { signal },
+      );
+      onThemeChange(show, { signal });
+      syncThemeAcrossTabs({ signal, storageKey });
+    }
+    disconnectedCallback() {
+      this.cleanup?.abort();
+    }
+  }
+  if (!customElements.get("sierra-theme-switcher"))
+    customElements.define("sierra-theme-switcher", SierraThemeSwitcher);
+</script>

@@ -5,6 +5,7 @@ import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
 import '@sierragridteam/design-system/styles/global.css';
 import IconSprite from '@sierragridteam/design-system/components/IconSprite.astro';
+import ThemeScript from '@sierragridteam/design-system/components/ThemeScript.astro';
 const {title, description} = Astro.props;
 ---
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><title>{title}</title><meta name="description" content={description}/></head><body><IconSprite/><slot/><div id="toasts" class="toasts" aria-live="polite"></div></body></html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width"/><ThemeScript/><title>{title}</title><meta name="description" content={description}/></head><body><IconSprite/><slot/><div id="toasts" class="toasts" aria-live="polite"></div></body></html>
