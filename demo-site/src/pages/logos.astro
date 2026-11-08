@@ -1,0 +1,12 @@
+---
+import DemoLayout from '../layouts/DemoLayout.astro';
+import Logo from '@sierragridteam/design-system/components/Logo.astro';
+---
+<DemoLayout title="Logo accessibility" sections={[]}>
+  <h1>Logo variants</h1>
+  <div id="logo-default"><Logo /></div>
+  <div id="logo-grid"><Logo siteName="Grid" /></div>
+  <div id="logo-multiword"><Logo siteName="Data explorer" /></div>
+  <div id="logo-empty"><Logo siteName="" /></div>
+  <div id="logo-mark"><Logo siteName="Grid" wordmark={false} /></div>
+</DemoLayout>
