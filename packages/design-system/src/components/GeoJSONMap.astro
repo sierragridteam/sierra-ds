@@ -91,13 +91,26 @@ const {
   import type { FeatureCollection, Geometry } from "geojson";
   import "maplibre-gl/dist/maplibre-gl.css";
   import { restyleBasemap, type StyleDoc } from "../lib/basemap-style";
+  import { getThemeState, onThemeChange } from "../lib/theme";
   class SierraGeoMap extends HTMLElement {
     map?: maplibregl.Map;
     observer?: ResizeObserver;
     abort?: AbortController;
+    selected?: number;
     async connectedCallback() {
       this.abort = new AbortController();
       const { signal } = this.abort;
+      // MapLibre needs literal colours, so rebuild when the theme flips.
+      let theme = getThemeState().theme;
+      onThemeChange(
+        (state) => {
+          if (state.theme === theme) return;
+          theme = state.theme;
+          this.disconnectedCallback();
+          void this.connectedCallback();
+        },
+        { signal },
+      );
       const data = JSON.parse(
         this.dataset.features!,
       ) as FeatureCollection<Geometry | null>;
@@ -108,6 +121,7 @@ const {
       const select = (index: number) => {
         const feature = data.features[index];
         if (!feature) return;
+        this.selected = index;
         selection.textContent = `${feature.properties?.label ?? "Feature"} — ${feature.properties?.description ?? (feature.geometry ? feature.geometry.type : "Location unavailable")}`;
         this.querySelectorAll<HTMLButtonElement>(
           "[data-feature-index]",
@@ -243,6 +257,13 @@ const {
               "circle-stroke-width": 2,
             },
           });
+          if (this.selected !== undefined)
+            map.setPaintProperty("ds-points", "circle-radius", [
+              "case",
+              ["==", ["id"], this.selected],
+              10,
+              6,
+            ]);
           if (this.dataset.selectable !== "false")
             for (const layer of ["ds-areas", "ds-lines", "ds-points"])
               map.on("click", layer, (event) => {

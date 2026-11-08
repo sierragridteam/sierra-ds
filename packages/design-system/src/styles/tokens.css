@@ -7,61 +7,15 @@
  * spacing, radii and layout are re-tuned for an application: denser, sans-serif
  * body, sidebar shell. Rationale and the full comparison: docs/design-system.md.
  *
+ * Colours are grouped into light and dark theme blocks at the end of the file;
+ * every colour token needs a value in each.
+ *
  * This is the ONLY file allowed to contain raw hex colours and raw px font
  * sizes (stylelint enforces it). Everything else uses var(--…).
  */
 
 :root {
-  /* ---------------------------------------------------------------------- */
-  /* Surfaces — warm parchment neutrals (inherited)                           */
-  /* ---------------------------------------------------------------------- */
-  --surface-page: #f3efe4; /* app background */
-  --surface-card: #f6f2e7; /* cards, panels, table headers */
-  --surface-banner: #efe9da; /* sidebar, callouts, code, footer strips */
-  --surface-raised: #fdfcf7; /* inputs, hovered rows, popovers */
-  --surface-hero: #edefe7; /* cool tint — auth screens, empty states */
-  --surface-deep: #14281d; /* the one dark ground — admin badge, toasts */
-  --surface-deep-line: #2c4536;
-
-  /* ---------------------------------------------------------------------- */
-  /* Ink (inherited)                                                          */
-  /* ---------------------------------------------------------------------- */
-  --ink-strong: #16271e;
-  --ink-body: #3c453c;
-  --ink-secondary: #5a5e4f;
-  --ink-muted: #6f6750;
-  --ink-on-deep: #f1ece0;
-  --ink-on-deep-muted: #9db3a4;
-
-  /* ---------------------------------------------------------------------- */
-  /* Brand & signal (inherited)                                               */
-  /* ---------------------------------------------------------------------- */
-  --brand-green: #1d5b3f; /* primary: actions, links, focus, active nav */
-  --brand-green-hover: #16472f;
-  --brand-green-tint: #e4ebe4; /* selected row / active nav ground */
-  --brand-brass: #b08a3e; /* rules, secondary outline, pending state */
-  --brand-brass-text: #785d20;
-  --brand-brass-tint: #f1e8d3;
-  --signal-orange: #c2410c; /* risk / destructive only */
-  --signal-orange-hover: #9a330a;
-  --signal-orange-text: #b03808;
-  --signal-orange-tint: #f6e2d6;
-
-  /* Status dots & badges */
-  --state-ok: #1d5b3f;
-  --state-elevated: #b08a3e;
-  --state-alarm: #c2410c;
-  --state-muted: #9a906f;
-
-  /* ---------------------------------------------------------------------- */
-  /* Lines (inherited — always warm tan, never grey)                          */
-  /* ---------------------------------------------------------------------- */
-  --line: #d8d0bd;
-  --line-soft: #e5ddca;
-  --line-control: #928869; /* ≥ 3:1 against inputs */
   --border-w: 1px;
-  --border: var(--border-w) solid var(--line);
-  --border-soft: var(--border-w) solid var(--line-soft);
 
   /* ---------------------------------------------------------------------- */
   /* Typography — same faces, app roles                                       */
@@ -140,15 +94,6 @@
   --z-drawer: 60;
   --z-overlay: 40;
 
-  /* Shadows: none on cards; only floating things */
-  --shadow-overlay: 0 1px 0 var(--line);
-  --shadow-popover:
-    0 6px 20px rgb(22 39 30 / 14%), 0 1px 3px rgb(22 39 30 / 10%);
-  --shadow-drawer: 0 12px 32px rgb(22 39 30 / 22%);
-  --backdrop: rgb(
-    20 40 29 / 45%
-  ); /* behind modal dialogs: --surface-deep, translucent */
-
   /* Motion */
   --transition: 120ms ease;
   --transition-slow: 200ms ease;
@@ -161,12 +106,222 @@
   }
 }
 
-/* Map ground: aligned with sierragridteam.org, independent of page layout. */
-:root {
+/* ------------------------------------------------------------------------ */
+/* Colour themes                                                             */
+/*                                                                           */
+/* Light is the default. Set data-theme on <html> (ThemeScript/ThemeSwitcher */
+/* do this) to "light", "dark" or "system"; "system" follows the operating   */
+/* system. data-theme="light" or "dark" also scopes a theme to any subtree.  */
+/* The two dark blocks must stay identical (tests/theme-tokens.test.mjs).    */
+/* ------------------------------------------------------------------------ */
+
+:root,
+[data-theme="light"],
+[data-theme="system"] {
+  color-scheme: light;
+
+  /* ---------------------------------------------------------------------- */
+  /* Surfaces — warm parchment neutrals (inherited)                           */
+  /* ---------------------------------------------------------------------- */
+  --surface-page: #f3efe4; /* app background */
+  --surface-card: #f6f2e7; /* cards, panels, table headers */
+  --surface-banner: #efe9da; /* sidebar, callouts, code, footer strips */
+  --surface-raised: #fdfcf7; /* inputs, hovered rows, popovers */
+  --surface-hero: #edefe7; /* cool tint — auth screens, empty states */
+  --surface-deep: #14281d; /* the one dark ground — admin badge, toasts */
+  --surface-deep-line: #2c4536;
+
+  /* ---------------------------------------------------------------------- */
+  /* Ink (inherited)                                                          */
+  /* ---------------------------------------------------------------------- */
+  --ink-strong: #16271e;
+  --ink-body: #3c453c;
+  --ink-secondary: #5a5e4f;
+  --ink-muted: #6f6750;
+  --ink-on-deep: #f1ece0;
+  --ink-on-deep-muted: #9db3a4;
+
+  /* ---------------------------------------------------------------------- */
+  /* Brand & signal (inherited)                                               */
+  /* ---------------------------------------------------------------------- */
+  --brand-green: #1d5b3f; /* primary: actions, links, focus, active nav */
+  --brand-green-hover: #16472f;
+  --brand-green-tint: #e4ebe4; /* selected row / active nav ground */
+  --brand-brass: #b08a3e; /* rules, secondary outline, pending state */
+  --brand-brass-text: #785d20;
+  --brand-brass-tint: #f1e8d3;
+  --signal-orange: #c2410c; /* risk / destructive only */
+  --signal-orange-hover: #9a330a;
+  --signal-orange-text: #b03808;
+  --signal-orange-tint: #f6e2d6;
+  --ink-on-brand: #f3efe4; /* text on filled green/orange controls */
+
+  /* Status dots & badges */
+  --state-ok: #1d5b3f;
+  --state-elevated: #b08a3e;
+  --state-alarm: #c2410c;
+  --state-muted: #9a906f;
+
+  /* ---------------------------------------------------------------------- */
+  /* Lines (inherited — always warm tan, never grey)                          */
+  /* ---------------------------------------------------------------------- */
+  --line: #d8d0bd;
+  --line-soft: #e5ddca;
+  --line-control: #928869; /* ≥ 3:1 against inputs */
+
+  /* Shadows: none on cards; only floating things */
+  --shadow-popover:
+    0 6px 20px rgb(22 39 30 / 14%), 0 1px 3px rgb(22 39 30 / 10%);
+  --shadow-drawer: 0 12px 32px rgb(22 39 30 / 22%);
+  --backdrop: rgb(20 40 29 / 45%); /* behind modal dialogs */
+  --scrim: rgb(22 39 30 / 40%); /* behind the mobile navigation drawer */
+
+  /* The raster mark is never recoloured; dark grounds place it on parchment. */
+  --logo-plate: transparent;
+  --logo-plate-pad: 0;
+
+  /* Map ground: aligned with sierragridteam.org, independent of page layout. */
   --map-water: #dde3da;
   --map-road: #f8f6ef;
   --map-road-casing: #ddd4bd;
   --map-county-line: #c9c1a9;
   --map-place: #9a906f;
   --map-shield-text: #7d7459;
+  --map-control-icon-filter: none; /* MapLibre ships dark raster icons */
+
+  /* Colour-derived tokens are restated so scoped themes resolve their own lines. */
+  --border: var(--border-w) solid var(--line);
+  --border-soft: var(--border-w) solid var(--line-soft);
+  --shadow-overlay: 0 1px 0 var(--line);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Surfaces — night forest grounds; elevation gets lighter, never greyer */
+  --surface-page: #121a16;
+  --surface-card: #18221c;
+  --surface-banner: #1c2720;
+  --surface-raised: #212e26;
+  --surface-hero: #16211b;
+  --surface-deep: #2a3d31; /* toasts stay distinct by sitting above the page */
+  --surface-deep-line: #3d5446;
+
+  /* Ink — parchment tones */
+  --ink-strong: #efe9da;
+  --ink-body: #d6d1c2;
+  --ink-secondary: #b8b4a2;
+  --ink-muted: #a69e86;
+  --ink-on-deep: #f1ece0;
+  --ink-on-deep-muted: #b3c6b8;
+
+  /* Brand & signal — lifted for dark grounds; fills carry dark ink */
+  --brand-green: #8acba3;
+  --brand-green-hover: #a6dbb9;
+  --brand-green-tint: #203a2c;
+  --brand-brass: #c9a55a;
+  --brand-brass-text: #d9b76f;
+  --brand-brass-tint: #352b18;
+  --signal-orange: #f0895a;
+  --signal-orange-hover: #f6a47e;
+  --signal-orange-text: #f49a70;
+  --signal-orange-tint: #40231a;
+  --ink-on-brand: #0f1914;
+
+  --state-ok: #8acba3;
+  --state-elevated: #c9a55a;
+  --state-alarm: #f0895a;
+  --state-muted: #8a8268;
+
+  --line: #36443b;
+  --line-soft: #2a362f;
+  --line-control: #7b8579; /* ≥ 3:1 against inputs */
+
+  --shadow-popover: 0 6px 20px rgb(0 0 0 / 45%), 0 1px 3px rgb(0 0 0 / 35%);
+  --shadow-drawer: 0 12px 32px rgb(0 0 0 / 55%);
+  --backdrop: rgb(0 0 0 / 60%);
+  --scrim: rgb(0 0 0 / 55%);
+
+  --logo-plate: #f3efe4;
+  --logo-plate-pad: 3px;
+
+  --map-water: #1b2b2a;
+  --map-road: #2e3c33;
+  --map-road-casing: #415046;
+  --map-county-line: #4d5a4e;
+  --map-place: #a39c84;
+  --map-shield-text: #b8b4a2;
+  --map-control-icon-filter: invert(0.88);
+
+  /* Colour-derived tokens are restated so scoped themes resolve their own lines. */
+  --border: var(--border-w) solid var(--line);
+  --border-soft: var(--border-w) solid var(--line-soft);
+  --shadow-overlay: 0 1px 0 var(--line);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    color-scheme: dark;
+
+    /* Surfaces — night forest grounds; elevation gets lighter, never greyer */
+    --surface-page: #121a16;
+    --surface-card: #18221c;
+    --surface-banner: #1c2720;
+    --surface-raised: #212e26;
+    --surface-hero: #16211b;
+    --surface-deep: #2a3d31; /* toasts stay distinct by sitting above the page */
+    --surface-deep-line: #3d5446;
+
+    /* Ink — parchment tones */
+    --ink-strong: #efe9da;
+    --ink-body: #d6d1c2;
+    --ink-secondary: #b8b4a2;
+    --ink-muted: #a69e86;
+    --ink-on-deep: #f1ece0;
+    --ink-on-deep-muted: #b3c6b8;
+
+    /* Brand & signal — lifted for dark grounds; fills carry dark ink */
+    --brand-green: #8acba3;
+    --brand-green-hover: #a6dbb9;
+    --brand-green-tint: #203a2c;
+    --brand-brass: #c9a55a;
+    --brand-brass-text: #d9b76f;
+    --brand-brass-tint: #352b18;
+    --signal-orange: #f0895a;
+    --signal-orange-hover: #f6a47e;
+    --signal-orange-text: #f49a70;
+    --signal-orange-tint: #40231a;
+    --ink-on-brand: #0f1914;
+
+    --state-ok: #8acba3;
+    --state-elevated: #c9a55a;
+    --state-alarm: #f0895a;
+    --state-muted: #8a8268;
+
+    --line: #36443b;
+    --line-soft: #2a362f;
+    --line-control: #7b8579; /* ≥ 3:1 against inputs */
+
+    --shadow-popover: 0 6px 20px rgb(0 0 0 / 45%), 0 1px 3px rgb(0 0 0 / 35%);
+    --shadow-drawer: 0 12px 32px rgb(0 0 0 / 55%);
+    --backdrop: rgb(0 0 0 / 60%);
+    --scrim: rgb(0 0 0 / 55%);
+
+    --logo-plate: #f3efe4;
+    --logo-plate-pad: 3px;
+
+    --map-water: #1b2b2a;
+    --map-road: #2e3c33;
+    --map-road-casing: #415046;
+    --map-county-line: #4d5a4e;
+    --map-place: #a39c84;
+    --map-shield-text: #b8b4a2;
+    --map-control-icon-filter: invert(0.88);
+  --map-control-icon-filter: invert(0.88);
+
+    /* Colour-derived tokens are restated so scoped themes resolve their own lines. */
+    --border: var(--border-w) solid var(--line);
+    --border-soft: var(--border-w) solid var(--line-soft);
+    --shadow-overlay: 0 1px 0 var(--line);
+  }
 }

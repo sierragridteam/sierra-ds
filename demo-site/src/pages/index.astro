@@ -13,6 +13,7 @@ import Field from "@sierragridteam/design-system/components/Field.astro";
 import Callout from "@sierragridteam/design-system/components/Callout.astro";
 import EmptyState from "@sierragridteam/design-system/components/EmptyState.astro";
 import Icon from "@sierragridteam/design-system/components/Icon.astro";
+import ThemeSwitcher from "@sierragridteam/design-system/components/ThemeSwitcher.astro";
 
 const swatches = [
   ["--surface-page", "Page"],
@@ -31,6 +32,7 @@ const swatches = [
   ["--ink-body", "Ink body"],
   ["--ink-secondary", "Ink secondary"],
   ["--ink-muted", "Ink muted"],
+  ["--ink-on-brand", "Ink on brand"],
   ["--line", "Line"],
   ["--line-control", "Line control"],
 ];
@@ -80,6 +82,7 @@ const icons = [
   sections={[
     { id: "principles", label: "Principles" },
     { id: "colour", label: "Colour" },
+    { id: "theme", label: "Theme" },
     { id: "type", label: "Type" },
     { id: "buttons", label: "Buttons" },
     { id: "forms", label: "Forms" },
@@ -182,6 +185,65 @@ const icons = [
                 <div class="sg__chip" style={`background: var(${token})`}></div>
                 <span class="sg__swatch-label">{label}</span>
                 <code class="sg__swatch-token">{token}</code>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="theme">
+          <div class="section-header">
+            <h2>Light and dark</h2>
+            <p>
+              The same tokens in two grounds. Choose light, dark or follow the
+              system; the choice persists on this site.
+            </p>
+          </div>
+          <Card>
+            <div class="sg__row">
+              <ThemeSwitcher />
+              <ThemeSwitcher compact label="Colour theme (compact)" />
+              <span class="meta" id="theme-status" aria-live="polite"></span>
+            </div>
+            <p class="meta sg__theme-help">
+              Both switchers, and the one in the header, stay in step. Place{" "}
+              <code>ThemeScript</code> in the head to apply the stored choice
+              before first paint. A <code>data-theme</code> of{" "}
+              <code>light</code> or <code>dark</code> also themes a single
+              region, as in the comparison below.
+            </p>
+          </Card>
+          <div class="sg__themes">
+            {["light", "dark"].map((theme) => (
+              <div class="sg__theme" data-theme={theme}>
+                <span class="kicker">{theme === "light" ? "Parchment" : "Night forest"}</span>
+                <h3>{theme === "light" ? "Light theme" : "Dark theme"}</h3>
+                <p class="meta">
+                  Net check-in opens at 19:00 PT on the Ebbetts Pass repeater.
+                </p>
+                <div class="sg__row">
+                  <Button size="sm">Check in</Button>
+                  <Button size="sm" variant="secondary">Later</Button>
+                  <Button size="sm" variant="danger">Suspend</Button>
+                </div>
+                <div class="sg__row">
+                  <Badge tone="ok">Active</Badge>
+                  <Badge tone="elevated">Pending</Badge>
+                  <Badge tone="alarm">Suspended</Badge>
+                  <Badge tone="deep">Admin</Badge>
+                </div>
+                <input
+                  class="input"
+                  aria-label={`Call sign (${theme} sample)`}
+                  placeholder="KN6ABC"
+                />
+                <Callout tone="brass" title="Waiting for approval">
+                  An admin will review your request.
+                </Callout>
+                <div class="sg__theme-chips" aria-hidden="true">
+                  {["--surface-page", "--surface-card", "--surface-raised", "--brand-green", "--brand-brass", "--signal-orange", "--ink-strong"].map((token) => (
+                    <span style={`background: var(${token})`} title={token}></span>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -908,6 +970,36 @@ The practice net runs **Tuesdays at 19:00 PT**.
   .sg__rules li::marker {
     color: var(--brand-brass-text);
   }
+  .sg__theme-help {
+    margin-top: var(--space-3);
+  }
+  .sg__themes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+  .sg__theme {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    padding: var(--space-5);
+    border: var(--border);
+    border-radius: var(--radius);
+  }
+  .sg__theme .sg__row + .sg__row {
+    margin-top: 0;
+  }
+  .sg__theme-chips {
+    display: flex;
+    gap: var(--space-1);
+  }
+  .sg__theme-chips span {
+    flex: 1;
+    height: var(--space-6);
+    border: var(--border);
+    border-radius: var(--radius-sm);
+  }
   .sg__swatches {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -989,6 +1081,11 @@ The practice net runs **Tuesdays at 19:00 PT**.
   import { openDialog } from "@sierragridteam/design-system/lib/dialog";
   import { toast } from "@sierragridteam/design-system/lib/toast";
   import { el } from "@sierragridteam/design-system/lib/dom";
+  import {
+    getThemeState,
+    onThemeChange,
+    type ThemeState,
+  } from "@sierragridteam/design-system/lib/theme";
   document.querySelector("#density")?.addEventListener("change", (event) => {
     const value = (event.target as HTMLButtonElement).value;
     document.querySelector<HTMLElement>(".sg__preview")!.dataset.density =
@@ -1008,6 +1105,15 @@ The practice net runs **Tuesdays at 19:00 PT**.
       el("p", {}, "Native dialog with keyboard dismissal and focus handling."),
     );
   });
+  const themeStatus = document.querySelector<HTMLElement>("#theme-status")!;
+  const describeTheme = ({ preference, theme }: ThemeState) => {
+    themeStatus.textContent =
+      preference === "system"
+        ? `Following the system: ${theme}.`
+        : `Showing ${theme}.`;
+  };
+  describeTheme(getThemeState());
+  onThemeChange(describeTheme);
   document
     .querySelector("#toast-demo")
     ?.addEventListener("click", () => toast("Changes saved."));

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "./BaseLayout.astro";
 import Logo from "@sierragridteam/design-system/components/Logo.astro";
+import ThemeSwitcher from "@sierragridteam/design-system/components/ThemeSwitcher.astro";
 interface Props {
   title: string;
   description?: string;
@@ -26,6 +27,7 @@ const current = Astro.url.pathname.replace(/\/$/, "") || "/";
         </a>
         <a href="/charts" aria-current={current === "/charts" ? "page" : undefined}>Charts</a>
       </nav>
+      <ThemeSwitcher compact class="demo-theme" />
     </div>
   </header>
   <main id="main" class="demo-shell">
@@ -56,6 +58,7 @@ const current = Astro.url.pathname.replace(/\/$/, "") || "/";
     padding: var(--space-3) var(--gutter);
   }
   .demo-pages {
+    margin-left: auto;
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);

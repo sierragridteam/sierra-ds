@@ -4,7 +4,7 @@ The shared Astro components, CSS tokens and browser UI primitives extracted from
 
 ## Local review
 
-Use Node >=26.13.0 and pnpm 12.18.0. Run `pnpm install`, then `pnpm run dev` and open the URL Astro prints. The demo catalog includes typography, palette, forms, tables, states, shell patterns and interactive dialog/toast examples. Density and width controls support alternate configurations. Use your browser viewport controls to test actual media-query breakpoints.
+Use Node >=26.13.0 and pnpm 12.18.0. Run `pnpm install`, then `pnpm run dev` and open the URL Astro prints. The demo catalog includes light/dark themes, typography, palette, forms, tables, states, shell patterns and interactive dialog/toast examples. Density and width controls support alternate configurations. Use your browser viewport controls to test actual media-query breakpoints.
 
 `pnpm run check` checks the demo; `pnpm run build` produces its static site.
 
@@ -55,6 +55,41 @@ Use `Field` with the same `for` value to label it. An optional `name` submits th
 selected value through a hidden input. The trigger exposes `.value` and emits
 bubbling `input` and `change` events. It supports arrow keys, Home/End, typeahead,
 Enter/Space selection, Escape cancellation, and outside-click dismissal.
+
+## Dark mode and theme switching (0.6)
+
+Light remains the default. To offer dark mode, render `ThemeScript` in `<head>`
+and a `ThemeSwitcher` wherever people set preferences (the header in the demo):
+
+```astro
+---
+import ThemeScript from '@sierragridteam/design-system/components/ThemeScript.astro';
+import ThemeSwitcher from '@sierragridteam/design-system/components/ThemeSwitcher.astro';
+---
+<head><ThemeScript /></head>
+<!-- … -->
+<ThemeSwitcher compact />
+```
+
+The preference is `data-theme` on `<html>`: `light`, `dark` or `system` (follow
+the operating system). `ThemeScript` applies the stored choice before first paint;
+its `fallback` (default `system`) applies when nothing is stored and `<html>` has
+no valid `data-theme`. Without `ThemeScript` or the attribute, pages stay light.
+The choice is stored in `localStorage` under `sierra-theme`, so it is per origin;
+pass the same `storageKey` to both components to change it.
+
+`ThemeSwitcher` is a native radio group (Light, Dark, System) with arrow-key
+navigation. `compact` shows icons only; `label` sets the group's accessible name.
+It is hidden until its script runs. Multiple switchers, other tabs and OS changes
+stay in sync. `data-theme="light"` or `"dark"` on any element themes just that
+region.
+
+`lib/theme` exports `getThemeState()` (`{ preference, theme }`),
+`setThemePreference()`, `resolveTheme()`, `readStoredThemePreference()` and
+`onThemeChange(callback, { signal })` for canvas/WebGL output that must
+re-read tokens. `GeoJSONMap` already rebuilds on theme changes. Project overrides
+of colour tokens must now cover both themes; filled controls use the new
+`--ink-on-brand` token rather than `--surface-page`.
 
 ## Data and maps
 

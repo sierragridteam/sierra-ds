@@ -11,7 +11,6 @@
 }
 
 html {
-  color-scheme: light;
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--topbar-h) + var(--space-4));
   -webkit-text-size-adjust: 100%;
@@ -27,6 +26,12 @@ body {
   background: var(--surface-page);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizelegibility;
+}
+
+/* A subtree with its own data-theme paints its own ground (zero specificity). */
+:where([data-theme]:not(:root)) {
+  color: var(--ink-body);
+  background: var(--surface-page);
 }
 
 h1,
@@ -122,7 +127,7 @@ button {
   z-index: var(--z-skiplink);
   padding: var(--space-2) var(--space-4);
   background: var(--brand-green);
-  color: var(--surface-page);
+  color: var(--ink-on-brand);
   font-size: var(--fs-label-lg);
   font-weight: var(--fw-semibold);
   letter-spacing: var(--tracking-label);
