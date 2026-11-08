@@ -1,0 +1,36 @@
+---
+import { buildTimeSeries, formatChartTime, type TimeSeriesChartOptions } from '../lib/time-series';
+interface Props extends TimeSeriesChartOptions { id?: string }
+const { id, ...options } = Astro.props;
+const model = buildTimeSeries(options);
+---
+<sierra-time-series id={id} data-options={JSON.stringify(options)}>
+  <figure class="ds-time-series" aria-label={options.label}>
+    <figcaption><strong>{options.label}</strong>{options.description && <p>{options.description}</p>}</figcaption>
+    <p>Time: UTC · Values: {options.unit || 'unitless'}</p>
+    <details>
+      <summary>View data table</summary>
+      <div class="table-wrap" tabindex="0" role="region" aria-label={`${options.label} values`}>
+        <table class="table">
+          <caption>{options.label} — {options.unit || 'unitless'}, UTC</caption>
+          <thead><tr><th scope="col">Series</th><th scope="col">Time (UTC)</th><th scope="col">Value</th></tr></thead>
+          <tbody>{model.series.flatMap(series => series.points.map(point => <tr><td>{series.label}</td><td>{formatChartTime(point.time)}</td><td>{point.value === null ? 'Not reported' : point.value}</td></tr>))}</tbody>
+        </table>
+      </div>
+    </details>
+    {model.empty && <p>No numeric samples. Data availability is determined by the source.</p>}
+  </figure>
+</sierra-time-series>
+<script>
+  import { renderTimeSeries } from '../lib/time-series-render';
+  import type { TimeSeriesChartOptions, TimeSeries } from '../lib/time-series';
+  class SierraTimeSeries extends HTMLElement {
+    private current?: TimeSeriesChartOptions;
+    connectedCallback() { this.options = this.current ?? JSON.parse(this.dataset.options!); }
+    get options(): TimeSeriesChartOptions { return structuredClone(this.current!); }
+    set options(value: TimeSeriesChartOptions) { renderTimeSeries(this,value); this.current=structuredClone(value); }
+    get series(): TimeSeries[] { return this.options.series; }
+    set series(value: TimeSeries[]) { this.options = { ...this.options, series:value }; }
+  }
+  if (!customElements.get('sierra-time-series')) customElements.define('sierra-time-series',SierraTimeSeries);
+</script>

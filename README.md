@@ -142,3 +142,59 @@ reserved. This design system is derived from the organization's website and
 members site; public source availability does not grant permission to reuse the
 code, design, name, or brand assets. Third-party dependencies retain their own
 licenses. Contact `info@sierragridteam.org` for permission.
+
+## Time series (0.5)
+
+`TimeSeriesChart` is a framework-free SVG chart with a semantic sample table that
+also works without JavaScript. The `/charts` demo uses synthetic data. Import
+`components/TimeSeriesChart.astro` and the existing `styles/global.css`:
+
+```astro
+<TimeSeriesChart id="signal-chart" label="Gateway signal" unit="dB"
+  maxGapMs={60 * 60 * 1000}
+  series={[{ id: 'snr', label: 'SNR', points: [
+    { time: Date.UTC(2026, 10, 1), value: 0 },
+    { time: Date.UTC(2026, 10, 1, 1), value: null },
+  ] }]} />
+```
+
+Props: required `label` and `series`; optional `id`, `description`, `unit`,
+`timeDomain: [number, number]`, `valueDomain: [number, number]`, `maxGapMs`.
+Each series has a unique `id`, `label`, and `points: { time: number,
+value: number | null }[]`. Time is Unix milliseconds. All labels/table times
+are deterministic UTC ISO dates (including seconds), independent of the browser
+locale/timezone. All series share one value unit and axis. Explicit domains must
+be finite and increasing. Automatic domains cover samples and expand constant
+values. Samples sort by time without mutating input; invalid timestamps are
+omitted, nonfinite values become missing. Nulls break lines, zero is a reading,
+and `maxGapMs` optionally breaks unsampled intervals. No resampling, smoothing,
+aggregation or extrapolation occurs. SVG clips to explicit domains; the table
+retains all valid-timestamp samples. Four visual series styles repeat; prefer up
+to four overlaid series for readability, or use separate charts.
+
+Update after custom-element registration (including client-fetched initial data):
+
+```ts
+import type { TimeSeriesChartElement } from
+  '@sierragridteam/design-system/lib/time-series';
+await customElements.whenDefined('sierra-time-series');
+const chart = document.querySelector<TimeSeriesChartElement>('#signal-chart')!;
+chart.series = [{ id: 'snr', label: 'SNR', points: samples }];
+// To change the unit, window, title or other configuration atomically:
+chart.options = { ...chart.options, valueDomain: [-20, 20] };
+```
+
+Setters replace chart, legend and table together; invalid configurations throw
+and preserve the previous rendering. Getters return copies: edit and reassign
+rather than mutating a returned array. The open table disclosure stays open across
+updates. The pure `buildTimeSeries(options)` export supplies normalized 0–100
+segments and domains; `formatChartTime(time)` supplies UTC labels.
+
+Fetching, source freshness, provenance and query state remain consumer concerns.
+Compose `DataStatus` for loading/stale/unavailable states; an empty chart does not
+assert that collection succeeded. Avoid feeding event revisions as regularly
+sampled telemetry unless the data source guarantees that interpretation.
+
+Run `pnpm test`, `pnpm check`, `pnpm build`, then `pnpm exec playwright install
+chromium` and `pnpm test:browser`. Browser contracts exercise updates, missing/zero
+readings, keyboard table access, no-JavaScript values and mobile overflow.

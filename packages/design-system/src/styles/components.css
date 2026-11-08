@@ -2233,3 +2233,24 @@ sierra-copy [data-copy-check] {
 .ds-values tr:last-child > :is(th, td) {
   border-bottom: 0;
 }
+
+/* Time series: colors identify series, never source health or severity. */
+.ds-time-series { margin: 0; min-width: 0; }
+.ds-time-series svg { display: block; width: 100%; height: auto; overflow: hidden; }
+.ds-time-series text { fill: var(--ink-secondary); font-family: var(--font-mono); font-size: var(--fs-small); }
+.ds-time-series figcaption p, .ds-time-series > p { color: var(--ink-secondary); font-size: var(--fs-small); }
+.ds-chart-axis { fill: none; stroke: var(--line-control); }
+.ds-chart-series { fill: none; stroke: currentColor; stroke-width: 2; }
+.ds-chart-dot { fill: currentColor; }
+.ds-chart-series-0 { color: var(--brand-green); }
+.ds-chart-series-1 { color: var(--brand-brass-text); }
+.ds-chart-series-2 { color: var(--ink-secondary); }
+.ds-chart-series-3 { color: var(--ink-strong); }
+.ds-chart-legend { display: flex; flex-wrap: wrap; gap: var(--space-4); list-style: none; padding: 0; }
+.ds-chart-legend li { overflow-wrap: anywhere; }
+.ds-chart-swatch { display: inline-block; width: var(--space-6); border-top: 2px solid currentColor; margin-right: var(--space-2); vertical-align: middle; }
+.ds-chart-swatch.ds-chart-series-1 { border-top-style: dashed; }
+.ds-chart-swatch.ds-chart-series-2 { border-top-style: dotted; }
+.ds-chart-swatch.ds-chart-series-3 { border-top-style: double; border-top-width: 3px; }
+.ds-time-series summary { cursor: pointer; }
+.ds-time-series td { overflow-wrap: anywhere; }
