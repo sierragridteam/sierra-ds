@@ -75,6 +75,8 @@ The preference is `data-theme` on `<html>`: `light`, `dark` or `system` (follow
 the operating system). `ThemeScript` applies the stored choice before first paint;
 its `fallback` (default `system`) applies when nothing is stored and `<html>` has
 no valid `data-theme`. Without `ThemeScript` or the attribute, pages stay light.
+Sites using Astro's `ClientRouter` keep the theme across navigations:
+`ThemeScript` copies it onto the incoming document before each swap.
 The choice is stored in `localStorage` under `sierra-theme`, so it is per origin;
 pass the same `storageKey` to both components to change it.
 

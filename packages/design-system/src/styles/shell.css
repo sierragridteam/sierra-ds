@@ -103,6 +103,21 @@
   border-top: var(--border);
 }
 
+/* Theme switcher row above the user chip: icons share the full width. */
+.sidebar__theme {
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.sidebar__theme fieldset {
+  display: flex;
+  width: 100%;
+}
+
+.sidebar__theme .theme-switcher__option {
+  flex: 1 1 0;
+}
+
 /* Compact chip: 240px has to fit avatar, email, and the sign-out button. */
 .sidebar__footer .avatar {
   width: 28px;
@@ -303,6 +318,12 @@
   color: var(--ink-muted);
 }
 
+.auth__theme {
+  display: block;
+  width: fit-content;
+  margin: var(--space-3) auto 0;
+}
+
 /* Boot screen: holds auth-dependent pages until the session is known (src/lib/boot.ts) */
 html[data-boot='loading'] body > :not(.boot) {
   visibility: hidden;
@@ -351,8 +372,12 @@ html[data-boot='ready'] .boot {
 }
 
 .boot__mark {
+  box-sizing: content-box;
   height: 38px;
   width: auto;
+  padding: var(--logo-plate-pad, 0);
+  border-radius: var(--radius-sm);
+  background: var(--logo-plate, transparent);
 }
 
 .boot__track {

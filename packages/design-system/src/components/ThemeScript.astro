@@ -5,6 +5,9 @@
  *
  * Precedence: stored preference, then a valid data-theme already on <html>,
  * then `fallback`. Keep `storageKey` equal to the ThemeSwitcher's.
+ *
+ * Astro's ClientRouter replaces <html> attributes on each navigation, so the
+ * current theme is copied onto the incoming document before the swap.
  */
 import type { ThemePreference } from "../lib/theme";
 interface Props {
@@ -27,4 +30,11 @@ const { fallback = "system", storageKey = "sierra-theme" } = Astro.props;
     : valid(root.dataset.theme)
       ? root.dataset.theme
       : fallback;
+  if (!window.__sierraThemeSwap) {
+    window.__sierraThemeSwap = true;
+    document.addEventListener("astro:before-swap", (event) => {
+      const theme = document.documentElement.dataset.theme;
+      if (valid(theme)) event.newDocument.documentElement.dataset.theme = theme;
+    });
+  }
 </script>

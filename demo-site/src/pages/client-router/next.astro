@@ -1,0 +1,11 @@
+---
+/** Fixture: ThemeScript must survive Astro ClientRouter navigation (browser tests). */
+import { ClientRouter } from "astro:transitions";
+import DemoLayout from "../../layouts/DemoLayout.astro";
+---
+
+<DemoLayout title="Client-side navigation" sections={[]}>
+  <ClientRouter slot="head" />
+  <h1>Second page</h1>
+  <p><a href="/client-router" id="client-nav">Navigate without reloading</a></p>
+</DemoLayout>

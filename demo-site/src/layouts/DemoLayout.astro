@@ -12,6 +12,7 @@ const current = Astro.url.pathname.replace(/\/$/, "") || "/";
 ---
 
 <BaseLayout title={title} description={description}>
+  <slot name="head" slot="head" />
   <a class="skip-link" href="#main">
     Skip to content
   </a>

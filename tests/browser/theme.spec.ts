@@ -79,3 +79,16 @@ for (const path of ["/", "/data", "/charts"]) {
     expect(results.violations.flatMap((v) => v.nodes.map((n) => n.target))).toEqual([]);
   });
 }
+
+test("the theme survives Astro ClientRouter navigation", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
+  await page.goto("/client-router");
+  await header(page).getByRole("radio", { name: "Dark" }).check();
+  await page.evaluate(() => ((window as any).__beforeNavigation = true));
+  await page.click("#client-nav");
+  await expect(page.locator("h1")).toHaveText("Second page");
+  expect(await page.evaluate(() => (window as any).__beforeNavigation)).toBe(true);
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  expect(await ground(page)).toBe(DARK);
+  await expect(header(page).getByRole("radio", { name: "Dark" })).toBeChecked();
+});
