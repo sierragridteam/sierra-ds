@@ -36,7 +36,12 @@ const width = Math.round((height * 271) / 154);
   {wordmark && (
     <span class="logo__text">
       <span class="logo__org">S.I.E.R.R.A</span>
-      {siteName && <span class="logo__app">{siteName}</span>}
+      {/* Preserve a word separator in rendered text for label-in-name matching. */}
+      {siteName && (
+        <>
+          {" "}<span class="logo__app">{siteName}</span>
+        </>
+      )}
     </span>
   )}
 </a>
