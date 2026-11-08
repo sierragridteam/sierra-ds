@@ -1,9 +1,12 @@
 packages:
   - 'packages/*'
   - 'demo-site'
-onlyBuiltDependencies:
-  - esbuild
-  - sharp
+allowBuilds:
+  esbuild: true
+  sharp: true
 # Keep the WASM runtime compatible with Astro's emnapi 1.x bridge.
 overrides:
   '@emnapi/runtime': 1.11.3
+
+# Resolve the current stable releases; the committed lockfile fixes exact versions.
+minimumReleaseAge: 0
