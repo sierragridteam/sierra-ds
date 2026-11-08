@@ -4,7 +4,7 @@ The shared Astro components, CSS tokens and browser UI primitives extracted from
 
 ## Local review
 
-Use Node >=22.12 and pnpm 10.26.0. Run `pnpm install`, then `pnpm run dev` and open the URL Astro prints. The demo catalog includes typography, palette, forms, tables, states, shell patterns and interactive dialog/toast examples. Density and width controls support alternate configurations. Use your browser viewport controls to test actual media-query breakpoints.
+Use Node >=26.13.0 and pnpm 12.18.0. Run `pnpm install`, then `pnpm run dev` and open the URL Astro prints. The demo catalog includes typography, palette, forms, tables, states, shell patterns and interactive dialog/toast examples. Density and width controls support alternate configurations. Use your browser viewport controls to test actual media-query breakpoints.
 
 `pnpm run check` checks the demo; `pnpm run build` produces its static site.
 
@@ -43,11 +43,11 @@ publish permission and no environment name.
 
 See `docs/design-system.md` for inherited visual principles and token rationale.
 
-pnpm is pinned in `package.json`. To activate it with Corepack, run
-`corepack enable && corepack prepare pnpm@10.26.0 --activate`.
+pnpm is pinned in `package.json`. Install it with `npm install --global pnpm@12.18.0`.
 Commit `pnpm-lock.yaml`; CI installs with `pnpm install --frozen-lockfile`.
 The workspace pins `@emnapi/runtime` to 1.11.3 because the 2.0 beta selected during
-import is incompatible with Astro's WASM bridge. Revisit that override when upgrading Astro.
+import is incompatible with Astro's WASM bridge. TypeScript stays on the latest supported 6.x release because Astro check does not
+yet support TypeScript 7. Map components require MapLibre GL 6 starting in 0.4.0.
 
 `Select.astro` provides a single-choice styled popover. Pass a unique `id`, an
 `options` array of `{ value, label, disabled? }`, and an optional initial `value`.

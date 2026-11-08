@@ -85,7 +85,9 @@ const {
   )}
 </sierra-geo-map>
 <script>
-  import maplibregl from "maplibre-gl";
+  import * as maplibregl from "maplibre-gl";
+  import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+  maplibregl.setWorkerUrl(workerUrl);
   import type { FeatureCollection, Geometry } from "geojson";
   import "maplibre-gl/dist/maplibre-gl.css";
   import { restyleBasemap, type StyleDoc } from "../lib/basemap-style";
