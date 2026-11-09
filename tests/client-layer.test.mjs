@@ -82,3 +82,20 @@ test("panel cards put kicker and title in the header and the source in the foote
   assert.match(out, /<span class="kicker">Looking ahead<\/span>\s*<h2 class="card__title">Weather<\/h2>/);
   assert.match(out, /<p class="card__source">NWS<\/p>/);
 });
+
+test("list params fall back when nothing usable remains; invalid dates are dropped", () => {
+  assert.deepEqual(parseQuery(schema, "?layers=BOGUS").layers, ["ALL"]);
+  assert.deepEqual(parseQuery(schema, "?layers=").layers, []);
+  assert.equal(toQuery(schema, { from: new Date("nope") }), "");
+});
+
+test("timestamps carry their zone", async () => {
+  const { formatTimestamp } = await import("../packages/design-system/src/lib/chart-model.ts");
+  assert.equal(formatTimestamp(Date.UTC(2026, 10, 9, 22, 5)), "Mon 9 Nov, 14:05 PT");
+  assert.equal(formatTimestamp(Date.UTC(2026, 10, 9, 22, 5), "UTC"), "Mon 9 Nov, 22:05 UTC");
+});
+
+test("a panel card renders the same element on server and client paths", () => {
+  assert.match(toHTML(card({ variant: "panel", title: "T" }, "B")), /^<section/);
+  assert.match(toHTML(card({ title: "T", as: "article", class: "x" }, "B")), /^<article[^>]*class="[^"]*\bx\b/);
+});

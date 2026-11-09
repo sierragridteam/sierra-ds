@@ -1,12 +1,17 @@
 ---
-/** MoreLink — "Browse all events →": the one style for a link to a section's full view. Client: `moreLink()`. */
+/**
+ * MoreLink — "Browse all events →": the one style for a link to a section's full
+ * view. Text by `text` prop or as content: <MoreLink href="/events">Browse all events</MoreLink>.
+ * Client: `moreLink()` from lib/ui.
+ */
 import { toHTML } from "../lib/ssr";
 import { moreLink } from "../lib/ui";
 interface Props {
   href: string;
-  text: string;
+  text?: string;
 }
 const { href, text } = Astro.props;
+const slotted = Astro.slots.has("default") ? (await Astro.slots.render("default")).replace(/<[^>]*>/g, "").trim() : "";
 ---
 
-<Fragment set:html={toHTML(moreLink(href, text))} />
+<Fragment set:html={toHTML(moreLink(href, text ?? slotted))} />

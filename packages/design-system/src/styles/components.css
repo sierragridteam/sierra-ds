@@ -485,7 +485,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  flex: none;
+  min-width: 0;
   color: var(--brand-green);
   font-size: var(--fs-ui);
   font-weight: var(--fw-medium);
@@ -551,6 +551,10 @@
   gap: var(--space-5);
   align-items: stretch;
 }
+/* A panel inside a wrapper (e.g. a region host) still fills its row. */
+.columns > * > .card--panel:only-child {
+  height: 100%;
+}
 @media (min-width: 960px) {
   .columns--wide-narrow {
     grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
@@ -615,6 +619,27 @@
   color: inherit;
   text-decoration: none;
 }
+/* The whole row follows the title link; the link stays the one focus stop. */
+.feed-item--link {
+  position: relative;
+  cursor: pointer;
+}
+.feed-item--link .feed-item__title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+/* Controls inside a row sit above the row's link. */
+.feed-item--link :is(button, input, select, textarea, a:not(.feed-item__title a)) {
+  position: relative;
+  z-index: 1;
+}
+.feed-item--link:hover {
+  background: color-mix(in srgb, var(--brand-green-tint) 50%, transparent);
+}
+.feed-item--link.is-selected:hover {
+  background: var(--brand-green-tint);
+}
 .feed-item__title a:hover {
   color: var(--brand-green);
   text-decoration: underline;
@@ -645,6 +670,7 @@
 /* Summary banner: the one dark headline block on an overview. */
 .summary-banner {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   padding: var(--space-6) var(--space-6) var(--space-5);
   border-radius: var(--radius);
@@ -711,6 +737,7 @@
 .summary-banner .badge--elevated::before { background: var(--state-elevated-on-deep); }
 .summary-banner .badge--alarm::before { background: var(--state-alarm-on-deep); }
 .summary-banner a {
+  overflow-wrap: anywhere;
   color: var(--ink-on-deep);
   text-underline-offset: 3px;
 }
@@ -723,7 +750,6 @@
   vertical-align: middle;
 }
 sierra-data-diff,
-sierra-select,
 sierra-geo-map {
   display: block;
   min-width: 0;
@@ -1255,6 +1281,7 @@ sierra-theme-switcher:not(:defined) {
 .theme-switcher fieldset,
 .segmented fieldset {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 2px;
   min-width: 0;
   margin: 0;
@@ -1309,7 +1336,7 @@ sierra-theme-switcher:not(:defined) {
   background: var(--brand-green-tint);
   color: var(--brand-green);
   font-weight: var(--fw-semibold);
-  box-shadow: inset 0 0 0 var(--border-w) color-mix(in srgb, var(--brand-green) 35%, transparent);
+  box-shadow: inset 0 0 0 var(--border-w) var(--brand-green);
 }
 
 .theme-switcher__option:has(:focus-visible),
@@ -2780,4 +2807,22 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
 
 @media (forced-colors: active) {
   .ds-chart-key__swatch, .ds-sparkline__bar, .ds-sparkline__dot { forced-color-adjust: none; }
+}
+
+/* Forced colours: selection must not rely on tints, shadows or weight alone. */
+@media (forced-colors: active) {
+  .feed-item.is-selected {
+    border-left: 4px solid Highlight;
+  }
+  .choice:has(:checked),
+  .choice.is-selected {
+    outline: 3px solid Highlight;
+    outline-offset: -3px;
+  }
+  .segmented__option:has(:checked),
+  .theme-switcher__option:has(:checked) {
+    forced-color-adjust: none;
+    background: Highlight;
+    color: HighlightText;
+  }
 }

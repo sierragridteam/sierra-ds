@@ -61,7 +61,7 @@ export const param = {
         const t = Date.parse(raw);
         return Number.isFinite(t) ? new Date(t) : fallback;
       },
-      format: (v) => (v === null || isDefault(v, fallback) ? null : v.toISOString()),
+      format: (v) => (v === null || !Number.isFinite(v.getTime()) || isDefault(v, fallback) ? null : v.toISOString()),
     };
   },
   /** Comma-separated list, e.g. layers=MESH,WILDFIRE. */
@@ -70,7 +70,9 @@ export const param = {
       parse(raw) {
         if (raw === null) return [...fallback];
         const items = raw.split(",").filter(Boolean) as T[];
-        return allowed ? items.filter((i) => allowed.includes(i)) : items;
+        const kept = allowed ? items.filter((i) => allowed.includes(i)) : items;
+        // Nothing usable (e.g. only unknown values): fall back, like other params.
+        return kept.length || !raw ? kept : [...fallback];
       },
       format: (v) => (v.join(",") === fallback.join(",") ? null : v.join(",")),
     };

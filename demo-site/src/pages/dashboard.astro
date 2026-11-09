@@ -37,7 +37,7 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
 >
   <div class="stack dashboard">
     <div id="summary">
-    <SummaryBanner kicker="Ebbetts Pass corridor" meta="3 active · 2 scheduled · synthetic data" asideTitle="Worth your attention">
+    <SummaryBanner level={1} kicker="Ebbetts Pass corridor" meta="3 active · 2 scheduled · synthetic data" asideTitle="Worth your attention">
       {REPORTS.length} reports are active or scheduled. {severe.length} are severe.
       <ul slot="aside">
         {severe.map((r) => (
@@ -81,7 +81,7 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
           </div>
         </div>
         <div id="detail-region">
-          <Card variant="panel" kicker="Selected report" title={selected.title} source={selected.source}>
+          <Card variant="panel" level={3} kicker="Selected report" title={selected.title} source={selected.source}>
             <p class="meta">{selected.place}</p>
             <DataDiff label="Latest revision" changes={diffValues(selected.previous, selected.current)} />
           </Card>
@@ -122,7 +122,7 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
   import { defineChartElements, type LineChartElement } from "@sierragridteam/design-system/lib/charts";
   import type { SierraGeoMap } from "@sierragridteam/design-system/lib/geo-map";
   import { diffValues } from "@sierragridteam/design-system/lib/data-values";
-  import { CATEGORIES, REPORTS, STATIONS, forecast, label, toCelsius } from "../fixtures/dashboard";
+  import { CATEGORIES, REPORTS, STATIONS, forecast, label, toCelsius, type Report } from "../fixtures/dashboard";
 
   defineDataDiff();
   defineChartElements();
@@ -146,22 +146,24 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
     const feed = root.querySelector<HTMLElement>("#feed-region")!;
     region(feed, state, (s) => html`
       ${segmented({ label: "Category", name: "category", options: [...CATEGORIES], value: s.category, onChange: (category) => state.set({ category: category as S["category"] }) })}
-      <div class="feed" aria-live="polite">
+      <p class="sr-only" role="status">${visible(s).length} of ${REPORTS.length} reports${s.category === "all" ? "" : `, ${label(s.category as Report["category"])}`}</p>
+      <div class="feed">
         ${repeat(visible(s), (r) => r.id, (r, i) =>
-          feedItem({ ...r, tags: [label(r.category), r.status], href: state.href({ report: r.id }), lead: i === 0, selected: r.id === s.report }))}
+          feedItem({
+            ...r,
+            tags: [label(r.category), r.status],
+            href: state.href({ report: r.id }),
+            onSelect: () => state.set({ report: r.id }),
+            lead: i === 0,
+            selected: r.id === s.report,
+          }))}
       </div>`, { signal });
-    feed.addEventListener("click", (event) => {
-      const link = (event.target as Element).closest<HTMLAnchorElement>(".feed-item__title a");
-      if (!link) return;
-      event.preventDefault();
-      state.set({ report: new URL(link.href).searchParams.get("report")! });
-    }, { signal });
 
     // Detail: the card re-renders around a DataDiff element that receives new props in place.
     region(root.querySelector<HTMLElement>("#detail-region")!, state, (s) => {
       const r = current(s);
       return card(
-        { variant: "panel", kicker: "Selected report", title: r.title, source: r.source, actions: badge(r.severity.label, { tone: r.severity.tone }) },
+        { variant: "panel", level: 3, kicker: "Selected report", title: r.title, source: r.source, actions: badge(r.severity.label, { tone: r.severity.tone }) },
         html`<p class="meta">${r.place}</p>
           <sierra-data-diff .props=${{ label: "Latest revision", changes: diffValues(r.previous, r.current) }}></sierra-data-diff>`,
       );

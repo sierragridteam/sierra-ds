@@ -1,41 +1,53 @@
-import { render } from "lit-html";
+/**
+ * <sierra-sparkline>: an inline SVG trend.
+ *
+ *   const spark = createSparkline({ label: "Temperature, 24 h", values, unit: "°F" });
+ *   spark.values = next;            // or spark.props = { ...spark.props, values: next }
+ *
+ * In a region, render `sparkline(props)` from lib/ui and pass new props through
+ * state; the element updates itself either way.
+ */
 import { buildSparkline, chartColorVar, type SparklineOptions } from "./chart-model";
-import { defineElement } from "./element";
+import { defineElement, SierraElement } from "./element";
 import { sparklineSvg } from "./ui";
 
-/** Redraw a <sierra-sparkline> from options; same markup as the server render. */
-export function renderSparkline(root: HTMLElement, options: SparklineOptions) {
-  const m = buildSparkline(options);
-  root.style.setProperty("--spark", `var(${chartColorVar(m.color)})`);
-  root.classList.remove("ds-sparkline--line", "ds-sparkline--bar");
-  root.classList.add(`ds-sparkline--${m.variant}`);
-  root.dataset.options = JSON.stringify(options);
-  root.replaceChildren();
-  render(sparklineSvg(m), root);
-}
-
-/**
- * <sierra-sparkline>: `values` and `options` setters redraw it. Inside a
- * region, pass new values through the `sparkline()` template instead.
- */
-export class SierraSparkline extends HTMLElement {
-  private current?: SparklineOptions;
-  connectedCallback() {
-    this.current ??= JSON.parse(this.dataset.options!);
+export class SierraSparkline extends SierraElement<SparklineOptions> {
+  protected template(p: SparklineOptions) {
+    return sparklineSvg(buildSparkline(p));
   }
-  get values() {
-    return [...(this.options.values ?? [])];
+  protected updated(p: SparklineOptions) {
+    const m = buildSparkline(p);
+    this.style.setProperty("--spark", `var(${chartColorVar(m.color)})`);
+    this.classList.add("ds-sparkline");
+    this.classList.toggle("ds-sparkline--line", m.variant === "line");
+    this.classList.toggle("ds-sparkline--bar", m.variant === "bar");
+  }
+  get values(): (number | null)[] {
+    return [...this.props.values];
   }
   set values(values: (number | null)[]) {
-    this.options = { ...this.options, values };
+    this.update({ values });
   }
+  /** Same as `props` (the 0.7 name). */
   get options(): SparklineOptions {
-    return structuredClone(this.current ?? JSON.parse(this.dataset.options!));
+    return this.props;
   }
   set options(value: SparklineOptions) {
-    this.current = structuredClone(value);
-    renderSparkline(this, this.current);
+    this.props = value;
   }
 }
 
 export const defineSparkline = () => defineElement("sierra-sparkline", SierraSparkline);
+
+export function createSparkline(props: SparklineOptions, { id }: { id?: string } = {}): SierraSparkline {
+  defineSparkline();
+  const el = document.createElement("sierra-sparkline") as SierraSparkline;
+  if (id) el.id = id;
+  el.props = props;
+  return el;
+}
+
+/** @deprecated Set `values` or `props` on the element instead. */
+export function renderSparkline(root: HTMLElement, options: SparklineOptions) {
+  (root as SierraSparkline).props = options;
+}

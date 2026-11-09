@@ -22,6 +22,10 @@ export class SierraCopy extends HTMLElement {
     const check = this.querySelector<HTMLElement>("[data-copy-check]")!;
     const status = this.querySelector<HTMLElement>("[role=status]")!;
     const originalTitle = button.title;
+    // Reconnected (e.g. moved by a keyed list) mid-copy: start from a clean state.
+    button.disabled = false;
+    icon.hidden = false;
+    check.hidden = true;
     button.addEventListener(
       "click",
       async () => {
@@ -51,7 +55,7 @@ export class SierraCopy extends HTMLElement {
             "Could not copy. Select the text to copy manually.";
           button.title = originalTitle;
         } finally {
-          if (!signal.aborted) button.disabled = false;
+          button.disabled = false;
         }
       },
       { signal },

@@ -54,12 +54,24 @@ browser code from `…/lib/name` (no extension).
 
 ## Compose a page
 
-The recipe every overview should follow — the `/dashboard` page of the demo is
-the reference:
+The recipe every overview should follow (the complete example under "Updating
+the page" puts it together; the repository's demo `/dashboard` page is the
+full reference):
 
 1. **Title.** `PageHeader` (kicker, title, lead, actions), or for an overview a
    single `SummaryBanner` stating the situation in one serif sentence.
-2. **Headline numbers.** `.stats` > `.stat` tiles, each with a `Sparkline`.
+2. **Headline numbers.** `.stats` > `.stat` tiles, each with a `Sparkline`:
+
+   ```html
+   <div class="stats">
+     <div class="stat">
+       <span class="stat__label">Stations online</span>
+       <span class="stat__value">7 of 8</span>
+       <Sparkline label="Stations online, last 7 days" values={[8, 8, 7, 8, 7, 7, 7]} />
+       <span class="stat__sub">Last 7 days</span>
+     </div>
+   </div>
+   ```
 3. **Sections.** `.section-header` with an `h2`, an optional `MoreLink`, and an
    optional description `p` (always shown below the title).
 4. **Lists stay on the page.** A feed is `.feed` (or `.feed feed--grid`) of
@@ -86,9 +98,9 @@ Do not:
 | Need | Astro (server) | Client code |
 | --- | --- | --- |
 | Page title | `PageHeader`, `SummaryBanner` | `summaryBanner()` |
-| Section link | `MoreLink` | `moreLink()` |
+| Section link | `MoreLink` (text as content or `text`) | `moreLink()` |
 | Panel / card | `Card` (`variant="panel"`) | `card()` |
-| Feed of reports | `FeedItem` in `.feed` | `feedItem()` |
+| Feed of reports | `FeedItem` in `.feed` | `feedItem()` (`onSelect` for list-and-detail) |
 | Status | `Badge` (ok, elevated, alarm, muted, deep) | `badge()` |
 | Notice | `Callout` (orange = risk only) | `callout()` |
 | Buttons | `Button` | `button()`/`iconButton()` in `lib/controls`, or `.btn` classes |
@@ -123,7 +135,14 @@ into a component's internals. There are two kinds of component:
   `<sierra-sparkline>`. Each has `create*(props)` and `define*()`, a typed `props`
   property (plus helpers such as `select.value`, `map.data`, `map.selected`,
   `diff.compare(a, b)`, `chart.appendPoints()`), standard events, and cleans up
-  when removed. Many prop changes in one task render once.
+  when removed. Many prop changes in one task render once. Elements add their
+  own classes; write `<sierra-line-chart .props=${p}></sierra-line-chart>` bare.
+
+Register every element a page's client code uses, once, from its module:
+`defineSelect()` (lib/select), `defineChartElements()` (lib/charts),
+`defineGeoMap()` (lib/geo-map), `defineDataDiff()` (lib/data-diff),
+`defineSparkline()` (lib/sparkline). Order does not matter: props set before
+registration are picked up. Astro components register their own.
 
 **Regions** re-render part of a page from state, keeping everything that did not
 change — the React model, without a framework:
@@ -146,6 +165,70 @@ definePage("/overview", async ({ root, signal }) => {
   `, { signal });
 });
 ```
+
+A complete list, detail and map view (filter and selection in the URL):
+
+```astro
+---
+import Card from "@sierragridteam/design-system/components/Card.astro";
+import GeoJSONMap from "@sierragridteam/design-system/components/GeoJSONMap.astro";
+---
+<section id="stations">
+  <div class="section-header"><h2>Stations</h2></div>
+  <div class="columns columns--wide-narrow">
+    <div id="list"><div class="skeleton skeleton--row"></div></div>
+    <div id="detail"></div>
+  </div>
+</section>
+<Card variant="panel" kicker="Network" title="Where stations are">
+  <GeoJSONMap slot="media" id="map" label="Stations" data={{ type: "FeatureCollection", features: [] }} labels featureList={false} />
+</Card>
+
+<script>
+  import { definePage, urlState } from "@sierragridteam/design-system/lib/app";
+  import { param } from "@sierragridteam/design-system/lib/url-state";
+  import { region } from "@sierragridteam/design-system/lib/region";
+  import { html, repeat } from "@sierragridteam/design-system/lib/template";
+  import { card, feedItem, segmented } from "@sierragridteam/design-system/lib/ui";
+  import { defineChartElements } from "@sierragridteam/design-system/lib/charts";
+  import { defineDataDiff } from "@sierragridteam/design-system/lib/data-diff";
+  import type { SierraGeoMap } from "@sierragridteam/design-system/lib/geo-map";
+  defineChartElements();
+  defineDataDiff();
+
+  definePage("/stations", async ({ root, signal }) => {
+    const state = urlState({ show: param.oneOf(["all", "offline"] as const, "all"), station: param.string("") }, { signal });
+    const stations = await loadStations(signal);            // your data
+    const visible = (s) => stations.filter((x) => s.show === "all" || !x.online);
+    const current = (s) => stations.find((x) => x.id === s.station) ?? stations[0];
+
+    region(root.querySelector("#list")!, state, (s) => html`
+      ${segmented({ label: "Show", name: "show", value: s.show,
+        options: [{ value: "all", label: "All" }, { value: "offline", label: "Offline" }],
+        onChange: (show) => state.set({ show }) })}
+      <p class="sr-only" role="status">${visible(s).length} stations</p>
+      <div class="feed">${repeat(visible(s), (x) => x.id, (x) => feedItem({
+        title: x.name, place: x.place, href: state.href({ station: x.id }),
+        onSelect: () => state.set({ station: x.id }), selected: x.id === current(s).id,
+        severity: x.online ? undefined : { tone: "alarm", label: "Offline" } }))}</div>`, { signal });
+
+    region(root.querySelector("#detail")!, state, (s) => card(
+      { variant: "panel", level: 3, kicker: "Selected", title: current(s).name },
+      html`<sierra-line-chart .props=${batteryChart(current(s))}></sierra-line-chart>
+           <sierra-data-diff .props=${{ label: "Since yesterday", changes: current(s).changes }}></sierra-data-diff>`), { signal });
+
+    const map = root.querySelector<SierraGeoMap>("#map")!;
+    map.data = toFeatures(stations);                          // { label, shortLabel } properties
+    const sync = (s) => (map.selected = stations.indexOf(current(s)));
+    sync(state.get());
+    state.subscribe(sync, { signal });
+    map.addEventListener("feature-select", (e) => state.set({ station: stations[e.detail.index].id }), { signal });
+  });
+</script>
+```
+
+On a phone the detail sits below the list; scroll it into view after a
+selection if the list is long.
 
 Rules:
 
@@ -175,10 +258,13 @@ in the URL. `renderInto(container, template)` renders once without a store.
   navigation that lands on the page (`match`: path, RegExp with named groups, or
   function), with `{ root, url, params, signal }`; `signal` aborts when the page is
   left. Works without the router too.
-- `urlState(schema)` — a store kept in the query string. Typed params
-  (`param.string/int/bool/oneOf/date/list`) with defaults that are omitted from the
-  URL; malformed values fall back. `state.href(patch)` builds shareable links;
-  back/forward restore state. Pure helpers: `parseQuery`, `toQuery` (lib/url-state).
+- `urlState(schema, { signal })` — a store kept in the query string. Typed
+  params (`param.string/int/bool/oneOf/date/list`); defaults are omitted from the
+  URL and malformed values fall back. `set` rewrites the URL in place
+  (`replaceState`), so the address bar is always a shareable link to the view;
+  it does not add history entries. Back and forward move between pages, and the
+  page re-reads its state from the URL when it mounts. `state.href(patch)` builds
+  links. Pure helpers: `parseQuery`, `toQuery` (lib/url-state).
 - `installNavigation()` — progress sweep while the next page loads
   (`html[data-navigating]`) and `aria-current` on links marked `data-nav`
   (`data-nav="section"` matches sub-pages).
@@ -188,6 +274,17 @@ in the URL. `renderInto(container, template)` renders once without a store.
 - Markup kept across navigations (`transition:persist` sidebars) must use global
   design-system classes, not Astro-scoped styles: scoped class hashes change
   between deployments.
+
+An app-shell component (sidebar, top bar, mobile drawer) is not in the system
+yet; `shell.css` holds the classes members' layout uses (`.shell`, `.sidebar`,
+`.topbar`, `.main`, `data-drawer`). Ask before building a shell of your own.
+
+## Times
+
+Show times on a 24-hour Pacific clock with the zone: `formatTimestamp(t)` →
+"Mon 9 Nov, 14:05 PT"; `formatChartTime` (no zone, for tables with a zone in the
+header), `formatChartDay` ("Mon 9 Nov") and `zoneLabel()` — all in
+lib/chart-model and accepting another IANA zone.
 
 ## Charts
 
@@ -207,8 +304,10 @@ properties: `label`, `shortLabel` (map label), `description`, `tone`
 (`alarm` | `brass`). `labels` names points the way the website's maps do;
 `labels="selected"` names only the selection. Clicking a feature emits
 `feature-select` with `{ feature, index }`; drive the selection back with
-`map.selected`. Set `featureList={false}` when the page already lists the same
-features (a feed), so they are not listed twice.
+`map.selected`. Set `featureList={false}` only when the page already lists the
+same features and selecting there drives `map.selected` (a feed), so keyboard
+users have the same path. The basemap style and label fonts load from
+`tiles.openfreemap.org`; without it the map shows geometry on plain ground.
 
 ## Tokens and theme
 

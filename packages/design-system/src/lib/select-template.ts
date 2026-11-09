@@ -1,6 +1,7 @@
 /** Markup for <sierra-select>; no DOM classes, so it renders on the server. */
 import { html, nothing } from "lit-html";
 import { ifDefined } from "lit-html/directives/if-defined.js";
+import { isServer } from "lit-html/is-server.js";
 import { icon } from "./ui";
 
 export interface SelectOption {
@@ -40,7 +41,7 @@ export function selectTemplate(p: SelectProps) {
       <span data-select-label>${selected?.label ?? ""}</span>${icon("chevron-down", { cls: "select-chevron" })}
     </button>
     ${p.name !== undefined
-      ? html`<input type="hidden" name=${p.name} .value=${value} value=${value} ?disabled=${!!p.disabled} />`
+      ? html`<input type="hidden" name=${p.name} .value=${isServer ? nothing : value} value=${value} ?disabled=${!!p.disabled} />`
       : nothing}
     <div id=${`${p.id}-options`} class="select-popover" popover="auto" role="listbox" aria-labelledby=${p.id}>
       ${p.options.map(

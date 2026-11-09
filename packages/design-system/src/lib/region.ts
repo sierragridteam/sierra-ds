@@ -9,7 +9,8 @@
  *
  * Only what changed is touched: keyed rows are reused, design-system elements
  * receive new props instead of being rebuilt (so focus, open tables, map
- * position and chart state survive), and many `set` calls in one task render once.
+ * position and chart state survive — also when a keyed list moves them), and
+ * many `set` calls in one task render once.
  */
 import { render, type TemplateResult } from "lit-html";
 
@@ -26,7 +27,16 @@ export function createStore<S extends object>(initial: S): Store<S> {
   let scheduled = false;
   const flush = () => {
     scheduled = false;
-    for (const listener of [...listeners]) listener(state);
+    // One failing listener must not starve the rest; report it and carry on.
+    for (const listener of [...listeners]) {
+      try {
+        listener(state);
+      } catch (error) {
+        queueMicrotask(() => {
+          throw error;
+        });
+      }
+    }
   };
   return {
     get: () => state,
@@ -64,7 +74,8 @@ export function region<S extends object>(
   view: (state: S) => TemplateResult,
   { signal }: { signal?: AbortSignal } = {},
 ): Region {
-  container.replaceChildren();
+  // Clear server markup once; a container lit already renders into keeps its part.
+  if (!(container as { _$litPart$?: unknown })._$litPart$) container.replaceChildren();
   const paint = () => render(view(store.get()), container);
   paint();
   const unsubscribe = store.subscribe(paint, { signal });
