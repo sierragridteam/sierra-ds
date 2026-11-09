@@ -21,8 +21,8 @@ import { PARITY } from "../../fixtures/parity";
 </DemoLayout>
 
 <script>
-  import { renderInto } from "@sierragridteam/design-system/lib/region";
-  import { html } from "@sierragridteam/design-system/lib/template";
+  import { createStore, region, renderInto } from "@sierragridteam/design-system/lib/region";
+  import { html, repeat } from "@sierragridteam/design-system/lib/template";
   import { choiceTiles, feedItem, segmented } from "@sierragridteam/design-system/lib/ui";
   import { createSelect } from "@sierragridteam/design-system/lib/select";
   import { createDataDiff } from "@sierragridteam/design-system/lib/data-diff";
@@ -42,5 +42,53 @@ import { PARITY } from "../../fixtures/parity";
     { id: "client-chart" },
   );
   client.append(select, diff, chart);
+
+  // Regression fixtures from the 0.8 review.
+  const T0 = Date.UTC(2026, 10, 9, 20);
+  const points = (v: number) => [{ time: T0, value: v }, { time: T0 + 3_600_000, value: v + 1 }];
+
+  // Props set before the element is defined (module imported lazily below).
+  const early = document.createElement("sierra-sparkline") as HTMLElement & { props: unknown };
+  early.id = "early-spark";
+  early.props = { label: "Early", values: [1, 2, 3] };
+  client.append(early);
+
+  // Appended first, props afterwards.
+  const late = document.createElement("sierra-data-diff") as HTMLElement & { props: unknown };
+  late.id = "late-diff";
+  client.append(late);
+  late.props = { label: "Late", changes: [{ path: "/a", kind: "changed", before: 1, after: 2 }] };
+
+  // A region disposed and created again on the same container.
+  const reusedHost = document.createElement("div");
+  reusedHost.id = "reused";
+  client.append(reusedHost);
+  const first = createStore({ text: "first" });
+  region(reusedHost, first, (s) => html`<p>${s.text}</p>`).dispose();
+  const second = createStore({ text: "second" });
+  region(reusedHost, second, (s) => html`<p>${s.text}</p>`);
+  (window as any).reusedStore = second;
+
+  // Keyed moves keep element instances (chart state survives reordering).
+  const movedHost = document.createElement("div");
+  movedHost.id = "moved";
+  client.append(movedHost);
+  const order = createStore({ ids: ["a", "b"] });
+  region(movedHost, order, (s) => html`${repeat(s.ids, (id) => id, (id) =>
+    html`<sierra-line-chart data-id=${id} .props=${{ label: `Chart ${id}`, series: [{ id, label: id, points: points(id === "a" ? 1 : 5) }] }}></sierra-line-chart>`)}`);
+  (window as any).moveStore = order;
+
+  // A throwing subscriber does not starve the others.
+  const noisy = createStore({ n: 0 });
+  noisy.subscribe(() => {
+    throw new Error("listener failure (expected in tests)");
+  });
+  const counter = document.createElement("output");
+  counter.id = "counter";
+  client.append(counter);
+  noisy.subscribe((s) => (counter.textContent = String(s.n)));
+  (window as any).noisyStore = noisy;
+
+  await import("@sierragridteam/design-system/lib/sparkline").then((m) => m.defineSparkline());
   document.documentElement.dataset.fixturesReady = "";
 </script>

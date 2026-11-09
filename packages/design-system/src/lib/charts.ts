@@ -612,11 +612,36 @@ abstract class SierraChart<O extends { label: string }> extends HTMLElement {
     // Validate first: a rejected update leaves the previous chart and options in place.
     this.text(next);
     this.current = next;
-    if (this.isConnected) this.render();
+    if (this.live) this.render();
+    else if (this.isConnected) this.start();
+  }
+
+  private live = false;
+
+  constructor() {
+    super();
+    // Props set by a template before the element was defined shadow the setters.
+    for (const key of ["props", "options"] as const) {
+      if (Object.hasOwn(this, key)) {
+        const early = (this as unknown as Record<string, O>)[key];
+        delete (this as unknown as Record<string, O | undefined>)[key];
+        this.options = early;
+      }
+    }
   }
 
   connectedCallback() {
-    this.current ??= JSON.parse(this.dataset.options!);
+    if (this.live) return; // moved within one task: keep the chart
+    if (!this.current) {
+      if (!this.dataset.options) return; // options will arrive through the setter
+      this.current = JSON.parse(this.dataset.options);
+    }
+    this.start();
+  }
+
+  private start() {
+    this.live = true;
+    this.classList.add("ds-chart");
     // Created empty (in a region or by create*()): render the frame from props.
     if (!this.querySelector("canvas")) {
       defineCopy();
@@ -634,10 +659,16 @@ abstract class SierraChart<O extends { label: string }> extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.abort?.abort();
-    this.chart?.destroy();
-    this.chart = undefined;
+    // Destroy only if still detached after this task, so list moves keep the chart.
+    queueMicrotask(() => {
+      if (this.isConnected || !this.live) return;
+      this.live = false;
+      this.abort?.abort();
+      this.chart?.destroy();
+      this.chart = undefined;
+    });
   }
+
 
   protected render() {
     const options = this.current!;

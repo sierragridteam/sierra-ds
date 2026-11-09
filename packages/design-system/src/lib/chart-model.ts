@@ -329,6 +329,14 @@ export function formatChartTime(
     .replace(" at ", ", ");
 }
 
+/** House-style timestamp with its zone: "Sun 1 Nov, 14:05 PT". */
+export function formatTimestamp(
+  time: number,
+  timeZone = DEFAULT_TIME_ZONE,
+): string {
+  return `${formatChartTime(time, timeZone)} ${zoneLabel(timeZone)}`;
+}
+
 /** Day label for daily bars: "Sun 1 Nov". */
 export function formatChartDay(
   time: number,

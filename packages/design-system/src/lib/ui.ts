@@ -86,6 +86,13 @@ export interface FeedItemProps {
   level?: 2 | 3 | 4;
   /** Marks the item as the current selection in a list-and-detail view. */
   selected?: boolean;
+  /**
+   * List-and-detail views: called instead of following `href` on a plain click
+   * (modified clicks still open the link). The whole row is the click target;
+   * the title link stays the keyboard path, so keep `href` a shareable URL,
+   * e.g. `state.href({ report: id })`.
+   */
+  onSelect?: () => void;
 }
 
 const heading = (level: number, cls: string, content: Content) => {
@@ -99,14 +106,27 @@ const heading = (level: number, cls: string, content: Content) => {
   }
 };
 
+const selectOnPlainClick = (onSelect: () => void) => (event: MouseEvent) => {
+  if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  onSelect();
+};
+
 export function feedItem(p: FeedItemProps, extra: Content = nothing) {
-  return html`<article class=${classMap({ "feed-item": true, "feed-item--lead": !!p.lead, "is-selected": !!p.selected })} aria-current=${ifDefined(p.selected ? "true" : undefined)}>
+  // aria-current goes on the focusable link, where screen readers announce it.
+  return html`<article class=${classMap({ "feed-item": true, "feed-item--lead": !!p.lead, "feed-item--link": !!p.href, "is-selected": !!p.selected })} aria-current=${ifDefined(p.selected && !p.href ? "true" : undefined)}>
     <div class="feed-item__top">
       ${p.severity ? badge(p.severity.label, { tone: p.severity.tone }) : nothing}
       ${(p.tags ?? []).map((tag) => html`<span class="feed-item__tag">${tag}</span>`)}
       ${p.received ? html`<time class="feed-item__received" datetime=${ifDefined(p.receivedAt)}>Received ${p.received}</time>` : nothing}
     </div>
-    ${heading(p.level ?? 3, "feed-item__title", p.href ? html`<a href=${p.href}>${p.title}</a>` : p.title)}
+    ${heading(
+      p.level ?? 3,
+      "feed-item__title",
+      p.href
+        ? html`<a href=${p.href} aria-current=${ifDefined(p.selected ? "true" : undefined)} @click=${p.onSelect ? selectOnPlainClick(p.onSelect) : nothing}>${p.title}</a>`
+        : p.title,
+    )}
     ${p.place ? html`<p class="feed-item__place">${p.place}</p>` : nothing}
     ${p.when || p.source
       ? html`<p class="feed-item__meta">${p.when ? html`<span>${p.when}</span>` : nothing}${p.source ? html`<span>${p.source}</span>` : nothing}</p>`
@@ -152,6 +172,9 @@ export interface CardProps {
   media?: Content;
   footer?: Content;
   id?: string;
+  /** Element; panels default to <section>, like the Astro component. */
+  as?: "div" | "section" | "article";
+  class?: string;
 }
 
 export function card(p: CardProps, body: Content) {
@@ -159,8 +182,8 @@ export function card(p: CardProps, body: Content) {
   const level = p.level ?? (panel ? 2 : 3);
   const surface = p.surface ?? "card";
   const header = p.title || p.kicker || p.actions;
-  return html`<div id=${ifDefined(p.id)} class=${classMap({ card: true, "card--panel": panel, [`card--${surface}`]: surface !== "card" })}>
-    ${header
+  const classes = classMap({ card: true, "card--panel": panel, [`card--${surface}`]: surface !== "card", ...(p.class ? { [p.class]: true } : {}) });
+  const content = html`${header
       ? html`<div class="card__header">
           <div class="card__heading">
             ${p.kicker ? html`<span class="kicker">${p.kicker}</span>` : nothing}
@@ -173,8 +196,15 @@ export function card(p: CardProps, body: Content) {
     ${p.padded === false ? body : html`<div class="card__body">${body}</div>`}
     ${p.source || p.footer
       ? html`<div class="card__footer">${p.source ? html`<p class="card__source">${p.source}</p>` : nothing}${p.footer ?? nothing}</div>`
-      : nothing}
-  </div>`;
+      : nothing}`;
+  switch (p.as ?? (panel ? "section" : "div")) {
+    case "section":
+      return html`<section id=${ifDefined(p.id)} class=${classes}>${content}</section>`;
+    case "article":
+      return html`<article id=${ifDefined(p.id)} class=${classes}>${content}</article>`;
+    default:
+      return html`<div id=${ifDefined(p.id)} class=${classes}>${content}</div>`;
+  }
 }
 
 export interface OptionItem {
@@ -230,13 +260,18 @@ export function choiceTiles(p: ChoiceTilesProps) {
 }
 
 /**
- * Inline SVG trend; themes through CSS, no JavaScript needed once rendered.
- * Renders a <sierra-sparkline>, whose `values` setter also works outside regions.
+ * Inline SVG trend; themes through CSS. On the server the SVG is rendered
+ * inside the element; in the browser the element draws itself from `.props`,
+ * so a region and the element never share its children.
  */
 export function sparkline(options: SparklineOptions & { id?: string; class?: string }) {
-  const { id, class: cls, ...rest } = options;
-  const m = buildSparkline(rest);
-  return html`<sierra-sparkline id=${ifDefined(id)} class=${["ds-sparkline", `ds-sparkline--${m.variant}`, cls].filter(Boolean).join(" ")} data-options=${JSON.stringify(rest)} style=${`--spark: var(${chartColorVar(m.color)})`}>${sparklineSvg(m)}</sierra-sparkline>`;
+  const { id, class: cls, ...props } = options;
+  const m = buildSparkline(props);
+  const classes = ["ds-sparkline", `ds-sparkline--${m.variant}`, cls].filter(Boolean).join(" ");
+  const style = `--spark: var(${chartColorVar(m.color)})`;
+  return isServer
+    ? html`<sierra-sparkline id=${ifDefined(id)} class=${classes} style=${style} data-props=${JSON.stringify(props)}>${sparklineSvg(m)}</sierra-sparkline>`
+    : html`<sierra-sparkline id=${ifDefined(id)} class=${classes} style=${style} .props=${props}></sierra-sparkline>`;
 }
 
 export function sparklineSvg(m: ReturnType<typeof buildSparkline>) {

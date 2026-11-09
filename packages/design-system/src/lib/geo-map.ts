@@ -32,6 +32,7 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
   #observer?: ResizeObserver;
   #loaded = false;
   #fitted?: string;
+  #shown?: GeoMapProps["data"];
   #build?: AbortController;
 
   protected template(p: GeoMapProps) {
@@ -81,11 +82,17 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
   }
 
   protected updated(p: GeoMapProps) {
+    this.classList.add("ds-geo-map");
+    this.classList.toggle("ds-map-compact", !!p.compact);
     if (!this.map || !this.#loaded) return;
-    const source = this.map.getSource("features") as maplibregl.GeoJSONSource | undefined;
-    source?.setData(located(p.data) as GeoJSON.FeatureCollection);
+    // A selection change only restyles; new data replaces the source and refits.
+    if (p.data !== this.#shown) {
+      this.#shown = p.data;
+      const source = this.map.getSource("features") as maplibregl.GeoJSONSource | undefined;
+      source?.setData(located(p.data) as GeoJSON.FeatureCollection);
+      this.fit(p.data);
+    }
     this.emphasise(p.selected);
-    this.fit(p.data);
   }
 
   private select(index: number) {
@@ -132,6 +139,7 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
     this.map = undefined;
     this.#loaded = false;
     this.#fitted = undefined;
+    this.#shown = undefined;
   }
 
   private async build(connection: AbortSignal) {
@@ -190,6 +198,7 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
       map.on("load", () => {
         status.textContent = fallback ? "Geometry only — geographic basemap is not loaded." : "";
         status.hidden = !fallback;
+        this.#shown = this.props.data;
         map.addSource("features", { type: "geojson", data: located(this.props.data) as GeoJSON.FeatureCollection });
         const color: maplibregl.ExpressionSpecification = [
           "match",
@@ -222,8 +231,9 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
             "text-font": ["Noto Sans Bold"],
             "text-size": selected ? 11 : 10,
             "text-letter-spacing": 0.11,
-            "text-anchor": "left",
-            "text-offset": [selected ? 1.1 : 0.9, 0],
+            // Right of the dot, or left of it when the right would run off the map.
+            "text-variable-anchor": ["left", "right"],
+            "text-radial-offset": selected ? 1.1 : 0.9,
             "text-padding": 2,
             "text-optional": true,
             "text-allow-overlap": selected,

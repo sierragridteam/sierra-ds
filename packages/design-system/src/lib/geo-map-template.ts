@@ -13,8 +13,9 @@ export interface GeoMapProps {
   selectable?: boolean;
   /**
    * The button list under the map that selects features by keyboard. Defaults to
-   * `selectable`; turn it off when the page already lists the same features
-   * (e.g. a feed that drives the map) so they are not listed twice.
+   * `selectable`. Turn it off only when the page already lists the same features
+   * and selecting there drives `map.selected` (e.g. a feed), so keyboard and
+   * screen-reader users have the same path; the selection is still announced.
    */
   featureList?: boolean;
   /**
@@ -35,7 +36,7 @@ export function geoMapTemplate(p: GeoMapProps) {
   const features = p.data.features;
   const unlocated = features.filter((f) => !f.geometry);
   const chosen = p.selected !== undefined ? features[p.selected] : undefined;
-  return html`<div class="ds-map-canvas" aria-label=${p.label}></div>
+  return html`<div class="ds-map-canvas" role="region" aria-label=${p.label}></div>
     <p class="ds-map-fallback" role="status">Loading map.</p>
     ${list
       ? html`<div class="ds-map-feature-list" aria-label="Map features">
@@ -50,7 +51,7 @@ export function geoMapTemplate(p: GeoMapProps) {
       : html`<ul class="sr-only" aria-label="Map features">
           ${features.map((f) => html`<li>${f.properties?.label}: ${f.properties?.description}</li>`)}
         </ul>`}
-    <p ?hidden=${!list} class="ds-map-fallback" data-selection aria-live="polite">
+    <p class=${list ? "ds-map-fallback" : "sr-only"} ?hidden=${!selectable} data-selection aria-live="polite">
       ${chosen
         ? `${chosen.properties?.label ?? "Feature"} — ${chosen.properties?.description ?? (chosen.geometry ? chosen.geometry.type : "Location unavailable")}`
         : "Select a feature on the map or in the list."}

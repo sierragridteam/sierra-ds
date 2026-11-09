@@ -112,6 +112,56 @@ test.describe("elements built in client code", () => {
   });
 });
 
+test.describe("review regressions", () => {
+  test.beforeEach(async ({ page }) => {
+    page.on("pageerror", (e) => {
+      if (!/listener failure \(expected in tests\)/.test(String(e))) throw e;
+    });
+    await page.goto("/compat/elements");
+    await expect(page.locator("html")).toHaveAttribute("data-fixtures-ready", "");
+  });
+
+  test("a sparkline updates through its setter any number of times", async ({ page }) => {
+    const spark = page.locator("#early-spark");
+    await expect(spark.getByRole("img")).toHaveAttribute("aria-label", /Early: 3 readings, from 1 to 3/);
+    for (const values of [[4, 5], [6, 7, 8, 9], [1]]) {
+      await spark.evaluate(async (el: HTMLElement & { values: number[] }, v) => {
+        el.values = v;
+        await Promise.resolve();
+      }, values);
+      await expect(spark.getByRole("img")).toHaveAttribute("aria-label", new RegExp(`${values.length} reading`));
+    }
+  });
+
+  test("elements render when props arrive before definition or after attachment", async ({ page }) => {
+    await expect(page.locator("#early-spark svg")).toHaveCount(1);
+    await expect(page.locator("#late-diff .meta")).toHaveText("1 change");
+  });
+
+  test("a region can be created again on a container it used before", async ({ page }) => {
+    await expect(page.locator("#reused p")).toHaveText("second");
+    await page.evaluate(() => (window as any).reusedStore.set({ text: "third" }));
+    await expect(page.locator("#reused p")).toHaveText("third");
+  });
+
+  test("keyed moves keep chart instances", async ({ page }) => {
+    const charts = page.locator("#moved sierra-line-chart");
+    await expect.poll(() => charts.evaluateAll((els) => els.every((e: any) => !!e.chart))).toBe(true);
+    await page.evaluate(() => {
+      for (const el of document.querySelectorAll<any>("#moved sierra-line-chart")) el.chart.__mark = el.dataset.id;
+      (window as any).moveStore.set({ ids: ["b", "a"] });
+    });
+    await expect(charts.first()).toHaveAttribute("data-id", "b");
+    await page.waitForTimeout(50);
+    expect(await charts.evaluateAll((els) => els.map((e: any) => e.chart?.__mark))).toEqual(["b", "a"]);
+  });
+
+  test("one failing subscriber does not stop the others", async ({ page }) => {
+    await page.evaluate(() => (window as any).noisyStore.set({ n: 3 }));
+    await expect(page.locator("#counter")).toHaveText("3");
+  });
+});
+
 test.describe("dashboard regions", () => {
   test("filtering reuses rows, selection updates elements in place, and the URL keeps the view", async ({ page }) => {
     await page.goto("/dashboard");
@@ -178,6 +228,19 @@ test.describe("dashboard regions", () => {
       return { text: getComputedStyle(el).color, ink: banner.color };
     });
     expect(colours.text).toBe(colours.ink);
+  });
+
+  test("a click anywhere on a feed row selects it; the link stays the keyboard path", async ({ page }) => {
+    await page.goto("/dashboard");
+    const row = page.locator("#feed-region .feed-item", { hasText: "Wind advisory" });
+    // Click the place line, away from the title: the row's link covers the whole row.
+    const place = await row.locator(".feed-item__place").boundingBox();
+    const box = await row.boundingBox();
+    await row.click({ position: { x: place!.x - box!.x + 10, y: place!.y - box!.y + place!.height / 2 } });
+    await expect(row).toHaveClass(/is-selected/);
+    await expect(row.getByRole("link")).toHaveAttribute("aria-current", "true");
+    await expect(page).toHaveURL(/\/dashboard\?report=wind-advisory$/);
+    await expect(page.getByRole("status").filter({ hasText: "of 5 reports" })).toHaveText("5 of 5 reports");
   });
 
   test("choosing a report highlights it on the map", async ({ page }) => {

@@ -138,41 +138,31 @@ export interface UrlState<S extends Schema> extends Store<StateOf<S>> {
 }
 
 /**
- * A store whose state lives in the query string. `set` updates the URL with
- * `history.replaceState` (or `pushState` with `{ push: true }` in the options)
- * without a navigation; back/forward re-parse it. Parameters the schema does
- * not own are kept. Pass the page's `signal` so it stops listening on leave.
+ * A store whose state lives in the query string. `set` rewrites the URL with
+ * `history.replaceState` (no navigation, no new history entry), so the address
+ * bar is always a shareable link to the current view. Back and forward move
+ * between pages as usual; `definePage` mounts again and the page re-reads its
+ * state from the URL. Parameters the schema does not own are kept. Pass the
+ * page's `signal` so it stops writing when the page is left.
  */
 export function urlState<S extends Schema>(
   schema: S,
-  { signal, push = false }: { signal?: AbortSignal; push?: boolean } = {},
+  { signal }: { signal?: AbortSignal } = {},
 ): UrlState<S> {
+  const path = location.pathname;
   const store = createStore(parseQuery(schema, location.search));
-  const write = (state: StateOf<S>) => {
-    const query = toQuery(schema, state, location.search);
-    const next = `${location.pathname}${query}${location.hash}`;
+  store.subscribe((state) => {
+    // Never write onto another page's URL (a set landing mid-navigation).
+    if (signal?.aborted || location.pathname !== path) return;
+    const next = `${path}${toQuery(schema, state, location.search)}${location.hash}`;
     if (next === `${location.pathname}${location.search}${location.hash}`) return;
     // Keep Astro's history entry state so the ClientRouter still restores scroll.
-    if (push) history.pushState(history.state, "", next);
-    else history.replaceState(history.state, "", next);
-  };
-  let fromHistory = false;
-  store.subscribe((state) => {
-    if (!fromHistory) write(state);
-    fromHistory = false;
+    history.replaceState(history.state, "", next);
   }, { signal });
-  addEventListener(
-    "popstate",
-    () => {
-      fromHistory = true;
-      store.set(parseQuery(schema, location.search));
-    },
-    { signal },
-  );
   return {
     ...store,
     href(patch = {}) {
-      return `${location.pathname}${toQuery(schema, { ...store.get(), ...patch }, location.search)}`;
+      return `${path}${toQuery(schema, { ...store.get(), ...patch }, location.search)}`;
     },
   };
 }

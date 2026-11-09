@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.8.2
+
+Fixes from an adversarial review and a clean-room build of a page from the
+package alone.
+
+- Elements render when props arrive after they are attached, or before they
+  are defined (props set by a template before `define*()`).
+- Keyed list moves keep element instances: charts and maps are no longer
+  rebuilt when a region reorders them.
+- `<sierra-sparkline>` is a full element (`props`, `values`, `createSparkline`);
+  repeated updates and updates inside regions work.
+- `region()` can be created again on a container; one failing store subscriber
+  no longer stops the others.
+- `urlState` only rewrites the URL in place. The `push` option is removed: under
+  the ClientRouter it turned back/forward into full page loads.
+- `feedItem({ onSelect })`: the whole row selects, the title link stays the
+  keyboard path and carries `aria-current`.
+- `card()` renders the same element as `Card` (`as`, `class`); panels are
+  `<section>`. Elements add their own host classes.
+- `MoreLink` accepts its text as content. `formatTimestamp()` adds the zone.
+- Map: labels flip left at the edge, the selection is announced when the
+  feature list is off, the canvas is a named region, selection no longer resets
+  the data source.
+- Forced-colours selection states; stronger selected segment; segmented
+  controls wrap; banner and links no longer overflow narrow screens; panels in
+  region wrappers keep equal heights.
+- README: complete list-detail-map example, stat tile markup, element
+  registration, URL-state behaviour, times, map network needs.
+
 ## 0.8.1
 
 - `GeoJSONMap`: feature labels in the website's treatment (`labels`,

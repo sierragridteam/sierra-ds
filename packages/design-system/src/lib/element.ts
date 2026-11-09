@@ -17,6 +17,18 @@ export abstract class SierraElement<P extends object> extends HTMLElement {
   #controller?: AbortController;
   #scheduled = false;
   #rendered = false;
+  #live = false;
+
+  constructor() {
+    super();
+    // A template can set `.props` before the element is defined; that value is
+    // an own property shadowing the setter. Take it over now.
+    if (Object.hasOwn(this, "props")) {
+      const early = (this as unknown as { props: P }).props;
+      delete (this as unknown as { props?: P }).props;
+      this.props = early;
+    }
+  }
 
   /** Validate props; throw to reject an update. */
   protected validate(_props: P): void {}
@@ -35,42 +47,57 @@ export abstract class SierraElement<P extends object> extends HTMLElement {
   set props(next: P) {
     this.validate(next);
     this.#props = next;
-    this.requestUpdate();
+    // Appended before it had props: start now.
+    if (this.isConnected && !this.#live) this.#start();
+    else this.requestUpdate();
   }
   /** Merge a partial change into props. */
   update(partial: Partial<P>): void {
     this.props = { ...this.#props!, ...partial };
   }
 
-  /** Aborts when the element is disconnected. */
+  /** Aborts when the element leaves the document. */
   protected get signal(): AbortSignal {
     return this.#controller!.signal;
   }
 
   connectedCallback() {
+    // Moved within one task (a keyed list reorder): keep the live instance.
+    if (this.#live) return;
     if (!this.#props) {
       const raw = this.dataset.props;
-      if (!raw) return;
-      this.props = JSON.parse(raw) as P;
+      if (!raw) return; // Props will arrive through the setter.
+      this.#props = JSON.parse(raw) as P;
+      this.validate(this.#props);
     }
+    this.#start();
+  }
+
+  disconnectedCallback() {
+    // Tear down only if still detached after this task, so moves keep state.
+    queueMicrotask(() => {
+      if (this.isConnected || !this.#live) return;
+      this.#live = false;
+      this.#controller?.abort();
+      this.#controller = undefined;
+      this.disconnected();
+    });
+  }
+
+  #start() {
+    this.#live = true;
     this.#controller = new AbortController();
     this.renderNow();
     this.connected(this.signal);
   }
 
-  disconnectedCallback() {
-    this.#controller?.abort();
-    this.#controller = undefined;
-    this.disconnected();
-  }
-
   /** Batch renders: many prop changes in one task render once. */
   protected requestUpdate() {
-    if (this.#scheduled || !this.isConnected || !this.#controller) return;
+    if (this.#scheduled || !this.#live) return;
     this.#scheduled = true;
     queueMicrotask(() => {
       this.#scheduled = false;
-      if (this.isConnected) this.renderNow();
+      if (this.#live) this.renderNow();
     });
   }
 
