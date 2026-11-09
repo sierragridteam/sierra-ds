@@ -470,17 +470,31 @@
   flex-wrap: wrap;
 }
 
+/* Title and an optional action (link, button) share the first row; a
+   description paragraph always takes its own line beneath, whatever its length. */
 .section-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-1) var(--space-3);
   margin-bottom: var(--space-3);
+}
+
+.section-header > :is(h1, h2, h3) {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .section-header p {
   font-size: var(--fs-ui);
   color: var(--ink-secondary);
+}
+
+.section-header > p {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  max-width: 72ch;
+  margin: 0;
 }
 
 .stack > * + * {
@@ -2272,6 +2286,7 @@ sierra-copy {
   align-items: center;
 }
 sierra-copy button > span {
+  gap: var(--space-1);
   display: flex;
   align-items: center;
 }
@@ -2306,30 +2321,11 @@ sierra-copy [data-copy-check] {
 }
 
 /* Time series: colors identify series, never source health or severity. */
-.ds-time-series { margin: 0; min-width: 0; }
-.ds-time-series svg { display: block; width: 100%; height: auto; overflow: hidden; }
-.ds-time-series text { fill: var(--ink-secondary); font-family: var(--font-mono); font-size: var(--fs-small); }
-.ds-time-series figcaption p, .ds-time-series > p { color: var(--ink-secondary); font-size: var(--fs-small); }
-.ds-chart-axis { fill: none; stroke: var(--line-control); }
-.ds-chart-series { fill: none; stroke: currentColor; stroke-width: 2; }
-.ds-chart-dot { fill: currentColor; }
-.ds-chart-series-0 { color: var(--brand-green); }
-.ds-chart-series-1 { color: var(--brand-brass-text); }
-.ds-chart-series-2 { color: var(--ink-secondary); }
-.ds-chart-series-3 { color: var(--ink-strong); }
-.ds-chart-legend { display: flex; flex-wrap: wrap; gap: var(--space-4); list-style: none; padding: 0; }
-.ds-chart-legend li { overflow-wrap: anywhere; }
-.ds-chart-swatch { display: inline-block; width: var(--space-6); border-top: 2px solid currentColor; margin-right: var(--space-2); vertical-align: middle; }
-.ds-chart-swatch.ds-chart-series-1 { border-top-style: dashed; }
-.ds-chart-swatch.ds-chart-series-2 { border-top-style: dotted; }
-.ds-chart-swatch.ds-chart-series-3 { border-top-style: double; border-top-width: 3px; }
-.ds-time-series summary { cursor: pointer; }
-.ds-time-series td { overflow-wrap: anywhere; }
 
 /* Charts (LineChart, BarChart, Sparkline). Series colours mark data only;
    every label stays in ink tokens. */
-sierra-line-chart, sierra-bar-chart { display: block; min-width: 0; }
-.ds-chart__figure { margin: 0; display: grid; gap: var(--space-3); min-width: 0; }
+sierra-line-chart, sierra-bar-chart, sierra-time-series { display: block; min-width: 0; }
+.ds-chart__figure { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); min-width: 0; }
 .ds-chart__caption { display: grid; gap: var(--space-1); }
 .ds-chart__title { color: var(--ink-strong); font-size: var(--fs-ui); font-weight: var(--fw-semibold); }
 .ds-chart__description { color: var(--ink-body); font-size: var(--fs-ui); }
@@ -2366,11 +2362,46 @@ button.ds-chart-key:focus-visible { outline: 2px solid var(--brand-green); outli
 .ds-chart-key__swatch { flex: none; width: 16px; height: 3px; border-radius: 2px; background: var(--key); }
 .ds-chart-key[aria-pressed="false"] { color: var(--ink-muted); text-decoration: line-through; }
 .ds-chart-key[aria-pressed="false"] .ds-chart-key__swatch { background: none; box-shadow: inset 0 0 0 1px var(--line-control); height: 4px; }
-.ds-chart__data summary { width: fit-content; color: var(--brand-green); font-size: var(--fs-small); cursor: pointer; }
-.ds-chart__data .table-wrap { max-height: 320px; margin-top: var(--space-2); overflow: auto; }
-.ds-chart__data caption { text-align: left; color: var(--ink-muted); font-size: var(--fs-small); padding-bottom: var(--space-2); }
-.ds-chart__data td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
-.ds-chart__data tbody th { font-weight: var(--fw-regular); white-space: nowrap; }
+/* Disclosure: a light chevron that turns when open. The summary is never
+   text-selected by repeated clicks. */
+.ds-disclosure > summary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: fit-content;
+  min-height: var(--control-h-sm);
+  padding-right: var(--space-1);
+  color: var(--brand-green);
+  font-size: var(--fs-small);
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ds-disclosure > summary::-webkit-details-marker { display: none; }
+.ds-disclosure > summary:hover { color: var(--brand-green-hover); }
+.ds-disclosure > summary:focus-visible { outline: 2px solid var(--brand-green); outline-offset: 2px; border-radius: var(--radius-sm); }
+.ds-disclosure__icon { width: 14px; height: 14px; stroke-width: 1.5; transition: transform var(--transition); }
+.ds-disclosure[open] > summary .ds-disclosure__icon { transform: rotate(90deg); }
+.ds-chart__data-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-2); margin-top: var(--space-2); }
+.ds-chart__data-caption { color: var(--ink-muted); font-size: var(--fs-small); }
+.ds-chart__data .table-wrap { max-height: 320px; margin-top: var(--space-1); overflow: auto; }
+/* The caption is shown beside the copy button; the table keeps it for assistive tech. */
+.ds-chart__data caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.ds-chart__data td { font-family: var(--font-mono); font-size: var(--fs-ui); font-variant-numeric: tabular-nums; text-align: right; }
+.ds-chart__data thead th:not(:first-child) { text-align: right; }
+.ds-chart__data tbody th {
+  height: var(--row-h);
+  border-top: var(--border-soft);
+  background: none;
+  color: var(--ink-body);
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-regular);
+  letter-spacing: normal;
+  text-transform: none;
+}
+.ds-chart__data tbody tr:first-child th { border-top: 0; }
 
 sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0; }
 .ds-sparkline svg { display: block; max-width: 100%; height: auto; overflow: visible; }

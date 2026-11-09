@@ -118,3 +118,55 @@ for (const scheme of ["light", "dark"] as const) {
     expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(", ")}`)).toEqual([]);
   });
 }
+
+test("the data table copies as Markdown and the icon confirms with a tick", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/charts");
+  const chart = page.locator("sierra-bar-chart").filter({ hasText: "Rainfall by station" });
+  await chart.getByText("View data table").click();
+  const copy = chart.getByRole("button", { name: "Copy as Markdown" });
+  await expect(copy.locator("[data-copy-icon]")).toBeVisible();
+  await copy.click();
+  await expect(copy.locator("[data-copy-check]")).toBeVisible();
+  await expect(copy.locator("[data-copy-icon]")).toBeHidden();
+  await expect(chart.getByRole("status")).toHaveText("Copied.");
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text.split("\n").slice(0, 5)).toEqual([
+    "**Rainfall by station (in)**",
+    "",
+    "| Station | Storm total |",
+    "| --- | ---: |",
+    "| Ebbetts Pass | 2.41 |",
+  ]);
+  await expect(copy.locator("[data-copy-icon]")).toBeVisible({ timeout: 4000 });
+});
+
+test("copied Markdown follows live data", async ({ page, context }) => {
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.goto("/charts");
+  const live = page.locator("#live-chart");
+  await page.getByRole("button", { name: "Pause updates" }).click();
+  await live.getByText("View data table").click();
+  await live.evaluate((el: HTMLElement & { series: unknown[] }) => {
+    el.series = [{ id: "h", label: "Heard", points: [{ time: Date.UTC(2026, 10, 9, 20), value: 42 }] }];
+  });
+  await live.getByRole("button", { name: "Copy as Markdown" }).click();
+  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("| Mon 9 Nov, 12:00 | 42 |");
+});
+
+test("repeated clicks on the table toggle never select text", async ({ page }) => {
+  await page.goto("/charts");
+  const summary = page.locator("#battery-chart summary");
+  await expect(summary).toHaveCSS("user-select", "none");
+  await summary.dblclick();
+  await summary.click({ clickCount: 3 });
+  expect(await page.evaluate(() => getSelection()?.toString() ?? "")).toBe("");
+});
+
+test("open data tables scroll inside the chart, not the page, on a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/charts");
+  for (const details of await page.locator("details.ds-chart__data").all())
+    await details.evaluate((d: HTMLDetailsElement) => (d.open = true));
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});

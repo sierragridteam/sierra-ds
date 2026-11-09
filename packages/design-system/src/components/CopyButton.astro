@@ -1,18 +1,25 @@
 ---
 import Icon from "./Icon.astro";
+/**
+ * CopyButton — copies `value` to the clipboard; the copy icon turns into a tick
+ * while "Copied." is announced. Icon-only by default; pass `text` for a visible
+ * label. Client code can replace the value with `element.value = "…"`.
+ */
 interface Props {
   value: string;
   label?: string;
+  text?: string;
+  class?: string;
 }
-const { value, label = "Copy value" } = Astro.props;
+const { value, label = "Copy value", text, class: cls } = Astro.props;
 ---
 
-<sierra-copy data-value={value}>
+<sierra-copy data-value={value} class={cls}>
   <button
     type="button"
-    class="btn btn--ghost btn--sm btn--icon"
-    aria-label={label}
-    title={label}
+    class:list={["btn btn--ghost btn--sm", !text && "btn--icon"]}
+    aria-label={text ? undefined : label}
+    title={text ? undefined : label}
   >
     <span data-copy-icon>
       <Icon name="copy" />
@@ -20,6 +27,7 @@ const { value, label = "Copy value" } = Astro.props;
     <span data-copy-check hidden>
       <Icon name="check" />
     </span>
+    {text && <span data-copy-text>{text}</span>}
   </button>
   <span class="sr-only" role="status" aria-live="polite"></span>
 </sierra-copy>
@@ -27,6 +35,12 @@ const { value, label = "Copy value" } = Astro.props;
   class SierraCopy extends HTMLElement {
     controller?: AbortController;
     timer?: ReturnType<typeof setTimeout>;
+    get value() {
+      return this.dataset.value ?? "";
+    }
+    set value(value: string) {
+      this.dataset.value = value;
+    }
     connectedCallback() {
       this.controller?.abort();
       this.controller = new AbortController();

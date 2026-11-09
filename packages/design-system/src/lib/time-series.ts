@@ -1,3 +1,4 @@
+/** @deprecated Types and helpers for TimeSeriesChart, now a wrapper around LineChart. */
 export interface TimeSeriesPoint {
   time: number;
   value: number | null;
@@ -15,6 +16,10 @@ export interface TimeSeriesChartOptions {
   timeDomain?: [number, number];
   valueDomain?: [number, number];
   maxGapMs?: number;
+}
+/** @deprecated TimeSeriesChart is a LineChart in UTC; use LineChart directly. */
+export function toLineOptions(options: TimeSeriesChartOptions) {
+  return { ...options, timeZone: "UTC" };
 }
 export interface TimeSeriesChartElement extends HTMLElement {
   options: TimeSeriesChartOptions;

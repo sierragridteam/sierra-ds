@@ -39,6 +39,7 @@ import {
   formatChartValue,
   isolatedPoints,
   lineTable,
+  tableToMarkdown,
   timeTicks,
   type BarChartOptions,
   type BarValue,
@@ -50,6 +51,7 @@ import {
   type LineSeries,
 } from "./chart-model";
 import { onThemeChange } from "./theme";
+import { toLineOptions } from "./time-series";
 
 Chart.register(
   LineController,
@@ -594,7 +596,10 @@ abstract class SierraChart<O extends { label: string }> extends HTMLElement {
     return structuredClone(this.current!);
   }
   set options(value: O) {
-    this.current = structuredClone(value);
+    const next = structuredClone(value);
+    // Validate first: a rejected update leaves the previous chart and options in place.
+    this.text(next);
+    this.current = next;
     if (this.isConnected) this.render();
   }
 
@@ -655,7 +660,12 @@ abstract class SierraChart<O extends { label: string }> extends HTMLElement {
     const details = this.querySelector("details");
     const target = this.querySelector("[data-chart-table]");
     if (!details || !target || !this.tableStale || !details.open) return;
-    renderChartTable(target, table ?? this.text(this.current!).table);
+    const data = table ?? this.text(this.current!).table;
+    renderChartTable(target, data);
+    const copy = this.querySelector<HTMLElement & { value: string }>("sierra-copy");
+    if (copy) copy.value = tableToMarkdown(data);
+    const caption = this.querySelector("[data-chart-caption]");
+    if (caption) caption.textContent = data.caption;
     this.tableStale = false;
   }
 }
@@ -722,7 +732,19 @@ export class SierraBarChart extends SierraChart<BarChartOptions> {
   }
 }
 
+/** @deprecated <sierra-time-series>: TimeSeriesChart options rendered as a UTC line chart. */
+export class SierraTimeSeries extends SierraLineChart {
+  protected config(options: LineChartOptions, palette: ChartPalette) {
+    return super.config(toLineOptions(options), palette);
+  }
+  protected text(options: LineChartOptions) {
+    return super.text(toLineOptions(options));
+  }
+}
+
 export function defineChartElements() {
+  if (!customElements.get("sierra-time-series"))
+    customElements.define("sierra-time-series", SierraTimeSeries);
   if (!customElements.get("sierra-line-chart"))
     customElements.define("sierra-line-chart", SierraLineChart);
   if (!customElements.get("sierra-bar-chart"))

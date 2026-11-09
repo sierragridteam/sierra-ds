@@ -4,7 +4,6 @@ import Card from "@sierragridteam/design-system/components/Card.astro";
 import LineChart from "@sierragridteam/design-system/components/LineChart.astro";
 import BarChart from "@sierragridteam/design-system/components/BarChart.astro";
 import Sparkline from "@sierragridteam/design-system/components/Sparkline.astro";
-import TimeSeriesChart from "@sierragridteam/design-system/components/TimeSeriesChart.astro";
 import { CHART_COLORS, formatChartDay } from "@sierragridteam/design-system/lib/chart-model";
 
 // Synthetic fixtures only. A seeded generator keeps every build identical.
@@ -86,17 +85,11 @@ const traffic = {
 const temps = Array.from({ length: 25 }, (_, i) => round(41 + 14 * sun(start + i * HOUR) + (wr() - 0.5) * 2, 1));
 const packets = Array.from({ length: 24 }, () => round(80 + wr() * 70, 0));
 const weekRain = storm.slice(-7);
-const legacyStart = Date.UTC(2026, 10, 1);
-const legacy = [
-  { id: "a", label: "Synthetic receiver A", points: [{ time: legacyStart, value: -4 }, { time: legacyStart + HOUR, value: 0 }, { time: legacyStart + 2 * HOUR, value: null }, { time: legacyStart + 3 * HOUR, value: 7 }] },
-  { id: "b", label: "Synthetic receiver B", points: [{ time: legacyStart, value: 2 }, { time: legacyStart + HOUR, value: 2 }, { time: legacyStart + 3 * HOUR, value: 2 }] },
-];
 const sections = [
   { id: "palette", label: "Palette" },
   { id: "telemetry", label: "Telemetry lines" },
   { id: "weather", label: "Weather bars" },
   { id: "sparklines", label: "Sparklines" },
-  { id: "svg", label: "SVG time series" },
 ];
 ---
 
@@ -340,27 +333,11 @@ const sections = [
       </Card>
     </section>
 
-    <section id="svg" class="stack">
-      <div class="section-header">
-        <h2>SVG time series</h2>
-        <p>The earlier dependency-free chart, kept for existing consumers.</p>
-      </div>
-      <TimeSeriesChart id="demo-chart" label="Receiver signal" description="Explicit missing samples and a two-hour gap." series={legacy} unit="dB" maxGapMs={5400000} />
-      <button id="update-chart" class="btn">Replace with one zero reading</button>
-      <TimeSeriesChart label="No samples" series={[]} />
-    </section>
   </div>
 </DemoLayout>
 
 <script>
-  import type { TimeSeriesChartElement } from "@sierragridteam/design-system/lib/time-series";
   import type { LineChartElement } from "@sierragridteam/design-system/lib/charts";
-
-  document.querySelector("#update-chart")?.addEventListener("click", () => {
-    (document.querySelector("#demo-chart") as TimeSeriesChartElement).series = [
-      { id: "zero", label: "Updated sample", points: [{ time: Date.UTC(2026, 10, 2), value: 0 }] },
-    ];
-  });
 
   // Live telemetry: seed five minutes of history, then append every two seconds.
   const live = document.querySelector("#live-chart") as LineChartElement;

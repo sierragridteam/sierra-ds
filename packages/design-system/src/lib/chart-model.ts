@@ -473,6 +473,20 @@ export function lineTable(model: LineModel): ChartTable {
   };
 }
 
+/** GitHub-flavoured Markdown, with the caption as a bold line above the table. */
+export function tableToMarkdown(table: ChartTable): string {
+  const cell = (text: string) =>
+    text.replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\s*\n\s*/g, " ");
+  const row = (cells: string[]) => `| ${cells.map(cell).join(" | ")} |`;
+  return [
+    `**${cell(table.caption)}**`,
+    "",
+    row(table.columns),
+    `| ${table.columns.map((_, i) => (i === 0 ? "---" : "---:")).join(" | ")} |`,
+    ...table.rows.map(row),
+  ].join("\n");
+}
+
 export function barTable(model: BarModel): ChartTable {
   const { options } = model;
   const fmt = { decimals: options.decimals };

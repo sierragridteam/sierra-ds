@@ -248,3 +248,11 @@ test("sparkline geometry breaks on nulls, ends with a dot and describes the rang
   assert.equal(bars.bars[1].height, 10);
   assert.equal(buildSparkline({ label: "None", values: [] }).description, "None: no readings.");
 });
+
+test("tables export as GitHub Markdown with escaped cells", async () => {
+  const { tableToMarkdown } = await import("../packages/design-system/src/lib/chart-model.ts");
+  assert.equal(
+    tableToMarkdown({ caption: "Rain (in)", columns: ["Station", "Total"], rows: [["A|B", "1.5"], ["C", "Not reported"]] }),
+    "**Rain (in)**\n\n| Station | Total |\n| --- | ---: |\n| A\\|B | 1.5 |\n| C | Not reported |",
+  );
+});
