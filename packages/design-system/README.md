@@ -79,9 +79,13 @@ full reference):
 5. **Panels group media and controls.** `Card variant="panel"`: kicker + title +
    `actions` slot (a `MoreLink`), full-bleed `media` slot (map, image), padded
    body, `source` line. Lay panels out with `.columns` or
-   `.columns.columns--wide-narrow`; they stretch to equal height.
+   `.columns.columns--wide-narrow`; they stretch to equal height. A map in the
+   `media` slot takes the extra height, so a short panel beside a tall one has
+   no empty band.
 6. **Space with the system.** `.stack` between sections, `.columns` for side by
-   side, panel bodies space their children. No ad-hoc margins.
+   side. Panel bodies and the banner aside space their blocks (`p`, lists,
+   `.field`, `.callout`, `section`, `figure`, `table`, `form`) even inside your
+   own wrappers or region hosts. No ad-hoc margins.
 
 Do not:
 
@@ -278,6 +282,11 @@ in the URL. `renderInto(container, template)` renders once without a store.
 An app-shell component (sidebar, top bar, mobile drawer) is not in the system
 yet; `shell.css` holds the classes members' layout uses (`.shell`, `.sidebar`,
 `.topbar`, `.main`, `data-drawer`). Ask before building a shell of your own.
+Put page content in `.main > .main__inner`: it starts beside the sidebar.
+`.main__inner--wide` (1480px) suits dashboards and list-and-detail views,
+`--narrow` forms. Do not centre your own column: on wide screens that opens an
+empty band between navigation and content. Plain `p`/`span` text in
+`.sidebar__footer` is styled as a caption.
 
 ## Times
 
@@ -308,6 +317,8 @@ properties: `label`, `shortLabel` (map label), `description`, `tone`
 same features and selecting there drives `map.selected` (a feed), so keyboard
 users have the same path. The basemap style and label fonts load from
 `tiles.openfreemap.org`; without it the map shows geometry on plain ground.
+Zoom controls follow the theme whether the map comes from `GeoJSONMap` or
+`createGeoMap()`.
 
 ## Tokens and theme
 

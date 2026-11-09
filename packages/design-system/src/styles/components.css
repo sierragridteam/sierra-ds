@@ -460,6 +460,12 @@
   margin: 0;
   min-width: 0;
 }
+/* Flow: blocks an app nests inside a panel body or banner aside (a region
+   host, a key, a status note) keep the same rhythm as direct children. */
+:where(.card--panel > .card__body, .summary-banner__aside)
+  :where(* + :is(p, ul, ol, dl, .field, .callout, section, figure, table, form)) {
+  margin-top: var(--flow-space, var(--space-3));
+}
 .card__media {
   margin-top: var(--space-4);
   border-block: var(--border-soft);
@@ -468,6 +474,22 @@
 .card__media > * {
   display: block;
   border-radius: 0;
+}
+/* A map in a panel's media takes the height the row gives the panel, so an
+   equal-height row has no dead band above the source line. */
+.card--panel > .card__media:has(.ds-geo-map) {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.card--panel > .card__media:has(.ds-geo-map) > *,
+.card--panel > .card__media .ds-geo-map {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+.card--panel > .card__media .ds-map-canvas {
+  flex: 1 0 auto;
 }
 .card--panel > .card__footer {
   margin-top: auto;
@@ -724,8 +746,13 @@
 .summary-banner__aside li {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: baseline;
   gap: var(--space-2);
+}
+/* A long title wraps beside its badge instead of dropping below it. */
+.summary-banner__aside li > a {
+  flex: 1 1 12rem;
+  min-width: 0;
 }
 /* Badges on the deep ground: a quiet outline, light text, lifted status dot. */
 .summary-banner .badge {
@@ -2417,12 +2444,16 @@ sierra-select {
 .ds-map-compact .ds-map-canvas {
   height: 220px;
 }
-.ds-map-frame .maplibregl-ctrl-group {
+/* Applies to the Astro frame and to createGeoMap() elements alike. */
+:is(.ds-map-frame, .ds-geo-map) .maplibregl-ctrl-group {
   background: var(--surface-raised);
   border: var(--border);
   box-shadow: none;
 }
-.ds-map-frame .maplibregl-ctrl-icon {
+:is(.ds-map-frame, .ds-geo-map) .maplibregl-ctrl-group button + button {
+  border-top: var(--border);
+}
+:is(.ds-map-frame, .ds-geo-map) .maplibregl-ctrl-icon {
   filter: var(--map-control-icon-filter);
 }
 .ds-map-fallback {

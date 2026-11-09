@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.8.3
+
+Guardrails from a wide-screen review of a data app's overview: layouts an app
+gets right by using the system's classes.
+
+- Shell: `.main__inner` starts beside the sidebar instead of centring (visible
+  for members on wide screens). New `.main__inner--wide` (`--content-wide`,
+  1480px) for dashboards.
+- Map zoom controls are themed for `createGeoMap()` elements as well as the
+  Astro frame; dark mode no longer shows white MapLibre buttons.
+- A map in a panel's `media` slot grows to fill an equal-height row.
+- Flow spacing: blocks nested inside a panel body or banner aside (in an app's
+  wrapper or region host) keep the system rhythm.
+- Banner attention items: a long title wraps beside its badge, aligned to the
+  first line.
+- `.sidebar__footer` plain text reads as a caption.
+- Browser fixture `compat/composition` covers each case.
+
 ## 0.8.2
 
 Fixes from an adversarial review and a clean-room build of a page from the

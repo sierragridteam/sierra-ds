@@ -103,6 +103,23 @@
   border-top: var(--border);
 }
 
+/* Plain text in the footer (a place, a scope note) reads as a quiet caption. */
+.sidebar__footer :where(p, span:not([class])) {
+  display: block;
+  margin: var(--space-2) 0 0;
+  padding: 0 var(--space-1);
+  font-size: var(--fs-small);
+  line-height: var(--lh-ui);
+  color: var(--ink-muted);
+}
+.sidebar__footer :where(p) {
+  color: var(--ink-secondary);
+  font-weight: var(--fw-medium);
+}
+.sidebar__footer :where(p + span:not([class])) {
+  margin-top: 0;
+}
+
 /* Theme switcher row above the user chip: icons share the full width. */
 .sidebar__theme {
   display: block;
@@ -213,13 +230,19 @@
   padding: var(--space-7) var(--gutter) var(--space-10);
 }
 
+/* Content starts beside the sidebar. A centred column leaves an empty band
+   between navigation and content on wide screens. */
 .main__inner {
   max-width: var(--content-max);
-  margin-inline: auto;
+  margin-inline: 0 auto;
 }
 
 .main__inner--narrow {
   max-width: var(--content-narrow);
+}
+
+.main__inner--wide {
+  max-width: var(--content-wide);
 }
 
 .scrim {

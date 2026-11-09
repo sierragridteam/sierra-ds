@@ -83,6 +83,7 @@
   --topbar-h: 56px;
   --content-max: 960px;
   --content-narrow: 560px;
+  --content-wide: 1480px; /* data apps: dashboards, list-and-detail */
   --dialog-w: 560px;
   --dialog-w-wide: 760px;
   --gutter: clamp(16px, 3vw, 32px);

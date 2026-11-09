@@ -1,0 +1,64 @@
+---
+// Test fixture: app composition guardrails (shell width, panels, flow spacing,
+// client-built maps). Shaped like a data app's overview. Not linked from the demo.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Card from "@sierragridteam/design-system/components/Card.astro";
+import SummaryBanner from "@sierragridteam/design-system/components/SummaryBanner.astro";
+import Badge from "@sierragridteam/design-system/components/Badge.astro";
+import ThemeSwitcher from "@sierragridteam/design-system/components/ThemeSwitcher.astro";
+---
+
+<BaseLayout title="Composition fixtures">
+  <div class="shell">
+    <aside class="sidebar" aria-label="Fixture navigation">
+      <div class="sidebar__brand">Fixture</div>
+      <nav class="sidebar__nav" aria-label="Main"><a class="nav-link is-active" href="#">Overview</a></nav>
+      <div class="sidebar__footer">
+        <ThemeSwitcher compact class="sidebar__theme" />
+        <p id="footer-place">Ebbetts Pass corridor</p>
+        <span id="footer-detail">From Angels Camp to the crest</span>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="main__inner main__inner--wide">
+        <main id="main" class="stack">
+          <SummaryBanner level={1} kicker="Corridor" asideTitle="Worth your attention">
+            Four reports need attention.
+            <div slot="aside" id="attention">
+              <ul>
+                <li><Badge tone="alarm">Severe</Badge><a href="#">Short title</a></li>
+                <li id="long-item"><Badge tone="elevated">Moderate</Badge><a href="#">Hwy 108 one-way traffic control between two distant junctions (Drainage Work)</a></li>
+              </ul>
+              <p id="attention-note">Includes road conditions, which are separate from the event count.</p>
+            </div>
+          </SummaryBanner>
+
+          <div class="columns columns--wide-narrow" id="row">
+            <Card variant="panel" kicker="On the ground" title="Roads" source="Route lines are context." id="map-panel">
+              <div slot="media" id="map-host"></div>
+              <div id="key">
+                <div class="cluster"><span>Lines: routes</span><span>Markers: reports</span></div>
+                <p id="key-note" class="meta">Markers locate source reports.</p>
+                <label class="field" id="key-field">Inspect a report<select class="input"><option>One</option></select></label>
+              </div>
+            </Card>
+            <Card variant="panel" kicker="Looking ahead" title="Weather" source="Synthetic." id="tall-panel">
+              <div style="height: 640px" aria-hidden="true"></div>
+            </Card>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { createGeoMap } from "@sierragridteam/design-system/lib/geo-map";
+  const map = createGeoMap({
+    label: "Fixture map",
+    compact: true,
+    featureList: false,
+    data: { type: "FeatureCollection", features: [{ type: "Feature", properties: { label: "Arnold" }, geometry: { type: "Point", coordinates: [-120.35, 38.25] } }] },
+  });
+  document.querySelector("#map-host")!.append(map);
+</script>
