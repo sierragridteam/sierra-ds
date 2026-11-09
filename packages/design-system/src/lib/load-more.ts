@@ -68,11 +68,24 @@ export class SierraLoadMore extends SierraElement<LoadMoreProps> {
 
   protected updated(p: LoadMoreProps) {
     if (!p.loading) this.#pending = false;
-    // A page that loaded but did not push the sentinel out of view: keep going.
-    queueMicrotask(() => {
+    // A page that loaded but did not push the sentinel out of reach: keep going.
+    // Measure now; the observer's last reading predates the new rows.
+    requestAnimationFrame(() => {
+      if (!this.isConnected) return;
       if (this.#root === undefined || scrollParent(this) !== this.#root) this.#observe();
+      this.#visible = this.#inReach();
       this.#maybeLoad();
     });
+  }
+
+  /** Whether the sentinel is within rootMargin of its scroll container (or the viewport) right now. */
+  #inReach(): boolean {
+    const sentinel = this.querySelector(".ds-load-more__sentinel");
+    if (!sentinel) return false;
+    const margin = parseFloat(this.props.rootMargin ?? "600px") || 0;
+    const box = sentinel.getBoundingClientRect();
+    const area = this.#root ? this.#root.getBoundingClientRect() : { top: 0, bottom: innerHeight };
+    return box.top <= area.bottom + margin && box.bottom >= area.top - margin;
   }
 
   protected disconnected() {
