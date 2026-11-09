@@ -125,6 +125,7 @@ Do not:
 | Charts | `LineChart`, `BarChart` | `createLineChart()`, `createBarChart()` |
 | Maps | `MapFrame`, `GeoJSONMap` (`labels`, `featureList`, `selected`) | `createGeoMap()` |
 | Record changes | `DataDiff` (`count={false}`; lists diff as pills), `IdentifierList` | `createDataDiff()` |
+| Long lists (infinite scroll) | — | `<sierra-load-more>` / `createLoadMore()` (lib/load-more): fires `load-more` near the end of its scroll container, keeps a real button, stops on `error` |
 | Record timeline | `Timeline` (`state`, `kind: "system"` for the app's own events) | `timeline()` |
 | Progress through a window | — | `progress()` (in a `stat()` `extra`) |
 | Highway message sign | `MessageSign` | `messageSign()` |

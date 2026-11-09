@@ -14,6 +14,12 @@ and event browser. Each case is covered by browser fixtures.
   for record details, and `identifiers` items rendered as pills.
   `identifierPills()` / `shortIdentifier()`: long hex values show six
   characters, with the full value as title and accessible name.
+- `<sierra-load-more>` (`lib/load-more`, `createLoadMore`): infinite scroll
+  for paged lists. Fires `load-more` as its sentinel nears view inside the
+  nearest scrolling ancestor or the page, again while a short page leaves it
+  in view; `loading`/`hasMore`/`error` props drive it, an error stops
+  automatic loading, and a real button (`auto: false` for button only) is
+  always present.
 - `Timeline` / `timeline()`: a record's key moments in time order; `state`
   past/now/future and `kind` source/system (the app's own record-keeping is
   quieter). `progress()`: a bar for stat tiles. `.stats--compact` for a

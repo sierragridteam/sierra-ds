@@ -1,0 +1,46 @@
+---
+// Test fixture: <sierra-load-more> in a scrolling column and on the page. Not linked from the demo.
+import DemoLayout from "../../layouts/DemoLayout.astro";
+---
+
+<DemoLayout title="Load more fixture" sections={[]}>
+  <h1>Load more</h1>
+  <div id="column" style="height: 320px; overflow-y: auto; border: 1px solid var(--line)"><ol id="column-list"></ol><div id="column-more"></div></div>
+  <h2>Short pages</h2>
+  <ol id="short-list"></ol><div id="short-more"></div>
+  <h2>Manual</h2>
+  <ol id="manual-list"></ol><div id="manual-more"></div>
+  <h2>Failing</h2>
+  <ol id="fail-list"></ol><div id="fail-more"></div>
+</DemoLayout>
+
+<script>
+  import { createLoadMore, type LoadMoreProps } from "@sierragridteam/design-system/lib/load-more";
+
+  /** A fake paged source: `pages` pages of `size` rows, optionally failing once. */
+  function feed(list: HTMLElement, host: HTMLElement, { pages, size, failOnce = false, label, auto }: { pages: number; size: number; failOnce?: boolean; label: string; auto?: boolean }) {
+    let page = 0, failed = false;
+    const props: LoadMoreProps = { hasMore: true, loading: false, label, endLabel: "All rows loaded.", auto };
+    const more = createLoadMore(props);
+    host.append(more);
+    (window as any)[`${host.id}Calls`] = 0;
+    more.addEventListener("load-more", async () => {
+      (window as any)[`${host.id}Calls`]++;
+      more.update({ loading: true });
+      await new Promise((r) => setTimeout(r, 50));
+      if (failOnce && !failed && page === 1) {
+        failed = true;
+        more.update({ loading: false, error: "That page could not load." });
+        return;
+      }
+      for (let i = 0; i < size; i++) list.insertAdjacentHTML("beforeend", `<li style="height: 40px">Row ${page * size + i + 1}</li>`);
+      page++;
+      more.update({ loading: false, error: undefined, hasMore: page < pages });
+    });
+  }
+  feed(document.querySelector("#column-list")!, document.querySelector("#column-more")!, { pages: 4, size: 10, label: "Load more rows" });
+  feed(document.querySelector("#short-list")!, document.querySelector("#short-more")!, { pages: 3, size: 1, label: "Load more short" });
+  feed(document.querySelector("#manual-list")!, document.querySelector("#manual-more")!, { pages: 2, size: 2, label: "Load more manual", auto: false });
+  feed(document.querySelector("#fail-list")!, document.querySelector("#fail-more")!, { pages: 3, size: 5, failOnce: true, label: "Load more failing" });
+  document.documentElement.setAttribute("data-fixtures-ready", "");
+</script>
