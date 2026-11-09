@@ -123,3 +123,12 @@ test("record header, metric grid and message sign escape text", async () => {
   const blank = toHTML(messageSign({ location: "EB 88", pages: null }));
   assert.match(blank, /Sign is blank/);
 });
+
+test("timeline marks now, planned and system moments; progress clamps", async () => {
+  const { timeline, progress } = await import("../packages/design-system/src/lib/ui.ts");
+  const out = toHTML(timeline({ label: "T", items: [{ time: "1", label: "a", kind: "system" }, { time: "2", label: "Now", state: "now" }, { time: "3", label: "b", state: "future" }] }));
+  assert.match(out, /is-past[^"]*is-system|is-system[^"]*is-past/);
+  assert.match(out, /aria-current="time"/);
+  assert.match(out, /is-future/);
+  assert.match(toHTML(progress({ value: 1.4, label: "P" })), /aria-valuenow="100"/);
+});

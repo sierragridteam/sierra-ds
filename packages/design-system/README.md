@@ -125,6 +125,8 @@ Do not:
 | Charts | `LineChart`, `BarChart` | `createLineChart()`, `createBarChart()` |
 | Maps | `MapFrame`, `GeoJSONMap` (`labels`, `featureList`, `selected`) | `createGeoMap()` |
 | Record changes | `DataDiff` (`count={false}`; lists diff as pills), `IdentifierList` | `createDataDiff()` |
+| Record timeline | `Timeline` (`state`, `kind: "system"` for the app's own events) | `timeline()` |
+| Progress through a window | — | `progress()` (in a `stat()` `extra`) |
 | Highway message sign | `MessageSign` | `messageSign()` |
 | Data freshness | `DataStatus` | classes |
 | Copy | `CopyButton` | `copyButton()` |

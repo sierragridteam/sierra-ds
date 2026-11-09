@@ -1924,6 +1924,17 @@ a.stat:hover {
   text-decoration: none;
 }
 
+/* Compact stats: a record's callouts beside other content, values at h2 size. */
+.stats--compact {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr));
+}
+.stats--compact .stat {
+  padding: var(--space-3) var(--space-4);
+}
+.stats--compact .stat__value {
+  font-size: var(--fs-h2);
+}
+
 /* A tile with an action: arrow icon top right, the whole tile is the link. */
 .stat__top {
   display: flex;
@@ -3169,5 +3180,119 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   overflow-wrap: anywhere;
 }
 .ds-property-missing {
+  color: var(--ink-muted);
+}
+
+/* Timeline: time, dot on a rail, label. Past solid, now emphasised, planned hollow. */
+.ds-timeline {
+  display: grid;
+  grid-template-columns: max-content 1rem minmax(0, 1fr);
+  column-gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-timeline__item {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: baseline;
+  padding-bottom: var(--space-3);
+}
+.ds-timeline__time {
+  color: var(--ink-secondary);
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+/* The mark cell spans the row: dot at the top, rail down to the next dot. */
+.ds-timeline__mark {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: calc(-1 * var(--space-3));
+  padding-top: 0.35em;
+}
+.ds-timeline__item:not(:last-child) .ds-timeline__mark::after {
+  content: "";
+  flex: 1;
+  width: 1px;
+  margin-top: 2px;
+  background: var(--line);
+}
+.ds-timeline__dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+}
+.ds-timeline__item.is-now .ds-timeline__dot {
+  width: 12px;
+  height: 12px;
+  background: var(--brand-green);
+  box-shadow: 0 0 0 3px var(--brand-green-tint);
+}
+.ds-timeline__item.is-now .ds-timeline__label {
+  font-weight: var(--fw-semibold);
+  color: var(--ink-strong);
+}
+.ds-timeline__item.is-future .ds-timeline__dot {
+  background: var(--surface-card);
+  border: 1.5px solid var(--ink-muted);
+}
+.ds-timeline__item.is-future .ds-timeline__label {
+  color: var(--ink-secondary);
+}
+/* The app's own record-keeping (saved, new version): a small square, quieter text. */
+.ds-timeline__item.is-system .ds-timeline__dot {
+  width: 8px;
+  height: 8px;
+  margin-top: 1px;
+  border-radius: 2px;
+  background: transparent;
+  border: 1.5px solid var(--ink-muted);
+}
+.ds-timeline__item.is-system .ds-timeline__label {
+  color: var(--ink-secondary);
+  font-size: var(--fs-small);
+}
+.ds-timeline__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.ds-timeline__label {
+  font-size: var(--fs-ui);
+  color: var(--ink-body);
+  overflow-wrap: anywhere;
+}
+.ds-timeline__detail {
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+  overflow-wrap: anywhere;
+}
+
+/* Progress bar. */
+.ds-progress {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.ds-progress__track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--line);
+  overflow: hidden;
+}
+.ds-progress__fill {
+  display: block;
+  height: 100%;
+  background: var(--brand-green);
+  border-radius: inherit;
+}
+.ds-progress__text {
+  font-size: var(--fs-small);
   color: var(--ink-muted);
 }

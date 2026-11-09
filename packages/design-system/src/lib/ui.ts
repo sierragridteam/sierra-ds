@@ -449,3 +449,36 @@ export function propertyList(p: PropertyListProps) {
     </div>`,
   )}</dl>`;
 }
+
+export interface TimelineItem {
+  /** Short time, e.g. "11:15" or "Nov 9, 11:15". */
+  time: string;
+  /** Machine-readable instant for <time datetime>. */
+  datetime?: string;
+  label: Content;
+  detail?: Content;
+  /** past (default), now (the current moment) or future (planned). */
+  state?: "past" | "now" | "future";
+  /** `source`: something that happened in the world (default). `system`: the app's own record-keeping (saved, updated), shown quieter. */
+  kind?: "source" | "system";
+}
+export interface TimelineProps {
+  label: string;
+  items: TimelineItem[];
+}
+/** Key moments of a record in time order: what happened, now, and what is planned. */
+export function timeline(p: TimelineProps) {
+  return html`<ol class="ds-timeline" aria-label=${p.label}>${p.items.map(
+    (item) => html`<li class=${classMap({ "ds-timeline__item": true, [`is-${item.state ?? "past"}`]: true, "is-system": item.kind === "system" })} aria-current=${ifDefined(item.state === "now" ? "time" : undefined)}>
+      <time class="ds-timeline__time" datetime=${ifDefined(item.datetime)}>${item.time}</time>
+      <span class="ds-timeline__mark" aria-hidden="true"><span class="ds-timeline__dot"></span></span>
+      <div class="ds-timeline__body"><span class="ds-timeline__label">${item.label}</span>${item.detail ? html`<span class="ds-timeline__detail">${item.detail}</span>` : nothing}</div>
+    </li>`,
+  )}</ol>`;
+}
+
+/** A horizontal progress bar, e.g. how far through a planned window. `value` is 0–1. */
+export function progress({ value, label, text }: { value: number; label: string; text?: Content }) {
+  const v = Math.max(0, Math.min(1, value));
+  return html`<div class="ds-progress"><div class="ds-progress__track" role="progressbar" aria-label=${label} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(v * 100)}><span class="ds-progress__fill" style=${`width: ${(v * 100).toFixed(1)}%`}></span></div>${text ? html`<span class="ds-progress__text">${text}</span>` : nothing}</div>`;
+}

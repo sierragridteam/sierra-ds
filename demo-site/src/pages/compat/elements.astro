@@ -12,6 +12,7 @@ import MessageSign from "@sierragridteam/design-system/components/MessageSign.as
 import RecordHeader from "@sierragridteam/design-system/components/RecordHeader.astro";
 import Stat from "@sierragridteam/design-system/components/Stat.astro";
 import PropertyList from "@sierragridteam/design-system/components/PropertyList.astro";
+import Timeline from "@sierragridteam/design-system/components/Timeline.astro";
 import { PARITY } from "../../fixtures/parity";
 ---
 
@@ -26,6 +27,7 @@ import { PARITY } from "../../fixtures/parity";
   <div id="server-header"><RecordHeader {...PARITY.header} /></div>
   <div id="server-stat"><Stat {...PARITY.stat} /></div>
   <div id="server-properties"><PropertyList {...PARITY.properties} /></div>
+  <div id="server-timeline"><Timeline {...PARITY.timeline} /></div>
   <Field label="Server station" for="server-select"><Select id="server-select" {...PARITY.select} /></Field>
   <div id="client"></div>
 </DemoLayout>
@@ -33,7 +35,7 @@ import { PARITY } from "../../fixtures/parity";
 <script>
   import { createStore, region, renderInto } from "@sierragridteam/design-system/lib/region";
   import { html, repeat } from "@sierragridteam/design-system/lib/template";
-  import { choiceTiles, feedItem, segmented, metricGrid, messageSign, recordHeader, stat, propertyList } from "@sierragridteam/design-system/lib/ui";
+  import { choiceTiles, feedItem, segmented, metricGrid, messageSign, recordHeader, stat, propertyList, timeline } from "@sierragridteam/design-system/lib/ui";
   import { createSelect } from "@sierragridteam/design-system/lib/select";
   import { createDataDiff } from "@sierragridteam/design-system/lib/data-diff";
   import { createLineChart } from "@sierragridteam/design-system/lib/charts";
@@ -48,7 +50,8 @@ import { PARITY } from "../../fixtures/parity";
     <div id="client-sign">${messageSign(PARITY.sign)}</div>
     <div id="client-header">${recordHeader(PARITY.header)}</div>
     <div id="client-stat">${stat(PARITY.stat)}</div>
-    <div id="client-properties">${propertyList(PARITY.properties)}</div>`);
+    <div id="client-properties">${propertyList(PARITY.properties)}</div>
+    <div id="client-timeline">${timeline(PARITY.timeline)}</div>`);
   const select = createSelect({ id: "client-select", ...PARITY.select });
   const diff = createDataDiff(PARITY.diff);
   diff.id = "client-diff";

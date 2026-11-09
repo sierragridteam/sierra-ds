@@ -31,7 +31,7 @@ test.describe("templates", () => {
     await expect(page.locator("html")).toHaveAttribute("data-fixtures-ready", "");
   });
 
-  for (const name of ["feed", "segmented", "tiles", "metrics", "sign", "header", "stat", "properties"]) {
+  for (const name of ["feed", "segmented", "tiles", "metrics", "sign", "header", "stat", "properties", "timeline"]) {
     test(`${name}: server and client render the same markup`, async ({ page }) => {
       expect(await normalised(page, `#client-${name}`)).toBe(await normalised(page, `#server-${name}`));
     });

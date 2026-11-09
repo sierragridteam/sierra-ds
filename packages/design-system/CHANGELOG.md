@@ -14,6 +14,10 @@ and event browser. Each case is covered by browser fixtures.
   for record details, and `identifiers` items rendered as pills.
   `identifierPills()` / `shortIdentifier()`: long hex values show six
   characters, with the full value as title and accessible name.
+- `Timeline` / `timeline()`: a record's key moments in time order; `state`
+  past/now/future and `kind` source/system (the app's own record-keeping is
+  quieter). `progress()`: a bar for stat tiles. `.stats--compact` for a
+  record's callouts.
 - `PropertyList` / `propertyList()`: record details as label/value rows with
   hairlines, in as many columns as fit; identifier lists as pills.
 - `MessageSign` / `messageSign()`: one sign face with a bezel and amber text
