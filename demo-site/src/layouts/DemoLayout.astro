@@ -27,6 +27,7 @@ const current = Astro.url.pathname.replace(/\/$/, "") || "/";
           Data and maps
         </a>
         <a href="/charts" aria-current={current === "/charts" ? "page" : undefined}>Charts</a>
+        <a href="/dashboard" aria-current={current === "/dashboard" ? "page" : undefined}>Dashboard</a>
       </nav>
       <ThemeSwitcher compact class="demo-theme" />
     </div>

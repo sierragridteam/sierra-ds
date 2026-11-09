@@ -1,10 +1,11 @@
 {
   "name": "@sierragridteam/design-system",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "type": "module",
   "files": [
     "src",
-    "assets"
+    "assets",
+    "CHANGELOG.md"
   ],
   "exports": {
     "./components/*": "./src/components/*",
@@ -26,7 +27,9 @@
     }
   },
   "dependencies": {
-    "@types/geojson": "^7946.0.16"
+    "@lit-labs/ssr": "^4.1.0",
+    "@types/geojson": "^7946.0.16",
+    "lit-html": "^3.3.3"
   },
   "license": "UNLICENSED",
   "repository": {

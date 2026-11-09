@@ -1,0 +1,30 @@
+---
+/**
+ * SummaryBanner — the one dark headline block at the top of an overview: a
+ * kicker, a serif sentence stating the situation, a meta line, and an optional
+ * `aside` slot (e.g. "Worth your attention" with a short list of links).
+ * Use at most once per page. Client: `summaryBanner()` from lib/ui.
+ */
+interface Props {
+  kicker?: string;
+  meta?: string;
+  asideTitle?: string;
+  level?: 1 | 2;
+}
+const { kicker, meta, asideTitle, level = 2 } = Astro.props;
+const Heading = `h${level}` as "h2";
+---
+
+<section class="summary-banner">
+  <div class="summary-banner__main">
+    {kicker && <span class="kicker">{kicker}</span>}
+    <Heading class="summary-banner__headline"><slot /></Heading>
+    {meta && <p class="summary-banner__meta">{meta}</p>}
+  </div>
+  {Astro.slots.has("aside") && (
+    <div class="summary-banner__aside">
+      {asideTitle && <p class="summary-banner__aside-title">{asideTitle}</p>}
+      <slot name="aside" />
+    </div>
+  )}
+</section>

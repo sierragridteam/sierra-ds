@@ -2,31 +2,18 @@
 /**
  * @deprecated Use LineChart. Kept API-compatible: the same props, the same
  * <sierra-time-series> element with `options` and `series`, UTC labels by
- * default. It now renders with the LineChart runtime, so it needs chart.js.
+ * default. It renders with the LineChart runtime, so it needs chart.js.
  */
 import ChartFrame from "./ChartFrame.astro";
-import { buildLineModel, describeLine, lineTable, zoneLabel } from "../lib/chart-model";
+import { lineFrameProps } from "../lib/chart-frame";
 import { toLineOptions, type TimeSeriesChartOptions } from "../lib/time-series";
 interface Props extends TimeSeriesChartOptions {
   id?: string;
 }
 const { id, ...options } = Astro.props;
-const line = toLineOptions(options);
-const model = buildLineModel(line);
 ---
 
-<ChartFrame
-  tag="sierra-time-series"
-  id={id}
-  options={options}
-  label={options.label}
-  description={options.description}
-  meta={[options.unit && `Values in ${options.unit}`, `Times in ${zoneLabel(line.timeZone)}`].filter(Boolean).join(" · ")}
-  summary={describeLine(model)}
-  table={lineTable(model)}
-  empty={model.empty}
-  series={model.series}
-/>
+<ChartFrame tag="sierra-time-series" id={id} options={options} {...lineFrameProps(toLineOptions(options))} />
 
 <script>
   import { defineChartElements } from "../lib/charts";

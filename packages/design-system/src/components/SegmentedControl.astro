@@ -1,0 +1,12 @@
+---
+/**
+ * SegmentedControl — one of two to five short options (°F/°C, 24h/7d, list/map).
+ * Native radios: arrow keys move the choice and `change` bubbles from the radio.
+ * Client: `segmented()` from lib/ui. Use ChoiceTiles for longer options.
+ */
+import { toHTML } from "../lib/ssr";
+import { segmented, type SegmentedProps } from "../lib/ui";
+interface Props extends Omit<SegmentedProps, "onChange"> {}
+---
+
+<Fragment set:html={toHTML(segmented(Astro.props))} />

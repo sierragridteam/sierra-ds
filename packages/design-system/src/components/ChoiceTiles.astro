@@ -1,0 +1,12 @@
+---
+/**
+ * ChoiceTiles — pick one place, station or item from tiles with an optional icon
+ * and detail line ("50°F"). Native radios. `size="compact"` packs tiles into
+ * panels; the default is the large wizard form. Client: `choiceTiles()`.
+ */
+import { toHTML } from "../lib/ssr";
+import { choiceTiles, type ChoiceTilesProps } from "../lib/ui";
+interface Props extends Omit<ChoiceTilesProps, "onChange"> {}
+---
+
+<Fragment set:html={toHTML(choiceTiles(Astro.props))} />

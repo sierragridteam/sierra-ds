@@ -1,21 +1,55 @@
 ---
-/** Card — flat panel: card surface, tan border, 4px radius, never a shadow. */
+/**
+ * Card — flat panel: card surface, tan border, 4px radius, never a shadow.
+ *
+ * `variant="panel"` is the dashboard form: a kicker and serif title with an
+ * action (e.g. MoreLink) in the header, full-bleed `media` (map, chart), padded
+ * body sections and a `source` line. Panels stretch to equal height in a row.
+ * The default variant (sans title in a header strip) suits forms and admin views.
+ */
 interface Props {
   title?: string;
+  kicker?: string;
+  /** Heading level for the title; panels default to h2, cards to h3. */
+  level?: 2 | 3 | 4;
+  variant?: 'default' | 'panel';
   padded?: boolean;
   surface?: 'card' | 'raised' | 'banner';
   as?: 'div' | 'section' | 'article';
+  /** Data source or attribution, shown as a muted footer line. */
+  source?: string;
   class?: string;
   id?: string;
 }
-const { title, padded = true, surface = 'card', as: Tag = 'div', class: cls, id } = Astro.props;
+const {
+  title,
+  kicker,
+  variant = 'default',
+  level = variant === 'panel' ? 2 : 3,
+  padded = true,
+  surface = 'card',
+  as: Tag = variant === 'panel' ? 'section' : 'div',
+  source,
+  class: cls,
+  id,
+} = Astro.props;
+const Heading = `h${level}` as 'h2';
+const hasHeader = title || kicker || Astro.slots.has('actions');
 ---
 
-<Tag class:list={['card', surface !== 'card' && `card--${surface}`, cls]} id={id}>
-  {(title || Astro.slots.has('actions')) && (
+<Tag class:list={['card', variant === 'panel' && 'card--panel', surface !== 'card' && `card--${surface}`, cls]} id={id}>
+  {hasHeader && (
     <div class="card__header">
-      {title && <h3 class="card__title">{title}</h3>}
+      <div class="card__heading">
+        {kicker && <span class="kicker">{kicker}</span>}
+        {title && <Heading class="card__title">{title}</Heading>}
+      </div>
       <slot name="actions" />
+    </div>
+  )}
+  {Astro.slots.has('media') && (
+    <div class="card__media">
+      <slot name="media" />
     </div>
   )}
   {padded ? (
@@ -25,8 +59,9 @@ const { title, padded = true, surface = 'card', as: Tag = 'div', class: cls, id 
   ) : (
     <slot />
   )}
-  {Astro.slots.has('footer') && (
+  {(source || Astro.slots.has('footer')) && (
     <div class="card__footer">
+      {source && <p class="card__source">{source}</p>}
       <slot name="footer" />
     </div>
   )}

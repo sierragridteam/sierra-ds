@@ -1,0 +1,12 @@
+---
+/** MoreLink — "Browse all events →": the one style for a link to a section's full view. Client: `moreLink()`. */
+import { toHTML } from "../lib/ssr";
+import { moreLink } from "../lib/ui";
+interface Props {
+  href: string;
+  text: string;
+}
+const { href, text } = Astro.props;
+---
+
+<Fragment set:html={toHTML(moreLink(href, text))} />

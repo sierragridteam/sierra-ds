@@ -1,42 +1,20 @@
 ---
 /**
  * Time-series line chart for telemetry. Chart.js renders in the browser; the
- * element exposes `options`, `series` and `append()` for live updates.
+ * element exposes `props`/`options`, `series` and `appendPoints()` for live
+ * updates. Client code can also use `createLineChart()` from lib/charts.
  */
 import ChartFrame from "./ChartFrame.astro";
-import {
-  DEFAULT_TIME_ZONE,
-  buildLineModel,
-  describeLine,
-  lineTable,
-  zoneLabel,
-  type LineChartOptions,
-} from "../lib/chart-model";
+import { lineFrameProps } from "../lib/chart-frame";
+import type { LineChartOptions } from "../lib/chart-model";
 interface Props extends LineChartOptions {
   id?: string;
   class?: string;
 }
 const { id, class: className, ...options } = Astro.props;
-const model = buildLineModel(options);
-const meta = [options.unit && `Values in ${options.unit}`, `Times in ${zoneLabel(options.timeZone ?? DEFAULT_TIME_ZONE)}`]
-  .filter(Boolean)
-  .join(" · ");
 ---
 
-<ChartFrame
-  tag="sierra-line-chart"
-  id={id}
-  class={className}
-  options={options}
-  label={options.label}
-  description={options.description}
-  meta={meta}
-  summary={describeLine(model)}
-  table={lineTable(model)}
-  empty={model.empty}
-  series={model.series}
-  height={options.height}
-/>
+<ChartFrame tag="sierra-line-chart" id={id} class={className} options={options} {...lineFrameProps(options)} />
 
 <script>
   import { defineChartElements } from "../lib/charts";

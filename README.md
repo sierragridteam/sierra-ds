@@ -2,6 +2,9 @@
 
 The shared Astro components, CSS tokens and browser UI primitives extracted from sierra-members. No frontend runtime framework is required.
 
+Usage documentation for consumers lives in the package: [packages/design-system/README.md](packages/design-system/README.md)
+and [CHANGELOG.md](packages/design-system/CHANGELOG.md). Both ship with the npm package.
+
 ## Local review
 
 Use Node >=26.13.0 and pnpm 12.18.0. Run `pnpm install`, then `pnpm run dev` and open the URL Astro prints. The demo catalog includes light/dark themes, typography, palette, forms, tables, states, shell patterns and interactive dialog/toast examples. Density and width controls support alternate configurations. Use your browser viewport controls to test actual media-query breakpoints.

@@ -52,6 +52,9 @@ import {
 } from "./chart-model";
 import { onThemeChange } from "./theme";
 import { toLineOptions } from "./time-series";
+import { render as litRender } from "lit-html";
+import { barFrameProps, chartFrameTemplate, lineFrameProps, type ChartFrameProps } from "./chart-frame";
+import { defineCopy } from "./copy";
 
 Chart.register(
   LineController,
@@ -592,8 +595,17 @@ abstract class SierraChart<O extends { label: string }> extends HTMLElement {
     series: { id: string; label: string; color: ChartColor }[];
   };
 
+  protected abstract frame(options: O): ChartFrameProps;
+
   get options(): O {
     return structuredClone(this.current!);
+  }
+  /** Same as `options`; matches the `props` contract of other design-system elements. */
+  get props(): O {
+    return this.options;
+  }
+  set props(value: O) {
+    this.options = value;
   }
   set options(value: O) {
     const next = structuredClone(value);
@@ -605,6 +617,11 @@ abstract class SierraChart<O extends { label: string }> extends HTMLElement {
 
   connectedCallback() {
     this.current ??= JSON.parse(this.dataset.options!);
+    // Created empty (in a region or by create*()): render the frame from props.
+    if (!this.querySelector("canvas")) {
+      defineCopy();
+      litRender(chartFrameTemplate(this.frame(this.current!)), this);
+    }
     this.abort = new AbortController();
     const { signal } = this.abort;
     onThemeChange(() => this.render(), { signal });
@@ -628,6 +645,7 @@ abstract class SierraChart<O extends { label: string }> extends HTMLElement {
     const text = this.text(options);
     const config = this.config(options, readChartPalette(this));
     canvas.setAttribute("aria-label", text.description);
+    this.renderCaption(this.frame(options));
     const frame = this.querySelector<HTMLElement>("[data-chart-frame]")!;
     const empty = this.querySelector<HTMLElement>("[data-chart-empty]")!;
     frame.hidden = text.empty;
@@ -655,6 +673,25 @@ abstract class SierraChart<O extends { label: string }> extends HTMLElement {
     this.refreshTable(text.table);
   }
 
+  /** Title, description and meta follow the options (label, unit, time zone). */
+  private renderCaption(frame: ChartFrameProps) {
+    const caption = this.querySelector(".ds-chart__caption");
+    if (!caption) return;
+    caption.querySelector(".ds-chart__title")!.textContent = frame.label;
+    caption.querySelector(".ds-chart__meta")!.textContent = frame.meta;
+    let description = caption.querySelector(".ds-chart__description");
+    if (frame.description) {
+      if (!description) {
+        description = document.createElement("span");
+        description.className = "ds-chart__description";
+        caption.querySelector(".ds-chart__title")!.after(description);
+      }
+      description.textContent = frame.description;
+    } else description?.remove();
+    const region = this.querySelector("[data-chart-table]");
+    region?.setAttribute("aria-label", `${frame.label} data`);
+  }
+
   /** Rebuilding a long table on every streamed sample is wasted work while it is closed. */
   private refreshTable(table?: ChartTable) {
     const details = this.querySelector("details");
@@ -671,6 +708,9 @@ abstract class SierraChart<O extends { label: string }> extends HTMLElement {
 }
 
 export class SierraLineChart extends SierraChart<LineChartOptions> {
+  protected frame(options: LineChartOptions) {
+    return lineFrameProps(options);
+  }
   protected config(options: LineChartOptions, palette: ChartPalette) {
     return lineChartConfig(options, palette, this.hiddenSeries) as never;
   }
@@ -718,6 +758,9 @@ export class SierraLineChart extends SierraChart<LineChartOptions> {
 }
 
 export class SierraBarChart extends SierraChart<BarChartOptions> {
+  protected frame(options: BarChartOptions) {
+    return barFrameProps(options);
+  }
   protected config(options: BarChartOptions, palette: ChartPalette) {
     return barChartConfig(options, palette, this.hiddenSeries) as never;
   }
@@ -740,6 +783,9 @@ export class SierraTimeSeries extends SierraLineChart {
   protected text(options: LineChartOptions) {
     return super.text(toLineOptions(options));
   }
+  protected frame(options: LineChartOptions) {
+    return lineFrameProps(toLineOptions(options));
+  }
 }
 
 export function defineChartElements() {
@@ -751,13 +797,34 @@ export function defineChartElements() {
     customElements.define("sierra-bar-chart", SierraBarChart);
 }
 
+/** A line chart built in client code; append it anywhere. */
+export function createLineChart(options: LineChartOptions, { id }: { id?: string } = {}): SierraLineChart {
+  defineChartElements();
+  const el = document.createElement("sierra-line-chart") as SierraLineChart;
+  el.className = "ds-chart";
+  if (id) el.id = id;
+  el.options = options;
+  return el;
+}
+
+export function createBarChart(options: BarChartOptions, { id }: { id?: string } = {}): SierraBarChart {
+  defineChartElements();
+  const el = document.createElement("sierra-bar-chart") as SierraBarChart;
+  el.className = "ds-chart";
+  if (id) el.id = id;
+  el.options = options;
+  return el;
+}
+
 export interface LineChartElement extends HTMLElement {
   options: LineChartOptions;
+  props: LineChartOptions;
   series: LineSeries[];
   appendPoints(seriesId: string, points: LinePoint[], opts?: { windowMs?: number }): void;
   chart?: Chart;
 }
 export interface BarChartElement extends HTMLElement {
   options: BarChartOptions;
+  props: BarChartOptions;
   chart?: Chart;
 }

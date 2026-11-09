@@ -1,12 +1,11 @@
 ---
 /**
- * Shared figure for LineChart and BarChart: caption, legend, canvas and the
- * data table. The table and text summary render on the server, so the data is
- * available before (and without) JavaScript.
+ * Shared figure for LineChart, BarChart and TimeSeriesChart: caption, legend,
+ * canvas and the data table, rendered from the same template client code uses.
  */
-import CopyButton from "./CopyButton.astro";
-import Icon from "./Icon.astro";
-import { chartColorVar, tableToMarkdown, type ChartColor, type ChartTable } from "../lib/chart-model";
+import type { ChartColor, ChartTable } from "../lib/chart-model";
+import { chartFrameTemplate } from "../lib/chart-frame";
+import { toHTML } from "../lib/ssr";
 interface Props {
   tag: "sierra-line-chart" | "sierra-bar-chart" | "sierra-time-series";
   id?: string;
@@ -21,47 +20,12 @@ interface Props {
   series: { id: string; label: string; color: ChartColor }[];
   height?: number;
 }
-const { tag: Tag, id, class: className, options, label, description, meta, summary, table, empty, series, height = 240 } = Astro.props;
+const { tag: Tag, id, class: className, options, ...frame } = Astro.props;
 ---
 
-<Tag id={id} class:list={["ds-chart", className]} data-options={JSON.stringify(options)}>
-  <figure class="ds-chart__figure">
-    <figcaption class="ds-chart__caption">
-      <strong class="ds-chart__title">{label}</strong>
-      {description && <span class="ds-chart__description">{description}</span>}
-      <span class="ds-chart__meta">{meta}</span>
-    </figcaption>
-    <ul class="ds-chart__legend" data-chart-legend hidden={series.length < 2}>
-      {series.map((s) => (
-        <li>
-          <span class="ds-chart-key">
-            <span class="ds-chart-key__swatch" style={`--key: var(${chartColorVar(s.color)})`} aria-hidden="true" />
-            <span>{s.label}</span>
-          </span>
-        </li>
-      ))}
-    </ul>
-    <div class="ds-chart__frame" data-chart-frame hidden={empty} style={`--chart-h: ${height}px`}>
-      <canvas role="img" aria-label={summary}></canvas>
-    </div>
-    <p class="ds-chart__empty" data-chart-empty hidden={!empty}>No readings for this period.</p>
-    <details class="ds-chart__data ds-disclosure">
-      <summary><Icon name="chevron-right" class="ds-disclosure__icon" />View data table</summary>
-      <div class="ds-chart__data-tools">
-        <span class="ds-chart__data-caption" aria-hidden="true" data-chart-caption>{table.caption}</span>
-        <CopyButton value={tableToMarkdown(table)} text="Copy" label="Copy table as Markdown" />
-      </div>
-      <div class="table-wrap" tabindex="0" role="region" aria-label={`${label} data`} data-chart-table>
-        <table class="table">
-          <caption>{table.caption}</caption>
-          <thead><tr>{table.columns.map((c) => <th scope="col">{c}</th>)}</tr></thead>
-          <tbody>
-            {table.rows.map((row) => (
-              <tr>{row.map((cell, i) => (i === 0 ? <th scope="row">{cell}</th> : <td>{cell}</td>))}</tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </details>
-  </figure>
-</Tag>
+<Tag id={id} class:list={["ds-chart", className]} data-options={JSON.stringify(options)} set:html={toHTML(chartFrameTemplate(frame))} />
+
+<script>
+  import { defineCopy } from "../lib/copy";
+  defineCopy();
+</script>
