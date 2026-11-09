@@ -1,96 +1,25 @@
 ---
-import Icon from "./Icon.astro";
 /**
  * CopyButton — copies `value` to the clipboard; the copy icon turns into a tick
  * while "Copied." is announced. Icon-only by default; pass `text` for a visible
  * label; the accessible `label` should start with that text (e.g. "Copy" /
- * "Copy table as Markdown"). Client code can replace the value with `element.value = "…"`.
+ * "Copy table as Markdown"). Client code can replace the value with
+ * `element.value = "…"`, or build one with `copyButton()` from lib/ui.
  */
+import { toHTML } from "../lib/ssr";
+import { copyButton } from "../lib/ui";
 interface Props {
   value: string;
   label?: string;
   text?: string;
   class?: string;
 }
-const { value, label = "Copy value", text, class: cls } = Astro.props;
+const { value, ...options } = Astro.props;
 ---
 
-<sierra-copy data-value={value} class={cls}>
-  <button
-    type="button"
-    class:list={["btn btn--ghost btn--sm", !text && "btn--icon"]}
-    aria-label={label}
-    title={text ? undefined : label}
-  >
-    <span data-copy-icon>
-      <Icon name="copy" />
-    </span>
-    <span data-copy-check hidden>
-      <Icon name="check" />
-    </span>
-    {text && <span data-copy-text>{text}</span>}
-  </button>
-  <span class="sr-only" role="status" aria-live="polite"></span>
-</sierra-copy>
+<Fragment set:html={toHTML(copyButton(value, options))} />
+
 <script>
-  class SierraCopy extends HTMLElement {
-    controller?: AbortController;
-    timer?: ReturnType<typeof setTimeout>;
-    get value() {
-      return this.dataset.value ?? "";
-    }
-    set value(value: string) {
-      this.dataset.value = value;
-    }
-    connectedCallback() {
-      this.controller?.abort();
-      this.controller = new AbortController();
-      const { signal } = this.controller;
-      const button = this.querySelector<HTMLButtonElement>("button")!;
-      const icon = this.querySelector<HTMLElement>("[data-copy-icon]")!;
-      const check = this.querySelector<HTMLElement>("[data-copy-check]")!;
-      const status = this.querySelector<HTMLElement>("[role=status]")!;
-      const originalTitle = button.title;
-      button.addEventListener(
-        "click",
-        async () => {
-          clearTimeout(this.timer);
-          icon.hidden = false;
-          check.hidden = true;
-          status.className = "sr-only";
-          status.textContent = "";
-          button.disabled = true;
-          try {
-            await navigator.clipboard.writeText(this.dataset.value ?? "");
-            if (signal.aborted) return;
-            icon.hidden = true;
-            check.hidden = false;
-            status.textContent = "Copied.";
-            button.title = "Copied";
-            this.timer = setTimeout(() => {
-              icon.hidden = false;
-              check.hidden = true;
-              button.title = originalTitle;
-              status.textContent = "";
-            }, 1800);
-          } catch {
-            if (signal.aborted) return;
-            status.className = "ds-copy-error";
-            status.textContent =
-              "Could not copy. Select the text to copy manually.";
-            button.title = originalTitle;
-          } finally {
-            if (!signal.aborted) button.disabled = false;
-          }
-        },
-        { signal },
-      );
-    }
-    disconnectedCallback() {
-      this.controller?.abort();
-      clearTimeout(this.timer);
-    }
-  }
-  if (!customElements.get("sierra-copy"))
-    customElements.define("sierra-copy", SierraCopy);
+  import { defineCopy } from "../lib/copy";
+  defineCopy();
 </script>

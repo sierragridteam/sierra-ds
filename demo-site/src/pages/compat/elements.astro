@@ -1,0 +1,46 @@
+---
+// Test fixture: client-built elements and server/client template parity. Not linked from the demo.
+import DemoLayout from "../../layouts/DemoLayout.astro";
+import FeedItem from "@sierragridteam/design-system/components/FeedItem.astro";
+import SegmentedControl from "@sierragridteam/design-system/components/SegmentedControl.astro";
+import ChoiceTiles from "@sierragridteam/design-system/components/ChoiceTiles.astro";
+import DataDiff from "@sierragridteam/design-system/components/DataDiff.astro";
+import Select from "@sierragridteam/design-system/components/Select.astro";
+import Field from "@sierragridteam/design-system/components/Field.astro";
+import { PARITY } from "../../fixtures/parity";
+---
+
+<DemoLayout title="Element fixtures" sections={[]}>
+  <h1>Element fixtures</h1>
+  <div id="server-feed"><FeedItem {...PARITY.feed} /></div>
+  <div id="server-segmented"><SegmentedControl {...PARITY.segmented} /></div>
+  <div id="server-tiles"><ChoiceTiles {...PARITY.tiles} /></div>
+  <div id="server-diff"><DataDiff {...PARITY.diff} /></div>
+  <Field label="Server station" for="server-select"><Select id="server-select" {...PARITY.select} /></Field>
+  <div id="client"></div>
+</DemoLayout>
+
+<script>
+  import { renderInto } from "@sierragridteam/design-system/lib/region";
+  import { html } from "@sierragridteam/design-system/lib/template";
+  import { choiceTiles, feedItem, segmented } from "@sierragridteam/design-system/lib/ui";
+  import { createSelect } from "@sierragridteam/design-system/lib/select";
+  import { createDataDiff } from "@sierragridteam/design-system/lib/data-diff";
+  import { createLineChart } from "@sierragridteam/design-system/lib/charts";
+  import { PARITY } from "../../fixtures/parity";
+
+  const client = document.querySelector<HTMLElement>("#client")!;
+  renderInto(client, html`
+    <div id="client-feed">${feedItem(PARITY.feed)}</div>
+    <div id="client-segmented">${segmented({ ...PARITY.segmented, name: `${PARITY.segmented.name}-client` })}</div>
+    <div id="client-tiles">${choiceTiles({ ...PARITY.tiles, name: `${PARITY.tiles.name}-client` })}</div>`);
+  const select = createSelect({ id: "client-select", ...PARITY.select });
+  const diff = createDataDiff(PARITY.diff);
+  diff.id = "client-diff";
+  const chart = createLineChart(
+    { label: "Client chart", unit: "V", series: [{ id: "a", label: "A", points: [{ time: Date.UTC(2026, 10, 9, 20), value: 3.7 }, { time: Date.UTC(2026, 10, 9, 21), value: 3.8 }] }] },
+    { id: "client-chart" },
+  );
+  client.append(select, diff, chart);
+  document.documentElement.dataset.fixturesReady = "";
+</script>

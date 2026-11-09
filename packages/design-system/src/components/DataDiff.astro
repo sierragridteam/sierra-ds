@@ -1,50 +1,24 @@
 ---
-import { formatDataValue, type DataChange } from "../lib/data-values";
+/**
+ * DataDiff — field-by-field changes between two records. Client code updates it
+ * with `el.compare(before, after)` or `el.changes = …`, or builds one with
+ * `createDataDiff()` from lib/data-diff.
+ */
+import type { DataChange } from "../lib/data-values";
+import { dataDiffTemplate } from "../lib/data-diff-template";
+import { toHTML } from "../lib/ssr";
 interface Props {
   label: string;
   changes: DataChange[];
   emptyMessage?: string;
+  id?: string;
 }
-const { label, changes, emptyMessage = "No changes." } = Astro.props;
+const { id, ...props } = Astro.props;
 ---
 
-<section class="ds-diff" aria-label={label}>
-  <div class="ds-diff-heading">
-    <strong>{label}</strong>
-    <span class="meta">
-      {changes.length} {changes.length === 1 ? "change" : "changes"}
-    </span>
-  </div>
-  {changes.length ? (
-    <ol class="ds-diff-list">
-      {changes.map((change) => (
-        <li data-kind={change.kind}>
-          <code class="ds-diff-field">{change.path || "(root)"}</code>
-          <div class="ds-diff-values">
-            <span class="sr-only">
-              {change.kind === "added"
-                ? "Added: "
-                : change.kind === "removed"
-                  ? "Removed: "
-                  : "Before: "}
-            </span>
-            {change.kind !== "added" && (
-              <del class="ds-diff-before">{formatDataValue(change.before)}</del>
-            )}{" "}
-            <span class="ds-diff-arrow" aria-hidden="true">
-              {change.kind === "added" ? "+" : "→"}
-            </span>{" "}
-            {change.kind === "changed" && <span class="sr-only">After: </span>}
-            {change.kind === "removed" ? (
-              <span class="ds-diff-removed">removed</span>
-            ) : (
-              <ins class="ds-diff-after">{formatDataValue(change.after)}</ins>
-            )}
-          </div>
-        </li>
-      ))}
-    </ol>
-  ) : (
-    <p class="ds-data-note">{emptyMessage}</p>
-  )}
-</section>
+<sierra-data-diff id={id} data-props={JSON.stringify(props)} set:html={toHTML(dataDiffTemplate(props))} />
+
+<script>
+  import { defineDataDiff } from "../lib/data-diff";
+  defineDataDiff();
+</script>

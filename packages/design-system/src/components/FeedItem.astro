@@ -1,0 +1,13 @@
+---
+/**
+ * FeedItem — one report in a feed: severity, category tags, title, place,
+ * time window, source and when it was received. Wrap items in `.feed` (one
+ * column) or `.feed feed--grid` (two columns on wide screens); `lead` gives the
+ * first item a larger serif title. Client code uses `feedItem()` from lib/ui.
+ */
+import { toHTML } from "../lib/ssr";
+import { feedItem, type FeedItemProps } from "../lib/ui";
+interface Props extends FeedItemProps {}
+---
+
+<Fragment set:html={toHTML(feedItem(Astro.props))} />
