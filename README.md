@@ -159,7 +159,7 @@ row header and note placement: annotations stay inside the record's header cell,
 including on narrow screens. Do not create separate colspan rows for a record's
 advisory. Use `DataStatus` for an entire dataset's state instead.
 
-`CopyButton` owns clipboard behavior: pass `value` and an accessible `label`; the copy icon turns into a tick and "Copied." is announced. Pass `text` for a visible label, and set `element.value` to change what is copied after render.
+`CopyButton` owns clipboard behavior: pass `value` and an accessible `label`; the copy icon turns into a tick and "Copied." is announced. Pass `text` for a visible label (keep `label` starting with it), and set `element.value` to change what is copied after render.
 The icon changes to a check only after the write succeeds, resets after 1.8 seconds,
 and preserves button dimensions. Failure shows an explicit manual-copy message.
 `IdentifierList` composes this control for individual and bulk copies.
@@ -227,7 +227,7 @@ Sparklines are server-rendered SVG and need no JavaScript or Chart.js.
 
 Each chart's data table sits behind a "View data table" disclosure (the shared
 `.ds-disclosure` style: a light chevron, no accidental text selection) with a
-"Copy as Markdown" button. `tableToMarkdown()` produces the same Markdown.
+"Copy" button (named "Copy table as Markdown" for assistive tech). `tableToMarkdown()` produces the same Markdown.
 
 `.section-header` puts a title and an optional action on one row; a description
 paragraph always takes its own line underneath, so it can be any length.

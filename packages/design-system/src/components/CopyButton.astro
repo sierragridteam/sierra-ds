@@ -3,7 +3,8 @@ import Icon from "./Icon.astro";
 /**
  * CopyButton — copies `value` to the clipboard; the copy icon turns into a tick
  * while "Copied." is announced. Icon-only by default; pass `text` for a visible
- * label. Client code can replace the value with `element.value = "…"`.
+ * label; the accessible `label` should start with that text (e.g. "Copy" /
+ * "Copy table as Markdown"). Client code can replace the value with `element.value = "…"`.
  */
 interface Props {
   value: string;
@@ -18,7 +19,7 @@ const { value, label = "Copy value", text, class: cls } = Astro.props;
   <button
     type="button"
     class:list={["btn btn--ghost btn--sm", !text && "btn--icon"]}
-    aria-label={text ? undefined : label}
+    aria-label={label}
     title={text ? undefined : label}
   >
     <span data-copy-icon>

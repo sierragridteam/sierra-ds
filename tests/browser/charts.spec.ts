@@ -124,7 +124,7 @@ test("the data table copies as Markdown and the icon confirms with a tick", asyn
   await page.goto("/charts");
   const chart = page.locator("sierra-bar-chart").filter({ hasText: "Rainfall by station" });
   await chart.getByText("View data table").click();
-  const copy = chart.getByRole("button", { name: "Copy as Markdown" });
+  const copy = chart.getByRole("button", { name: "Copy table as Markdown" });
   await expect(copy.locator("[data-copy-icon]")).toBeVisible();
   await copy.click();
   await expect(copy.locator("[data-copy-check]")).toBeVisible();
@@ -150,7 +150,7 @@ test("copied Markdown follows live data", async ({ page, context }) => {
   await live.evaluate((el: HTMLElement & { series: unknown[] }) => {
     el.series = [{ id: "h", label: "Heard", points: [{ time: Date.UTC(2026, 10, 9, 20), value: 42 }] }];
   });
-  await live.getByRole("button", { name: "Copy as Markdown" }).click();
+  await live.getByRole("button", { name: "Copy table as Markdown" }).click();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("| Mon 9 Nov, 12:00 | 42 |");
 });
 
