@@ -189,6 +189,17 @@
   --map-shield-text: #7d7459;
   --map-control-icon-filter: none; /* MapLibre ships dark raster icons */
 
+  /* Chart series — a fixed categorical order (lake, ochre, manzanita, glacier,
+     lupine, pine), validated for colour-vision deficiency and ≥ 3:1 on page
+     and card surfaces. Series identity only: never status or severity. */
+  --chart-lake: #036eae;
+  --chart-ochre: #ab8000;
+  --chart-manzanita: #b7376b;
+  --chart-glacier: #0796a2;
+  --chart-lupine: #8059bb;
+  --chart-pine: #33854a;
+  --chart-other: #8a8169; /* series past the sixth, and context lines */
+
   /* Colour-derived tokens are restated so scoped themes resolve their own lines. */
   --border: var(--border-w) solid var(--line);
   --border-soft: var(--border-w) solid var(--line-soft);
@@ -252,6 +263,15 @@
   --map-place: #a39c84;
   --map-shield-text: #b8b4a2;
   --map-control-icon-filter: invert(0.88);
+
+  /* Chart series — the same hues stepped for night grounds */
+  --chart-lake: #3e8cc9;
+  --chart-ochre: #b48c2b;
+  --chart-manzanita: #c24976;
+  --chart-glacier: #1ba8b5;
+  --chart-lupine: #8f68cb;
+  --chart-pine: #4ca563;
+  --chart-other: #847e6c;
 
   /* Colour-derived tokens are restated so scoped themes resolve their own lines. */
   --border: var(--border-w) solid var(--line);
@@ -317,7 +337,15 @@
     --map-place: #a39c84;
     --map-shield-text: #b8b4a2;
     --map-control-icon-filter: invert(0.88);
-  --map-control-icon-filter: invert(0.88);
+
+    /* Chart series — the same hues stepped for night grounds */
+    --chart-lake: #3e8cc9;
+    --chart-ochre: #b48c2b;
+    --chart-manzanita: #c24976;
+    --chart-glacier: #1ba8b5;
+    --chart-lupine: #8f68cb;
+    --chart-pine: #4ca563;
+    --chart-other: #847e6c;
 
     /* Colour-derived tokens are restated so scoped themes resolve their own lines. */
     --border: var(--border-w) solid var(--line);

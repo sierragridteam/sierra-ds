@@ -235,3 +235,41 @@ sampled telemetry unless the data source guarantees that interpretation.
 Run `pnpm test`, `pnpm check`, `pnpm build`, then `pnpm exec playwright install
 chromium` and `pnpm test:browser`. Browser contracts exercise updates, missing/zero
 readings, keyboard table access, no-JavaScript values and mobile overflow.
+
+## Charts (0.7)
+
+`LineChart.astro` (telemetry over time), `BarChart.astro` (grouped, stacked,
+horizontal or low–high range bars, e.g. weather) and `Sparkline.astro` share one
+palette and one set of rules. Line and bar charts draw with Chart.js 4, an
+optional peer dependency: run `pnpm add chart.js` in a consumer that uses them.
+Sparklines are server-rendered SVG and need no JavaScript or Chart.js.
+
+```astro
+<LineChart label="Node battery voltage" unit="V" decimals={2}
+  series={[{ id: "ebbetts", label: "Ebbetts Pass relay", points }]}
+  maxGapMs={30 * 60_000} thresholds={[{ value: 3.5, label: "Low battery" }]} />
+<BarChart label="Daily precipitation" unit="in" categories={days}
+  series={[{ id: "precip", label: "Precipitation", color: "lake", values }]} />
+<Sparkline label="Temperature, last 24 hours" values={temps} unit="°F" />
+```
+
+- Times are epoch milliseconds; labels use a 24-hour clock in `timeZone`
+  (default `America/Los_Angeles`). Ticks land on local hours and midnights,
+  including across daylight-saving changes. `formatChartDay()` makes day labels
+  for bar categories.
+- A `null` value, or a gap longer than `maxGapMs`, breaks the line. Isolated
+  samples get a dot; the latest sample is marked.
+- Series take `--chart-lake`, `-ochre`, `-manzanita`, `-glacier`, `-lupine` and
+  `-pine` in that order. Pass `color` to pin an entity to a hue. A seventh series
+  falls back to `--chart-other`; fold extra series or split the chart instead.
+  Series colours mean identity only; status keeps the badge colours.
+- Every chart renders a caption, a text summary on the canvas and a data table
+  on the server. Legends (two or more series) toggle series visibility.
+- Update in the browser: `el.options = {...}` on either chart, `el.series = [...]`
+  on a line chart, `el.appendPoints(id, points, { windowMs })` for live
+  telemetry, and `el.values = [...]` on a sparkline. Charts recolour when the
+  theme changes and inside `data-theme` regions.
+- The pure model (`lib/chart-model`) builds the same tables, summaries and
+  ticks without a DOM, for consumers that need them elsewhere.
+
+The earlier dependency-free `TimeSeriesChart` remains for existing consumers.

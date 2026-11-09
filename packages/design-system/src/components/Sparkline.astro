@@ -1,0 +1,51 @@
+---
+/**
+ * Inline trend for stat tiles and table rows. Server-rendered SVG coloured by
+ * tokens, so it themes without JavaScript. Set `values` on the element to update.
+ */
+import { buildSparkline, chartColorVar, type SparklineOptions } from "../lib/chart-model";
+interface Props extends SparklineOptions {
+  id?: string;
+  class?: string;
+}
+const { id, class: className, ...options } = Astro.props;
+const m = buildSparkline(options);
+---
+
+<sierra-sparkline
+  id={id}
+  class:list={["ds-sparkline", `ds-sparkline--${m.variant}`, className]}
+  data-options={JSON.stringify(options)}
+  style={`--spark: var(${chartColorVar(m.color)})`}
+>
+  <svg role="img" aria-label={m.description} viewBox={`0 0 ${m.width} ${m.height}`} width={m.width} height={m.height}>
+    {m.path && <path class="ds-sparkline__line" d={m.path} />}
+    {m.bars.map((b) => <rect class="ds-sparkline__bar" x={b.x} y={b.y} width={b.width} height={b.height} rx="1" />)}
+    {m.last && <circle class="ds-sparkline__dot" cx={m.last.x} cy={m.last.y} r="3" />}
+  </svg>
+</sierra-sparkline>
+
+<script>
+  import { renderSparkline } from "../lib/sparkline";
+  import type { SparklineOptions } from "../lib/chart-model";
+  class SierraSparkline extends HTMLElement {
+    private current?: SparklineOptions;
+    connectedCallback() {
+      this.current ??= JSON.parse(this.dataset.options!);
+    }
+    get values() {
+      return [...(this.current?.values ?? [])];
+    }
+    set values(values: (number | null)[]) {
+      this.options = { ...this.current!, values };
+    }
+    get options(): SparklineOptions {
+      return structuredClone(this.current!);
+    }
+    set options(value: SparklineOptions) {
+      this.current = structuredClone(value);
+      renderSparkline(this, this.current);
+    }
+  }
+  if (!customElements.get("sierra-sparkline")) customElements.define("sierra-sparkline", SierraSparkline);
+</script>

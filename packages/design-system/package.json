@@ -1,6 +1,6 @@
 {
   "name": "@sierragridteam/design-system",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "type": "module",
   "files": [
     "src",
@@ -14,9 +14,13 @@
   },
   "peerDependencies": {
     "astro": "^7.4.7",
+    "chart.js": "^4.6.1",
     "maplibre-gl": "^6.17.0"
   },
   "peerDependenciesMeta": {
+    "chart.js": {
+      "optional": true
+    },
     "maplibre-gl": {
       "optional": true
     }
@@ -33,5 +37,8 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "chart.js": "^4.6.1"
   }
 }

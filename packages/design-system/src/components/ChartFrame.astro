@@ -1,0 +1,61 @@
+---
+/**
+ * Shared figure for LineChart and BarChart: caption, legend, canvas and the
+ * data table. The table and text summary render on the server, so the data is
+ * available before (and without) JavaScript.
+ */
+import { chartColorVar, type ChartColor, type ChartTable } from "../lib/chart-model";
+interface Props {
+  tag: "sierra-line-chart" | "sierra-bar-chart";
+  id?: string;
+  class?: string;
+  options: unknown;
+  label: string;
+  description?: string;
+  meta: string;
+  summary: string;
+  table: ChartTable;
+  empty: boolean;
+  series: { id: string; label: string; color: ChartColor }[];
+  height?: number;
+}
+const { tag: Tag, id, class: className, options, label, description, meta, summary, table, empty, series, height = 240 } = Astro.props;
+---
+
+<Tag id={id} class:list={["ds-chart", className]} data-options={JSON.stringify(options)}>
+  <figure class="ds-chart__figure">
+    <figcaption class="ds-chart__caption">
+      <strong class="ds-chart__title">{label}</strong>
+      {description && <span class="ds-chart__description">{description}</span>}
+      <span class="ds-chart__meta">{meta}</span>
+    </figcaption>
+    <ul class="ds-chart__legend" data-chart-legend hidden={series.length < 2}>
+      {series.map((s) => (
+        <li>
+          <span class="ds-chart-key">
+            <span class="ds-chart-key__swatch" style={`--key: var(${chartColorVar(s.color)})`} aria-hidden="true" />
+            <span>{s.label}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+    <div class="ds-chart__frame" data-chart-frame hidden={empty} style={`--chart-h: ${height}px`}>
+      <canvas role="img" aria-label={summary}></canvas>
+    </div>
+    <p class="ds-chart__empty" data-chart-empty hidden={!empty}>No readings for this period.</p>
+    <details class="ds-chart__data">
+      <summary>View data table</summary>
+      <div class="table-wrap" tabindex="0" role="region" aria-label={`${label} data`} data-chart-table>
+        <table class="table">
+          <caption>{table.caption}</caption>
+          <thead><tr>{table.columns.map((c) => <th scope="col">{c}</th>)}</tr></thead>
+          <tbody>
+            {table.rows.map((row) => (
+              <tr>{row.map((cell, i) => (i === 0 ? <th scope="row">{cell}</th> : <td>{cell}</td>))}</tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </figure>
+</Tag>
