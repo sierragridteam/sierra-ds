@@ -1,0 +1,27 @@
+---
+// Test fixture: the deprecated TimeSeriesChart wrapper keeps its 0.6 API. Not linked from the demo.
+import DemoLayout from "../../layouts/DemoLayout.astro";
+import TimeSeriesChart from "@sierragridteam/design-system/components/TimeSeriesChart.astro";
+const start = Date.UTC(2026, 10, 1);
+const H = 3_600_000;
+const series = [
+  { id: "a", label: "Synthetic receiver A", points: [{ time: start, value: -4 }, { time: start + H, value: 0 }, { time: start + 2 * H, value: null }, { time: start + 3 * H, value: 7 }] },
+  { id: "b", label: "Synthetic receiver B", points: [{ time: start, value: 2 }, { time: start + H, value: 2 }, { time: start + 3 * H, value: 2 }] },
+];
+---
+
+<DemoLayout title="TimeSeriesChart compatibility" sections={[]}>
+  <h1>TimeSeriesChart compatibility</h1>
+  <TimeSeriesChart id="demo-chart" label="Receiver signal" description="Explicit missing samples and a two-hour gap." series={series} unit="dB" maxGapMs={5400000} />
+  <button id="update-chart" class="btn">Replace with one zero reading</button>
+  <TimeSeriesChart label="No samples" series={[]} />
+</DemoLayout>
+
+<script>
+  import type { TimeSeriesChartElement } from "@sierragridteam/design-system/lib/time-series";
+  document.querySelector("#update-chart")?.addEventListener("click", () => {
+    (document.querySelector("#demo-chart") as TimeSeriesChartElement).series = [
+      { id: "zero", label: "Updated sample", points: [{ time: Date.UTC(2026, 10, 2), value: 0 }] },
+    ];
+  });
+</script>

@@ -132,6 +132,21 @@ Client code builds nodes with `el()` and `icon()` from `src/lib/dom.ts` and the 
   DOMPurify, off-site links open in a new tab) into `.prose`. The editor's preview uses the
   same function.
 
+### Charts
+
+Chart colour encodes identity, nothing else. The six chart hues (lake, ochre,
+manzanita, glacier, lupine, pine) are drawn from the Sierra landscape, kept
+mid-tone so they read on parchment and night forest alike, and ordered so
+neighbours stay distinct under protanopia and deuteranopia (OKLab ΔE ≥ 8, ≥ 15
+for normal vision) and the first three are distinct in any combination.
+`tests/charts.test.mjs` enforces this and 3:1 contrast on page, card and raised
+surfaces. Signal orange and the state colours are never series colours.
+
+Marks are thin: 2px lines, bars at most 24px thick with a 4px rounded data end,
+area washes at 10%, recessive 1px gridlines, and labelled dashed thresholds.
+Text on and around charts stays in ink tokens. Prefer a stat tile with a
+sparkline over a chart with one bar or one number.
+
 ## 5. Shell
 
 Desktop (> 860px): 240px sidebar on the banner surface with brand, grouped nav, and a user

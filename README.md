@@ -159,7 +159,7 @@ row header and note placement: annotations stay inside the record's header cell,
 including on narrow screens. Do not create separate colspan rows for a record's
 advisory. Use `DataStatus` for an entire dataset's state instead.
 
-`CopyButton` owns clipboard behavior: pass `value` and an accessible `label`.
+`CopyButton` owns clipboard behavior: pass `value` and an accessible `label`; the copy icon turns into a tick and "Copied." is announced. Pass `text` for a visible label (keep `label` starting with it), and set `element.value` to change what is copied after render.
 The icon changes to a check only after the write succeeds, resets after 1.8 seconds,
 and preserves button dimensions. Failure shows an explicit manual-copy message.
 `IdentifierList` composes this control for individual and bulk copies.
@@ -180,58 +180,54 @@ members site; public source availability does not grant permission to reuse the
 code, design, name, or brand assets. Third-party dependencies retain their own
 licenses. Contact `info@sierragridteam.org` for permission.
 
-## Time series (0.5)
+## Time series (deprecated in 0.7)
 
-`TimeSeriesChart` is a framework-free SVG chart with a semantic sample table that
-also works without JavaScript. The `/charts` demo uses synthetic data. Import
-`components/TimeSeriesChart.astro` and the existing `styles/global.css`:
+`TimeSeriesChart` keeps its 0.5 API (the same props, the `<sierra-time-series>`
+element with `options` and `series`, UTC labels and the semantic table) but now
+renders through `LineChart`, so it needs `chart.js` and looks like the other
+charts. Rejected updates still leave the previous chart in place. The SVG
+renderer (`lib/time-series-render`) is removed. Use `LineChart` for new work;
+the wrapper will be removed in a later minor release.
+
+## Charts (0.7)
+
+`LineChart.astro` (telemetry over time), `BarChart.astro` (grouped, stacked,
+horizontal or low–high range bars, e.g. weather) and `Sparkline.astro` share one
+palette and one set of rules. Line and bar charts draw with Chart.js 4, an
+optional peer dependency: run `pnpm add chart.js` in a consumer that uses them.
+Sparklines are server-rendered SVG and need no JavaScript or Chart.js.
 
 ```astro
-<TimeSeriesChart id="signal-chart" label="Gateway signal" unit="dB"
-  maxGapMs={60 * 60 * 1000}
-  series={[{ id: 'snr', label: 'SNR', points: [
-    { time: Date.UTC(2026, 10, 1), value: 0 },
-    { time: Date.UTC(2026, 10, 1, 1), value: null },
-  ] }]} />
+<LineChart label="Node battery voltage" unit="V" decimals={2}
+  series={[{ id: "ebbetts", label: "Ebbetts Pass relay", points }]}
+  maxGapMs={30 * 60_000} thresholds={[{ value: 3.5, label: "Low battery" }]} />
+<BarChart label="Daily precipitation" unit="in" categories={days}
+  series={[{ id: "precip", label: "Precipitation", color: "lake", values }]} />
+<Sparkline label="Temperature, last 24 hours" values={temps} unit="°F" />
 ```
 
-Props: required `label` and `series`; optional `id`, `description`, `unit`,
-`timeDomain: [number, number]`, `valueDomain: [number, number]`, `maxGapMs`.
-Each series has a unique `id`, `label`, and `points: { time: number,
-value: number | null }[]`. Time is Unix milliseconds. All labels/table times
-are deterministic UTC ISO dates (including seconds), independent of the browser
-locale/timezone. All series share one value unit and axis. Explicit domains must
-be finite and increasing. Automatic domains cover samples and expand constant
-values. Samples sort by time without mutating input; invalid timestamps are
-omitted, nonfinite values become missing. Nulls break lines, zero is a reading,
-and `maxGapMs` optionally breaks unsampled intervals. No resampling, smoothing,
-aggregation or extrapolation occurs. SVG clips to explicit domains; the table
-retains all valid-timestamp samples. Four visual series styles repeat; prefer up
-to four overlaid series for readability, or use separate charts.
+- Times are epoch milliseconds; labels use a 24-hour clock in `timeZone`
+  (default `America/Los_Angeles`). Ticks land on local hours and midnights,
+  including across daylight-saving changes. `formatChartDay()` makes day labels
+  for bar categories.
+- A `null` value, or a gap longer than `maxGapMs`, breaks the line. Isolated
+  samples get a dot; the latest sample is marked.
+- Series take `--chart-lake`, `-ochre`, `-manzanita`, `-glacier`, `-lupine` and
+  `-pine` in that order. Pass `color` to pin an entity to a hue. A seventh series
+  falls back to `--chart-other`; fold extra series or split the chart instead.
+  Series colours mean identity only; status keeps the badge colours.
+- Every chart renders a caption, a text summary on the canvas and a data table
+  on the server. Legends (two or more series) toggle series visibility.
+- Update in the browser: `el.options = {...}` on either chart, `el.series = [...]`
+  on a line chart, `el.appendPoints(id, points, { windowMs })` for live
+  telemetry, and `el.values = [...]` on a sparkline. Charts recolour when the
+  theme changes and inside `data-theme` regions.
+- The pure model (`lib/chart-model`) builds the same tables, summaries and
+  ticks without a DOM, for consumers that need them elsewhere.
 
-Update after custom-element registration (including client-fetched initial data):
+Each chart's data table sits behind a "View data table" disclosure (the shared
+`.ds-disclosure` style: a light chevron, no accidental text selection) with a
+"Copy" button (named "Copy table as Markdown" for assistive tech). `tableToMarkdown()` produces the same Markdown.
 
-```ts
-import type { TimeSeriesChartElement } from
-  '@sierragridteam/design-system/lib/time-series';
-await customElements.whenDefined('sierra-time-series');
-const chart = document.querySelector<TimeSeriesChartElement>('#signal-chart')!;
-chart.series = [{ id: 'snr', label: 'SNR', points: samples }];
-// To change the unit, window, title or other configuration atomically:
-chart.options = { ...chart.options, valueDomain: [-20, 20] };
-```
-
-Setters replace chart, legend and table together; invalid configurations throw
-and preserve the previous rendering. Getters return copies: edit and reassign
-rather than mutating a returned array. The open table disclosure stays open across
-updates. The pure `buildTimeSeries(options)` export supplies normalized 0–100
-segments and domains; `formatChartTime(time)` supplies UTC labels.
-
-Fetching, source freshness, provenance and query state remain consumer concerns.
-Compose `DataStatus` for loading/stale/unavailable states; an empty chart does not
-assert that collection succeeded. Avoid feeding event revisions as regularly
-sampled telemetry unless the data source guarantees that interpretation.
-
-Run `pnpm test`, `pnpm check`, `pnpm build`, then `pnpm exec playwright install
-chromium` and `pnpm test:browser`. Browser contracts exercise updates, missing/zero
-readings, keyboard table access, no-JavaScript values and mobile overflow.
+`.section-header` puts a title and an optional action on one row; a description
+paragraph always takes its own line underneath, so it can be any length.

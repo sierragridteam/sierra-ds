@@ -1,0 +1,34 @@
+---
+/**
+ * Category bar chart: grouped, stacked or low–high range bars (weather trends).
+ * Chart.js renders in the browser; set `options` on the element to update it.
+ */
+import ChartFrame from "./ChartFrame.astro";
+import { barTable, buildBarModel, describeBars, type BarChartOptions } from "../lib/chart-model";
+interface Props extends BarChartOptions {
+  id?: string;
+  class?: string;
+}
+const { id, class: className, ...options } = Astro.props;
+const model = buildBarModel(options);
+---
+
+<ChartFrame
+  tag="sierra-bar-chart"
+  id={id}
+  class={className}
+  options={options}
+  label={options.label}
+  description={options.description}
+  meta={options.unit ? `Values in ${options.unit}` : ""}
+  summary={describeBars(model)}
+  table={barTable(model)}
+  empty={model.empty}
+  series={model.series}
+  height={options.height}
+/>
+
+<script>
+  import { defineChartElements } from "../lib/charts";
+  defineChartElements();
+</script>

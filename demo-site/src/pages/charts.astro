@@ -1,18 +1,391 @@
 ---
-import DemoLayout from '../layouts/DemoLayout.astro';
-import TimeSeriesChart from '@sierragridteam/design-system/components/TimeSeriesChart.astro';
-const start=Date.UTC(2026,10,1);
-const series=[{id:'a',label:'Synthetic receiver A',points:[{time:start,value:-4},{time:start+3600000,value:0},{time:start+7200000,value:null},{time:start+10800000,value:7}]},{id:'b',label:'Synthetic receiver B',points:[{time:start,value:2},{time:start+3600000,value:2},{time:start+10800000,value:2}]}];
+import DemoLayout from "../layouts/DemoLayout.astro";
+import Card from "@sierragridteam/design-system/components/Card.astro";
+import LineChart from "@sierragridteam/design-system/components/LineChart.astro";
+import BarChart from "@sierragridteam/design-system/components/BarChart.astro";
+import Sparkline from "@sierragridteam/design-system/components/Sparkline.astro";
+import { CHART_COLORS, formatChartDay } from "@sierragridteam/design-system/lib/chart-model";
+
+// Synthetic fixtures only. A seeded generator keeps every build identical.
+function random(seed: number) {
+  return () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const round = (n: number, d = 2) => Math.round(n * 10 ** d) / 10 ** d;
+const HOUR = 3_600_000;
+const end = Date.UTC(2026, 10, 9, 20); // 12:00 PT
+const start = end - 24 * HOUR;
+// Daylight in the Sierra foothills, roughly 06:45–16:55 PT in November.
+const sun = (t: number) => {
+  const h = (((t - 8 * HOUR) % (24 * HOUR)) / HOUR + 24) % 24;
+  return h > 6.75 && h < 16.9 ? Math.sin(((h - 6.75) / 10.15) * Math.PI) : 0;
+};
+const nodes = [
+  { id: "ebbetts", label: "Ebbetts Pass relay", base: 3.62, panel: 0.42, seed: 1 },
+  { id: "arnold", label: "Arnold repeater", base: 3.78, panel: 0.3, seed: 2 },
+  { id: "bear", label: "Bear Valley node", base: 3.52, panel: 0.2, seed: 3 },
+];
+const battery = nodes.map((n) => {
+  const r = random(n.seed);
+  const points = [];
+  let charge = n.base;
+  for (let t = start; t <= end; t += 10 * 60_000) {
+    charge += sun(t) * 0.012 - 0.0045 + (r() - 0.5) * 0.004;
+    charge = Math.min(4.15, Math.max(3.3, charge));
+    // The Ebbetts relay was offline from 02:00 to 05:10 PT.
+    if (n.id === "ebbetts" && t > start + 14 * HOUR && t < start + 17.2 * HOUR) continue;
+    points.push({ time: t, value: round(charge + sun(t) * n.panel * 0.25) });
+  }
+  return { id: n.id, label: n.label, points };
+});
+
+const snrRandom = random(7);
+const snr = [
+  {
+    id: "snr",
+    label: "Signal-to-noise",
+    area: true,
+    color: "glacier" as const,
+    points: Array.from({ length: 97 }, (_, i) => {
+      const t = start + i * 15 * 60_000;
+      return { time: t, value: i >= 60 && i <= 62 ? null : round(6 + 3 * Math.sin(i / 9) + (snrRandom() - 0.5) * 2.5, 1) };
+    }),
+  },
+];
+
+// Weather: fourteen days ending today.
+const days = Array.from({ length: 14 }, (_, i) => end - (13 - i) * 24 * HOUR);
+const dayLabels = days.map((t) => formatChartDay(t));
+const wr = random(11);
+const storm = [0, 0, 0.02, 0, 0, 0.35, 1.42, 0.88, 0.12, 0, 0, 0, 0.05, 0.6];
+const highs = days.map((_, i) => round(58 - storm[i] * 9 + (wr() - 0.5) * 6, 0));
+const lows = highs.map((h, i) => round(h - 14 - (storm[i] > 0.1 ? -6 : 4) + (wr() - 0.5) * 4, 0));
+const week = days.slice(-7);
+const weekLabels = dayLabels.slice(-7);
+const sustained = week.map((_, i) => round(8 + storm[i + 7] * 14 + wr() * 5, 0));
+const gusts = sustained.map((s) => round(s * (1.5 + wr() * 0.4), 0));
+const stations = [
+  ["Ebbetts Pass", 2.41],
+  ["Bear Valley", 1.98],
+  ["Arnold", 1.36],
+  ["Murphys", 0.92],
+  ["Angels Camp", 0.71],
+  ["Copperopolis", 0.44],
+] as const;
+const traffic = {
+  text: [212, 198, 240, 410, 520, 301, 233],
+  position: [640, 655, 610, 590, 702, 688, 671],
+  telemetry: [880, 902, 870, 1010, 1180, 955, 920],
+};
+
+const temps = Array.from({ length: 25 }, (_, i) => round(41 + 14 * sun(start + i * HOUR) + (wr() - 0.5) * 2, 1));
+const packets = Array.from({ length: 24 }, () => round(80 + wr() * 70, 0));
+const weekRain = storm.slice(-7);
+const sections = [
+  { id: "palette", label: "Palette" },
+  { id: "telemetry", label: "Telemetry lines" },
+  { id: "weather", label: "Weather bars" },
+  { id: "sparklines", label: "Sparklines" },
+];
 ---
-<DemoLayout title="Time series" sections={[]}>
-<h1>Time series</h1>
-<p>Synthetic samples. Gaps are unknown readings; source health is supplied separately by consumers.</p>
-<TimeSeriesChart id="demo-chart" label="Receiver signal" description="Explicit missing samples and a two-hour gap." series={series} unit="dB" maxGapMs={5400000} />
-<button id="update-chart" class="btn">Replace with one zero reading</button>
-<TimeSeriesChart label="No samples" series={[]} />
+
+<DemoLayout title="Charts" description="Line, bar and sparkline components with the chart palette." sections={sections}>
+  <div class="stack charts-demo">
+    <header class="section-header">
+      <h1>Charts</h1>
+      <p>
+        Line, bar and sparkline components share one palette and one set of rules. All data on this
+        page is synthetic. Switch the theme in the header: charts recolour in place.
+      </p>
+    </header>
+
+    <section id="palette" class="stack">
+      <div class="section-header">
+        <h2>Chart palette</h2>
+        <p>
+          Six Sierra hues in a fixed order. Series take them in sequence and keep their colour when
+          others are hidden. Neighbouring colours stay distinct under red–green colour-vision
+          deficiency and clear 3:1 against page and card surfaces in both themes.
+        </p>
+      </div>
+      <ol class="ds-chart-swatches">
+        {CHART_COLORS.map((color, i) => (
+          <li>
+            <span aria-hidden="true" style={`--key: var(--chart-${color})`}></span>
+            <strong>{i + 1}. {color[0].toUpperCase() + color.slice(1)}</strong>
+            <code>--chart-{color}</code>
+          </li>
+        ))}
+        <li>
+          <span aria-hidden="true" style="--key: var(--chart-other)"></span>
+          <strong>Other</strong>
+          <code>--chart-other</code>
+        </li>
+      </ol>
+      <ul class="charts-demo__rules meta">
+        <li>Series colour marks identity only. Status and severity keep the badge colours, with a label.</li>
+        <li>More than six series: highlight the ones that matter and draw the rest in <code>other</code>, or split the chart.</li>
+        <li>Labels, values and legends use ink colours; the coloured key beside them carries identity.</li>
+        <li>Pass <code>color</code> on a series to pin an entity to a hue across charts, e.g. precipitation is always <code>lake</code>.</li>
+      </ul>
+    </section>
+
+    <section id="telemetry" class="stack">
+      <div class="section-header">
+        <h2>Telemetry lines</h2>
+        <p>
+          Time on a PT clock axis, gaps left open, a labelled threshold, a crosshair tooltip and a data
+          table. Click a legend key to hide a series.
+        </p>
+      </div>
+      <Card>
+        <LineChart
+          id="battery-chart"
+          label="Node battery voltage"
+          description="Last 24 hours. The Ebbetts Pass relay stopped reporting overnight."
+          series={battery}
+          unit="V"
+          decimals={2}
+          maxGapMs={30 * 60_000}
+          thresholds={[{ value: 3.5, label: "Low battery" }]}
+          height={260}
+        />
+      </Card>
+      <div class="charts-demo__grid">
+        <Card>
+          <LineChart
+            id="live-chart"
+            label="Packets heard per minute"
+            description="Live, last 5 minutes. Updates every 2 seconds."
+            series={[
+              { id: "heard", label: "Heard", points: [] },
+              { id: "relayed", label: "Relayed", points: [] },
+            ]}
+            zero
+            decimals={0}
+            height={200}
+          />
+          <div class="charts-demo__row">
+            <button type="button" class="btn btn--sm btn--outline" id="live-toggle" aria-pressed="true">Pause updates</button>
+          </div>
+        </Card>
+        <Card>
+          <LineChart
+            label="Link quality, Arnold to Ebbetts"
+            description="One series with an area wash. Three missed reports break the line."
+            series={snr}
+            unit="dB"
+            decimals={1}
+            maxGapMs={20 * 60_000}
+            height={200}
+          />
+        </Card>
+      </div>
+    </section>
+
+    <section id="weather" class="stack">
+      <div class="section-header">
+        <h2>Weather bars</h2>
+        <p>
+          Bars are at most 24px thick, rounded at the data end and square at the baseline. Hover or tap
+          a day for every series at once.
+        </p>
+      </div>
+      <div class="charts-demo__grid">
+        <Card>
+          <BarChart
+            label="Daily precipitation, Bear Valley"
+            description="Fourteen days. One storm cycle."
+            categories={dayLabels}
+            categoryLabel="Day"
+            series={[{ id: "precip", label: "Precipitation", color: "lake", values: storm }]}
+            unit="in"
+            decimals={2}
+            height={200}
+          />
+        </Card>
+        <Card>
+          <BarChart
+            label="Daily temperature range, Arnold"
+            description="Low to high for each day."
+            categories={dayLabels}
+            categoryLabel="Day"
+            series={[{ id: "temp", label: "Temperature", color: "manzanita", values: lows.map((lo, i) => [lo, highs[i]] as [number, number]) }]}
+            unit="°F"
+            decimals={0}
+            thresholds={[{ value: 32, label: "Freezing" }]}
+            height={200}
+          />
+        </Card>
+        <Card>
+          <BarChart
+            label="Wind at Ebbetts Pass"
+            description="Daily maximums, last 7 days."
+            categories={weekLabels}
+            categoryLabel="Day"
+            series={[
+              { id: "sustained", label: "Sustained", values: sustained },
+              { id: "gust", label: "Gusts", values: gusts },
+            ]}
+            unit="mph"
+            decimals={0}
+            height={220}
+          />
+        </Card>
+        <Card>
+          <BarChart
+            label="Rainfall by station"
+            description="Storm total, 13–15 Nov."
+            categories={stations.map(([name]) => name)}
+            categoryLabel="Station"
+            series={[{ id: "total", label: "Storm total", color: "lake", values: stations.map(([, v]) => v) }]}
+            unit="in"
+            decimals={2}
+            horizontal
+            height={220}
+          />
+        </Card>
+      </div>
+      <Card>
+        <BarChart
+          label="Mesh messages by type"
+          description="Stacked daily totals across all relays, last 7 days."
+          categories={weekLabels}
+          categoryLabel="Day"
+          series={[
+            { id: "telemetry", label: "Telemetry", values: traffic.telemetry },
+            { id: "position", label: "Position", values: traffic.position },
+            { id: "text", label: "Text", values: traffic.text },
+          ]}
+          stacked
+          decimals={0}
+          height={240}
+        />
+      </Card>
+    </section>
+
+    <section id="sparklines" class="stack">
+      <div class="section-header">
+        <h2>Sparklines</h2>
+        <p>
+          A trend beside a number. Rendered as SVG on the server, so they cost nothing to load and
+          recolour with the theme without JavaScript. The accessible name summarises the range.
+        </p>
+      </div>
+      <div class="stats">
+        <div class="stat">
+          <span class="stat__label">Temperature, Arnold</span>
+          <span class="stat__value">{temps.at(-1)}°F</span>
+          <Sparkline label="Temperature, last 24 hours" values={temps} unit="°F" decimals={1} color="manzanita" />
+          <span class="stat__sub">Last 24 hours</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Battery, Bear Valley</span>
+          <span class="stat__value">{battery[2].points.at(-1)?.value} V</span>
+          <Sparkline label="Battery, last 24 hours" values={battery[2].points.filter((_, i) => i % 6 === 0).map((p) => p.value)} unit="V" decimals={2} />
+          <span class="stat__sub">Last 24 hours</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Packets heard</span>
+          <span class="stat__value" id="packets-value">{packets.at(-1)}/min</span>
+          <Sparkline id="packets-spark" label="Packets per minute, last 24 hours" values={packets} decimals={0} color="pine" />
+          <span class="stat__sub">Hourly averages</span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Rain this week</span>
+          <span class="stat__value">{round(weekRain.reduce((a, b) => a + b, 0))} in</span>
+          <Sparkline label="Daily rain, last 7 days" values={weekRain} unit="in" decimals={2} variant="bar" />
+          <span class="stat__sub">Daily totals</span>
+        </div>
+      </div>
+      <Card>
+        <div class="table-wrap">
+          <table class="table">
+            <caption class="sr-only">Relay battery trends</caption>
+            <thead>
+              <tr><th scope="col">Relay</th><th scope="col">Battery</th><th scope="col">Last 24 hours</th></tr>
+            </thead>
+            <tbody>
+              {battery.map((node, i) => (
+                <tr>
+                  <th scope="row">{node.label}</th>
+                  <td class="mono">{node.points.at(-1)?.value} V</td>
+                  <td>
+                    <Sparkline
+                      label={`${node.label} battery, last 24 hours`}
+                      values={node.points.filter((_, k) => k % 3 === 0).map((p) => p.value)}
+                      unit="V"
+                      decimals={2}
+                      color={CHART_COLORS[i]}
+                      width={140}
+                      height={24}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </section>
+
+  </div>
+</DemoLayout>
+
 <script>
-import type { TimeSeriesChartElement } from '@sierragridteam/design-system/lib/time-series';
-document.querySelector('#update-chart')?.addEventListener('click',()=>{(document.querySelector('#demo-chart') as TimeSeriesChartElement).series=[{id:'zero',label:'Updated sample',points:[{time:Date.UTC(2026,10,2),value:0}]}];});
+  import type { LineChartElement } from "@sierragridteam/design-system/lib/charts";
+
+  // Live telemetry: seed five minutes of history, then append every two seconds.
+  const live = document.querySelector("#live-chart") as LineChartElement;
+  const toggle = document.querySelector<HTMLButtonElement>("#live-toggle")!;
+  const WINDOW = 5 * 60_000;
+  let heard = 110;
+  const sample = (time: number) => {
+    heard = Math.max(40, Math.min(190, heard + (Math.random() - 0.5) * 24));
+    return {
+      heard: { time, value: Math.round(heard) },
+      relayed: { time, value: Math.round(heard * (0.55 + Math.random() * 0.1)) },
+    };
+  };
+  const now = Date.now();
+  const history = Array.from({ length: 150 }, (_, i) => sample(now - WINDOW + i * 2000));
+  live.series = [
+    { id: "heard", label: "Heard", points: history.map((s) => s.heard) },
+    { id: "relayed", label: "Relayed", points: history.map((s) => s.relayed) },
+  ];
+  let timer: number | undefined;
+  const tick = () => {
+    const s = sample(Date.now());
+    live.appendPoints("heard", [s.heard], { windowMs: WINDOW });
+    live.appendPoints("relayed", [s.relayed], { windowMs: WINDOW });
+  };
+  const run = (on: boolean) => {
+    clearInterval(timer);
+    timer = on ? window.setInterval(tick, 2000) : undefined;
+    toggle.setAttribute("aria-pressed", String(on));
+    toggle.textContent = on ? "Pause updates" : "Resume updates";
+  };
+  toggle.addEventListener("click", () => run(timer === undefined));
+  run(!matchMedia("(prefers-reduced-motion: reduce)").matches);
 </script>
 
-</DemoLayout>
+<style>
+  .charts-demo__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
+    gap: var(--space-4);
+  }
+  .charts-demo__row {
+    margin-top: var(--space-3);
+  }
+  .charts-demo__rules {
+    margin: var(--space-4) 0 0;
+    padding-left: var(--space-5);
+    display: grid;
+    gap: var(--space-1);
+  }
+</style>
