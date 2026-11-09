@@ -161,6 +161,10 @@
   --state-elevated: #b08a3e;
   --state-alarm: #c2410c;
   --state-muted: #9a906f;
+  /* Status dots on the deep ground (SummaryBanner): lifted to read on dark green. */
+  --state-ok-on-deep: #8acba3;
+  --state-elevated-on-deep: #d9b76f;
+  --state-alarm-on-deep: #f49a70;
 
   /* ---------------------------------------------------------------------- */
   /* Lines (inherited — always warm tan, never grey)                          */
@@ -243,6 +247,9 @@
   --state-elevated: #c9a55a;
   --state-alarm: #f0895a;
   --state-muted: #8a8268;
+  --state-ok-on-deep: #8acba3;
+  --state-elevated-on-deep: #d9b76f;
+  --state-alarm-on-deep: #f49a70;
 
   --line: #36443b;
   --line-soft: #2a362f;
@@ -317,6 +324,9 @@
     --state-elevated: #c9a55a;
     --state-alarm: #f0895a;
     --state-muted: #8a8268;
+    --state-ok-on-deep: #8acba3;
+    --state-elevated-on-deep: #d9b76f;
+    --state-alarm-on-deep: #f49a70;
 
     --line: #36443b;
     --line-soft: #2a362f;

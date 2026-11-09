@@ -5,6 +5,8 @@ import type { DataValue } from "@sierragridteam/design-system/lib/data-values";
 export type Category = "roads" | "wildfires" | "weather";
 export interface Report {
   id: string;
+  /** Short name for map labels. */
+  short: string;
   category: Category;
   severity: { tone: "alarm" | "elevated" | "ok" | "muted"; label: string };
   status: string;
@@ -29,6 +31,7 @@ export const CATEGORIES = [
 export const REPORTS: Report[] = [
   {
     id: "fire-summit",
+    short: "Summit Fire",
     category: "wildfires",
     severity: { tone: "alarm", label: "Severe" },
     status: "Active",
@@ -42,6 +45,7 @@ export const REPORTS: Report[] = [
   },
   {
     id: "hwy4-closure",
+    short: "Hwy 4 closure",
     category: "roads",
     severity: { tone: "alarm", label: "Severe" },
     status: "Active",
@@ -56,6 +60,7 @@ export const REPORTS: Report[] = [
   },
   {
     id: "hwy49-drainage",
+    short: "Hwy 49 work",
     category: "roads",
     severity: { tone: "elevated", label: "Moderate" },
     status: "Active",
@@ -70,6 +75,7 @@ export const REPORTS: Report[] = [
   },
   {
     id: "wind-advisory",
+    short: "Wind advisory",
     category: "weather",
     severity: { tone: "elevated", label: "Moderate" },
     status: "Scheduled",
@@ -84,6 +90,7 @@ export const REPORTS: Report[] = [
   },
   {
     id: "hwy4-control",
+    short: "Hwy 4 control",
     category: "roads",
     severity: { tone: "muted", label: "Minor" },
     status: "Scheduled",
@@ -105,18 +112,18 @@ export const toFeatures = (reports: Report[]): FeatureCollection<Geometry | null
   type: "FeatureCollection",
   features: reports.map((r) => ({
     type: "Feature",
-    properties: { label: r.title, description: r.place, tone: r.severity.tone === "alarm" ? "alarm" : r.severity.tone === "elevated" ? "brass" : undefined },
+    properties: { label: r.title, shortLabel: r.short, description: r.place, tone: r.severity.tone === "alarm" ? "alarm" : r.severity.tone === "elevated" ? "brass" : undefined },
     geometry: { type: "Point", coordinates: r.coordinates },
   })),
 });
 
 export const STATIONS = [
-  { value: "arnold", label: "Arnold", now: 50, low: 38, high: 64 },
-  { value: "murphys", label: "Murphys", now: 54, low: 41, high: 68 },
-  { value: "bear-valley", label: "Bear Valley", now: 36, low: 24, high: 47 },
-  { value: "sonora", label: "Sonora", now: 56, low: 43, high: 70 },
-  { value: "dorrington", label: "Dorrington", now: 44, low: 32, high: 56 },
-  { value: "twain-harte", label: "Twain Harte", now: 48, low: 36, high: 61 },
+  { value: "arnold", label: "Arnold", now: 50, low: 38, high: 64, icon: "sun", condition: "Clear sky" },
+  { value: "murphys", label: "Murphys", now: 54, low: 41, high: 68, icon: "cloud-sun", condition: "Partly cloudy" },
+  { value: "bear-valley", label: "Bear Valley", now: 36, low: 24, high: 47, icon: "cloud-snow", condition: "Light snow" },
+  { value: "sonora", label: "Sonora", now: 56, low: 43, high: 70, icon: "sun", condition: "Clear sky" },
+  { value: "dorrington", label: "Dorrington", now: 44, low: 32, high: 56, icon: "cloud", condition: "Overcast" },
+  { value: "twain-harte", label: "Twain Harte", now: 48, low: 36, high: 61, icon: "cloud-rain", condition: "Showers" },
 ];
 
 const HOUR = 3_600_000;

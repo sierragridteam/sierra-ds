@@ -11,6 +11,18 @@ export interface GeoMapProps {
   basemap?: boolean;
   /** Disable feature selection for an overview; pan and zoom remain. */
   selectable?: boolean;
+  /**
+   * The button list under the map that selects features by keyboard. Defaults to
+   * `selectable`; turn it off when the page already lists the same features
+   * (e.g. a feed that drives the map) so they are not listed twice.
+   */
+  featureList?: boolean;
+  /**
+   * Name points and lines on the map, as the website's maps do: uppercase,
+   * halo in the land colour, hidden where they would collide. Uses the
+   * feature's `shortLabel`, else `label`. "selected" labels only the selection.
+   */
+  labels?: boolean | "selected";
   selected?: number;
 }
 
@@ -19,12 +31,13 @@ const featureLabel = (f: Feature<Geometry | null>, i: number) =>
 
 export function geoMapTemplate(p: GeoMapProps) {
   const selectable = p.selectable !== false;
+  const list = selectable && p.featureList !== false;
   const features = p.data.features;
   const unlocated = features.filter((f) => !f.geometry);
   const chosen = p.selected !== undefined ? features[p.selected] : undefined;
   return html`<div class="ds-map-canvas" aria-label=${p.label}></div>
     <p class="ds-map-fallback" role="status">Loading map.</p>
-    ${selectable
+    ${list
       ? html`<div class="ds-map-feature-list" aria-label="Map features">
           ${repeat(
             features,
@@ -37,7 +50,7 @@ export function geoMapTemplate(p: GeoMapProps) {
       : html`<ul class="sr-only" aria-label="Map features">
           ${features.map((f) => html`<li>${f.properties?.label}: ${f.properties?.description}</li>`)}
         </ul>`}
-    <p ?hidden=${!selectable} class="ds-map-fallback" data-selection aria-live="polite">
+    <p ?hidden=${!list} class="ds-map-fallback" data-selection aria-live="polite">
       ${chosen
         ? `${chosen.properties?.label ?? "Feature"} — ${chosen.properties?.description ?? (chosen.geometry ? chosen.geometry.type : "Location unavailable")}`
         : "Select a feature on the map or in the list."}

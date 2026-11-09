@@ -56,6 +56,16 @@ export function copyButton(
   </sierra-copy>`;
 }
 
+/**
+ * A large value with its condition: "50°F ☀ Clear sky". The icon is decorative;
+ * the condition text carries the meaning.
+ */
+export function reading(value: Content, { condition, icon: name }: { condition?: string; icon?: string } = {}) {
+  return html`<span class="reading"><span class="reading__value">${value}</span>${condition
+    ? html`<span class="reading__condition">${name ? icon(name) : nothing}${condition}</span>`
+    : nothing}</span>`;
+}
+
 /** "Browse all events →": the one style for a link to a section's full view. */
 export function moreLink(href: string, text: Content) {
   return html`<a class="link-more" href=${href}>${text}${icon("arrow-right")}</a>`;
@@ -207,7 +217,7 @@ export interface ChoiceTilesProps extends SegmentedProps {
 export function choiceTiles(p: ChoiceTilesProps) {
   return html`<fieldset class="choice-group" @change=${(e: Event) => p.onChange?.((e.target as HTMLInputElement).value)}>
     <legend class=${p.showLabel ? "label choice-group__legend" : "sr-only"}>${p.label}</legend>
-    <div class=${classMap({ choices: true, "choices--compact": p.size === "compact" })}>
+    <div class=${classMap({ choices: true, "choices--tiles": p.size === "compact" })}>
       ${p.options.map(
         (o) => html`<label class="choice">
           <input class="choice__input" type="radio" name=${p.name} value=${o.value} .checked=${checkedProperty(o.value === p.value)} ?checked=${o.value === p.value} />
