@@ -99,3 +99,27 @@ test("a panel card renders the same element on server and client paths", () => {
   assert.match(toHTML(card({ variant: "panel", title: "T" }, "B")), /^<section/);
   assert.match(toHTML(card({ title: "T", as: "article", class: "x" }, "B")), /^<article[^>]*class="[^"]*\bx\b/);
 });
+
+test("list values in a diff render as identifier pills, not JSON", () => {
+  const changed = toHTML(dataDiffTemplate({ label: "Update 3", count: false, changes: [
+    { path: "Gateways", kind: "changed", before: ["0b0b037985e4980662d3", "aaaa11112222333344445555"], after: ["0b0b037985e4980662d3", "cccc11112222333344445555"] },
+    { path: "Tags", kind: "added", after: ["alpha", "beta"] },
+  ] }));
+  assert.doesNotMatch(changed, /\[&quot;|\["/);
+  assert.match(changed, /data-kind="removed"[^>]*>.*?aaaa11/s);
+  assert.match(changed, /data-kind="added"[^>]*>.*?cccc11/s);
+  assert.match(changed, /1 unchanged/);
+  assert.match(changed, /alpha/);
+  assert.doesNotMatch(changed, /changes<\/span>/);
+});
+
+test("record header, metric grid and message sign escape text", async () => {
+  const { recordHeader, metricGrid, messageSign } = await import("../packages/design-system/src/lib/ui.ts");
+  const header = toHTML(recordHeader({ title: "<b>x</b>", meta: "a & b" }));
+  assert.match(header, /&lt;b&gt;x&lt;\/b&gt;/);
+  const grid = toHTML(metricGrid({ label: "L", items: [{ label: "Keys", identifiers: ["55678f4147f9d04a32c89aa857a1fdb2"] }] }));
+  assert.match(grid, /title="55678f4147f9d04a32c89aa857a1fdb2"/);
+  assert.match(grid, />55678f</);
+  const blank = toHTML(messageSign({ location: "EB 88", pages: null }));
+  assert.match(blank, /Sign is blank/);
+});

@@ -1,0 +1,11 @@
+---
+/**
+ * MessageSign — a roadside changeable message sign as drivers see it: pages of
+ * amber text on a dark face, with its location. Client code uses `messageSign()`.
+ */
+import { toHTML } from "../lib/ssr";
+import { messageSign, type MessageSignProps } from "../lib/ui";
+interface Props extends MessageSignProps {}
+---
+
+<Fragment set:html={toHTML(messageSign(Astro.props))} />

@@ -7,6 +7,9 @@ import ChoiceTiles from "@sierragridteam/design-system/components/ChoiceTiles.as
 import DataDiff from "@sierragridteam/design-system/components/DataDiff.astro";
 import Select from "@sierragridteam/design-system/components/Select.astro";
 import Field from "@sierragridteam/design-system/components/Field.astro";
+import MetricGrid from "@sierragridteam/design-system/components/MetricGrid.astro";
+import MessageSign from "@sierragridteam/design-system/components/MessageSign.astro";
+import RecordHeader from "@sierragridteam/design-system/components/RecordHeader.astro";
 import { PARITY } from "../../fixtures/parity";
 ---
 
@@ -16,6 +19,9 @@ import { PARITY } from "../../fixtures/parity";
   <div id="server-segmented"><SegmentedControl {...PARITY.segmented} /></div>
   <div id="server-tiles"><ChoiceTiles {...PARITY.tiles} /></div>
   <div id="server-diff"><DataDiff {...PARITY.diff} /></div>
+  <div id="server-metrics"><MetricGrid {...PARITY.metrics} /></div>
+  <div id="server-sign"><MessageSign {...PARITY.sign} /></div>
+  <div id="server-header"><RecordHeader {...PARITY.header} /></div>
   <Field label="Server station" for="server-select"><Select id="server-select" {...PARITY.select} /></Field>
   <div id="client"></div>
 </DemoLayout>
@@ -23,7 +29,7 @@ import { PARITY } from "../../fixtures/parity";
 <script>
   import { createStore, region, renderInto } from "@sierragridteam/design-system/lib/region";
   import { html, repeat } from "@sierragridteam/design-system/lib/template";
-  import { choiceTiles, feedItem, segmented } from "@sierragridteam/design-system/lib/ui";
+  import { choiceTiles, feedItem, segmented, metricGrid, messageSign, recordHeader } from "@sierragridteam/design-system/lib/ui";
   import { createSelect } from "@sierragridteam/design-system/lib/select";
   import { createDataDiff } from "@sierragridteam/design-system/lib/data-diff";
   import { createLineChart } from "@sierragridteam/design-system/lib/charts";
@@ -33,7 +39,10 @@ import { PARITY } from "../../fixtures/parity";
   renderInto(client, html`
     <div id="client-feed">${feedItem(PARITY.feed)}</div>
     <div id="client-segmented">${segmented({ ...PARITY.segmented, name: `${PARITY.segmented.name}-client` })}</div>
-    <div id="client-tiles">${choiceTiles({ ...PARITY.tiles, name: `${PARITY.tiles.name}-client` })}</div>`);
+    <div id="client-tiles">${choiceTiles({ ...PARITY.tiles, name: `${PARITY.tiles.name}-client` })}</div>
+    <div id="client-metrics">${metricGrid(PARITY.metrics)}</div>
+    <div id="client-sign">${messageSign(PARITY.sign)}</div>
+    <div id="client-header">${recordHeader(PARITY.header)}</div>`);
   const select = createSelect({ id: "client-select", ...PARITY.select });
   const diff = createDataDiff(PARITY.diff);
   diff.id = "client-diff";

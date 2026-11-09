@@ -97,6 +97,8 @@ export interface FeedItemProps {
 
 const heading = (level: number, cls: string, content: Content) => {
   switch (level) {
+    case 1:
+      return html`<h1 class=${cls}>${content}</h1>`;
     case 2:
       return html`<h2 class=${cls}>${content}</h2>`;
     case 4:
@@ -276,4 +278,113 @@ export function sparkline(options: SparklineOptions & { id?: string; class?: str
 
 export function sparklineSvg(m: ReturnType<typeof buildSparkline>) {
   return svg`<svg role="img" aria-label=${m.description} viewBox=${`0 0 ${m.width} ${m.height}`} width=${m.width} height=${m.height}>${m.path ? svg`<path class="ds-sparkline__line" d=${m.path}></path>` : nothing}${m.bars.map((b) => svg`<rect class="ds-sparkline__bar" x=${b.x} y=${b.y} width=${b.width} height=${b.height} rx="1"></rect>`)}${m.last ? svg`<circle class="ds-sparkline__dot" cx=${m.last.x} cy=${m.last.y} r="3"></circle>` : nothing}</svg>`;
+}
+
+/**
+ * Identifiers (hashes, keys, IDs) as compact pills. Long hex values show their
+ * first six characters; the full value is the title and the accessible name.
+ */
+export const shortIdentifier = (value: string) => (/^[0-9a-f]{12,}$/i.test(value) ? value.slice(0, 6) : value);
+export function identifierPills(values: readonly string[], { label }: { label?: string } = {}) {
+  return html`<ul class="ds-id-pills" aria-label=${ifDefined(label)}>${values.map(
+    (value) => html`<li><code title=${value} aria-label=${value}>${shortIdentifier(value)}</code></li>`,
+  )}</ul>`;
+}
+
+export interface MetricItem {
+  label: string;
+  value?: string | number | null;
+  unit?: string;
+  description?: string;
+  missing?: string;
+  /** A list of identifiers instead of a single value. */
+  identifiers?: string[];
+}
+export interface MetricGridProps {
+  label: string;
+  items: MetricItem[];
+  /** `compact` sets values at UI size: record details rather than headline numbers. */
+  size?: "default" | "compact";
+}
+export function metricGrid(p: MetricGridProps) {
+  return html`<dl class=${classMap({ "ds-metric-grid": true, "ds-metric-grid--compact": p.size === "compact" })} aria-label=${p.label}>${p.items.map(
+    (item) => html`<div class=${classMap({ "ds-metric": true, "ds-metric--wide": !!item.identifiers && item.identifiers.length > 2 })}>
+      <dt>${item.label}</dt>
+      <dd>${item.identifiers
+        ? item.identifiers.length
+          ? identifierPills(item.identifiers, { label: item.label })
+          : html`<span class="ds-metric-value ds-metric-missing">${item.missing ?? "None"}</span>`
+        : html`<span class=${classMap({ "ds-metric-value": true, "ds-metric-missing": item.value == null })}>${item.value ?? item.missing ?? "Not reported"}</span>${item.value != null && item.unit ? html`<span class="ds-metric-unit"> ${item.unit}</span>` : nothing}`}${item.description ? html`<p class="ds-data-note">${item.description}</p>` : nothing}</dd>
+    </div>`,
+  )}</dl>`;
+}
+
+export interface RecordHeaderProps {
+  title: string;
+  level?: 1 | 2 | 3;
+  kicker?: string;
+  /** Status badges first (severity, then state). */
+  badges?: { label: string; tone?: Tone; dot?: boolean }[];
+  /** Plain category tags after the badges, as in a feed item. */
+  tags?: string[];
+  /** Where: an area or place line under the title. */
+  subtitle?: string;
+  /** Who and when: source and report time. */
+  meta?: Content;
+  /** Right-aligned controls, e.g. a close button. */
+  actions?: Content;
+}
+/** The top of a selected record in a list-and-detail view or a record page. The title takes focus (tabindex -1) after a selection. */
+export function recordHeader(p: RecordHeaderProps) {
+  const top = p.kicker || p.badges?.length || p.tags?.length || p.actions;
+  return html`<header class="record-header">
+    ${top
+      ? html`<div class="record-header__top">
+          <div class="record-header__tags">
+            ${p.kicker ? html`<span class="kicker">${p.kicker}</span>` : nothing}
+            ${(p.badges ?? []).map((b) => badge(b.label, { tone: b.tone, dot: b.dot }))}
+            ${(p.tags ?? []).map((tag) => html`<span class="feed-item__tag">${tag}</span>`)}
+          </div>
+          ${p.actions ? html`<div class="record-header__actions">${p.actions}</div>` : nothing}
+        </div>`
+      : nothing}
+    ${p.level === 1
+      ? html`<h1 class="record-header__title" tabindex="-1">${p.title}</h1>`
+      : p.level === 3
+        ? html`<h3 class="record-header__title" tabindex="-1">${p.title}</h3>`
+        : html`<h2 class="record-header__title" tabindex="-1">${p.title}</h2>`}
+    ${p.subtitle ? html`<p class="record-header__subtitle">${p.subtitle}</p>` : nothing}
+    ${p.meta ? html`<p class="record-header__meta">${p.meta}</p>` : nothing}
+  </header>`;
+}
+
+/** Close a selected record. `href` keeps it a real link (the list URL); `onClose` handles plain clicks. */
+export function closeLink(href: string, { label = "Close", onClose }: { label?: string; onClose?: () => void } = {}) {
+  return html`<a class="btn btn--ghost btn--sm btn--icon" href=${href} aria-label=${label} title=${label} @click=${onClose ? selectOnPlainClick(onClose) : nothing}>${icon("x")}</a>`;
+}
+
+export interface MessageSignProps {
+  /** Where the sign is, e.g. "EB 4 W/O MURPHYS". */
+  location: string;
+  route?: string;
+  direction?: string;
+  /** Each page is a list of lines, as the sign shows them. Empty or missing: blank. */
+  pages?: string[][] | null;
+  inService?: boolean;
+  /** A short note under the location, e.g. "Showing since Wed 4 Nov, 06:20 PT". */
+  detail?: string;
+}
+/** A roadside changeable message sign: its text as drivers see it. */
+export function messageSign(p: MessageSignProps) {
+  const pages = (p.pages ?? []).map((page) => page.filter((line) => line.trim())).filter((page) => page.length);
+  const where = [p.route, p.direction].filter(Boolean).join(" ");
+  const text = pages.map((page) => page.join(" ")).join(" / ");
+  return html`<figure class=${classMap({ "message-sign": true, "message-sign--blank": !pages.length, "message-sign--off": p.inService === false })}>
+    <div class="message-sign__face" role="img" aria-label=${p.inService === false ? "Sign not in service" : pages.length ? `Sign reads: ${text}` : "Sign is blank"}>
+      ${pages.length
+        ? pages.map((page, i) => html`<div class="message-sign__page">${page.map((line) => html`<span>${line}</span>`)}${pages.length > 1 ? html`<span class="message-sign__count" aria-hidden="true">${i + 1}/${pages.length}</span>` : nothing}</div>`)
+        : html`<div class="message-sign__page"><span>${p.inService === false ? "Not in service" : "Blank"}</span></div>`}
+    </div>
+    <figcaption><strong>${p.location}</strong>${where ? html`<span class="meta">${where}</span>` : nothing}${p.detail ? html`<span class="message-sign__detail">${p.detail}</span>` : nothing}</figcaption>
+  </figure>`;
 }

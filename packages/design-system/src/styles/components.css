@@ -2857,3 +2857,171 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
     color: HighlightText;
   }
 }
+
+/* Record header: the top of a selected record (badges, title, place, source). */
+.record-header {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.record-header__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.record-header__tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.record-header__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-block: calc(var(--space-2) * -1);
+}
+.record-header__title {
+  margin: var(--space-1) 0 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-heading);
+  color: var(--ink-strong);
+  overflow-wrap: anywhere;
+}
+.record-header__title:focus {
+  outline: none;
+}
+.record-header__subtitle {
+  margin: 0;
+  color: var(--ink-body);
+}
+.record-header__meta {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: var(--fs-small);
+}
+
+/* Identifier pills: hashes and keys, abbreviated, full value on hover. */
+.ds-id-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-id-pills code {
+  display: inline-block;
+  padding: 1px var(--space-2);
+  border: var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--surface-banner);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.ds-id-pills--diff li[data-kind="removed"] code {
+  color: var(--ink-muted);
+  text-decoration: line-through;
+}
+.ds-id-pills--diff li[data-kind="added"] code {
+  border-color: var(--brand-green);
+  color: var(--ink-strong);
+}
+.ds-id-pills--diff li[data-kind="added"] code::before {
+  content: "+";
+  color: var(--brand-green);
+}
+.ds-diff-kept {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--ink-muted);
+  font-family: var(--font-ui);
+}
+.ds-diff-label {
+  color: var(--ink-secondary);
+  font-size: var(--fs-small);
+}
+
+/* Record details: values at UI size, identifier lists span the row. */
+.ds-metric-grid--compact {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+}
+.ds-metric-grid--compact .ds-metric {
+  padding: var(--space-3);
+}
+.ds-metric-grid--compact .ds-metric-value {
+  font-size: var(--fs-ui);
+}
+.ds-metric--wide {
+  grid-column: 1 / -1;
+}
+.ds-metric dd .ds-id-pills {
+  margin-top: var(--space-1);
+}
+
+/* Roadside message sign: the text drivers see, amber on a dark face. */
+.message-sign {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  min-width: 0;
+}
+.message-sign__face {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--sign-face);
+  border-radius: var(--radius-sm);
+}
+.message-sign__page {
+  position: relative;
+  flex: 1 1 10rem;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  min-height: 4.5rem;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--sign-text) 18%, transparent);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--sign-text);
+}
+.message-sign__count {
+  position: absolute;
+  right: var(--space-1);
+  bottom: 0;
+  font-size: var(--fs-label);
+  color: var(--sign-text-off);
+}
+.message-sign--blank .message-sign__page,
+.message-sign--off .message-sign__page {
+  min-height: 2.5rem;
+  color: var(--sign-text-off);
+  font-weight: var(--fw-medium);
+}
+.message-sign figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  align-items: baseline;
+  font-size: var(--fs-small);
+}
+.message-sign__detail {
+  flex-basis: 100%;
+  color: var(--ink-muted);
+}
+@media (forced-colors: active) {
+  .message-sign__face { border: 1px solid CanvasText; }
+  .message-sign__page { color: CanvasText; }
+}

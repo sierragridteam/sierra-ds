@@ -1,9 +1,26 @@
 # Changelog
 
-## 0.8.3
+## 0.9.0
 
-Guardrails from a wide-screen review of a data app's overview: layouts an app
-gets right by using the system's classes.
+Record views and app composition guardrails, from a review of Grid's overview
+and event browser. Each case is covered by browser fixtures.
+
+### Added
+
+- `RecordHeader` / `recordHeader()`: the top of a selected record (badges,
+  tags, serif title, place, source/time, `actions`). `closeLink()` closes a
+  selection as a real link with a plain-click handler.
+- `metricGrid()` client template (parity with `MetricGrid`), `size="compact"`
+  for record details, and `identifiers` items rendered as pills.
+  `identifierPills()` / `shortIdentifier()`: long hex values show six
+  characters, with the full value as title and accessible name.
+- `MessageSign` / `messageSign()`: a roadside sign's pages in amber on a dark
+  face, blank and out-of-service states, a location caption and `detail`.
+  `--sign-face`, `--sign-text`, `--sign-text-off` tokens.
+- `DataDiff`: `count: false`; a small label; list values diff as removed/added
+  pills with an unchanged count, including lists added or removed whole.
+
+### Changed
 
 - Shell: `.main__inner` starts beside the sidebar instead of centring (visible
   for members on wide screens). New `.main__inner--wide` (`--content-wide`,

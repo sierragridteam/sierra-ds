@@ -82,7 +82,11 @@ full reference):
    `.columns.columns--wide-narrow`; they stretch to equal height. A map in the
    `media` slot takes the extra height, so a short panel beside a tall one has
    no empty band.
-6. **Space with the system.** `.stack` between sections, `.columns` for side by
+6. **A selected record** starts with `RecordHeader`: badges, title, place, source
+   and time, and a `closeLink()` in `actions` (not a "Back to results" link).
+   Its fields go in `MetricGrid size="compact"`; its history in `DataDiff`s
+   labelled "Update 3 · Mon 9 Nov, 09:59 PT" with `count: false`.
+7. **Space with the system.** `.stack` between sections, `.columns` for side by
    side. Panel bodies and the banner aside space their blocks (`p`, lists,
    `.field`, `.callout`, `section`, `figure`, `table`, `form`) even inside your
    own wrappers or region hosts. No ad-hoc margins.
@@ -105,6 +109,7 @@ Do not:
 | Section link | `MoreLink` (text as content or `text`) | `moreLink()` |
 | Panel / card | `Card` (`variant="panel"`) | `card()` |
 | Feed of reports | `FeedItem` in `.feed` | `feedItem()` (`onSelect` for list-and-detail) |
+| Selected record (detail pane) | `RecordHeader` (`actions` slot) | `recordHeader()`, `closeLink()` |
 | Status | `Badge` (ok, elevated, alarm, muted, deep) | `badge()` |
 | Notice | `Callout` (orange = risk only) | `callout()` |
 | Buttons | `Button` | `button()`/`iconButton()` in `lib/controls`, or `.btn` classes |
@@ -115,10 +120,12 @@ Do not:
 | Dropdown | `Select` + `Field` | `createSelect()` |
 | Form fields | `Field`, `.input`, `.textarea` | `field()`, `input()` in `lib/controls` |
 | Tables | `.table` (`.table--cards` on phones), `DataTable`, `DataRow`, `ValueTable` | classes |
-| Numbers | `.stats`/`.stat`, `MetricGrid`, `Sparkline` | `sparkline()` |
+| Numbers | `.stats`/`.stat`, `MetricGrid`, `Sparkline` | `metricGrid()`, `sparkline()` |
+| Record details | `MetricGrid size="compact"` (`identifiers` for hashes/keys) | `metricGrid()`, `identifierPills()` |
 | Charts | `LineChart`, `BarChart` | `createLineChart()`, `createBarChart()` |
 | Maps | `MapFrame`, `GeoJSONMap` (`labels`, `featureList`, `selected`) | `createGeoMap()` |
-| Record changes | `DataDiff`, `IdentifierList` | `createDataDiff()` |
+| Record changes | `DataDiff` (`count={false}`; lists diff as pills), `IdentifierList` | `createDataDiff()` |
+| Highway message sign | `MessageSign` | `messageSign()` |
 | Data freshness | `DataStatus` | classes |
 | Copy | `CopyButton` | `copyButton()` |
 | Empty / loading | `EmptyState`, `.skeleton` | `skeletonRows()`, `setBusy()` in `lib/dom` |
