@@ -16,3 +16,17 @@ for (const width of [1280, 390]) {
     expect(title!.height).toBeLessThan(40);
   });
 }
+
+const gap = (page: import("@playwright/test").Page, scope: string) =>
+  page.evaluate((scope) => {
+    const kicker = document.querySelector(`${scope} .kicker`)!.getBoundingClientRect();
+    const heading = document.querySelector(`${scope} .kicker + :is(h1, h2, h3)`)!.getBoundingClientRect();
+    return Math.round(heading.top - kicker.bottom);
+  }, scope);
+
+test("a kicker has room before its heading, once, in flow and in page headers", async ({ page }) => {
+  await page.goto("/");
+  expect(await gap(page, "#principles")).toBeGreaterThanOrEqual(8);
+  await page.goto("/data");
+  expect(await gap(page, ".page-header")).toBe(8);
+});

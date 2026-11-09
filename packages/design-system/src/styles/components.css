@@ -25,6 +25,11 @@
   margin-top: var(--space-2);
 }
 
+/* Page headers already space their kicker with a flex gap. */
+.page-header__text > .kicker + h1 {
+  margin-top: 0;
+}
+
 .label {
   font-family: var(--font-ui);
   font-size: var(--fs-label);
@@ -127,11 +132,6 @@
 
 .prose li::marker {
   color: var(--brand-brass-text);
-}
-
-/* A kicker reads as a label for the heading below it, not part of the same line box. */
-.kicker + :is(h1, h2, h3) {
-  margin-top: var(--space-2);
 }
 
 /* GitHub-style task lists: "- [ ] item" */
@@ -268,19 +268,9 @@
   color: var(--brand-brass-text);
 }
 
-/* A kicker reads as a label for the heading below it, not part of the same line box. */
-.kicker + :is(h1, h2, h3) {
-  margin-top: var(--space-2);
-}
-
 .btn--secondary:hover:not(:disabled) {
   background: color-mix(in srgb, var(--brand-brass) 16%, transparent);
   color: var(--brand-brass-text);
-}
-
-/* A kicker reads as a label for the heading below it, not part of the same line box. */
-.kicker + :is(h1, h2, h3) {
-  margin-top: var(--space-2);
 }
 
 .btn--ghost {
@@ -360,11 +350,6 @@
 .btn--ghost.is-busy::after,
 .btn--outline.is-busy::after {
   color: var(--brand-brass-text);
-}
-
-/* A kicker reads as a label for the heading below it, not part of the same line box. */
-.kicker + :is(h1, h2, h3) {
-  margin-top: var(--space-2);
 }
 
 @keyframes spin {
@@ -1042,11 +1027,6 @@ sierra-theme-switcher:not(:defined) {
   color: var(--brand-brass-text);
 }
 
-/* A kicker reads as a label for the heading below it, not part of the same line box. */
-.kicker + :is(h1, h2, h3) {
-  margin-top: var(--space-2);
-}
-
 .choice.is-selected .choice__icon {
   background: var(--brand-green);
   color: var(--ink-on-brand);
@@ -1223,11 +1203,6 @@ button.steps__btn:hover .steps__label {
   border-color: var(--brand-brass);
   background: var(--brand-brass-tint);
   color: var(--brand-brass-text);
-}
-
-/* A kicker reads as a label for the heading below it, not part of the same line box. */
-.kicker + :is(h1, h2, h3) {
-  margin-top: var(--space-2);
 }
 
 .is-current .steps__num {
@@ -2266,11 +2241,6 @@ sierra-select {
 }
 .ds-diff-arrow {
   color: var(--brand-brass-text);
-}
-
-/* A kicker reads as a label for the heading below it, not part of the same line box. */
-.kicker + :is(h1, h2, h3) {
-  margin-top: var(--space-2);
 }
 .ds-diff-list > li[data-kind="added"] .ds-diff-arrow {
   color: var(--brand-green);
