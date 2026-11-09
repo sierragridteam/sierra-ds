@@ -14,9 +14,15 @@ and event browser. Each case is covered by browser fixtures.
   for record details, and `identifiers` items rendered as pills.
   `identifierPills()` / `shortIdentifier()`: long hex values show six
   characters, with the full value as title and accessible name.
-- `MessageSign` / `messageSign()`: a roadside sign's pages in amber on a dark
-  face, blank and out-of-service states, a location caption and `detail`.
-  `--sign-face`, `--sign-text`, `--sign-text-off` tokens.
+- `PropertyList` / `propertyList()`: record details as label/value rows with
+  hairlines, in as many columns as fit; identifier lists as pills.
+- `MessageSign` / `messageSign()`: one sign face with a bezel and amber text
+  as drivers see it. Two- and three-page messages alternate every 3s with page
+  dots (stacked under reduced motion); blank and out-of-service states; a
+  location caption and `detail`. `--sign-face`, `--sign-text`,
+  `--sign-text-off` tokens.
+- `Stat` / `stat()`: a headline number tile; `href` + `actionLabel` put an
+  arrow action at the top right and make the whole tile the link target.
 - `DataDiff`: `count: false`; a small label; list values diff as removed/added
   pills with an unchanged count, including lists added or removed whole.
 
@@ -30,9 +36,14 @@ and event browser. Each case is covered by browser fixtures.
 - A map in a panel's `media` slot grows to fill an equal-height row.
 - Flow spacing: blocks nested inside a panel body or banner aside (in an app's
   wrapper or region host) keep the system rhythm.
-- Banner attention items: a long title wraps beside its badge, aligned to the
-  first line.
+- Banner attention items: badges in one column and titles in the next, so
+  titles share a left edge and wrap beside their badge; a following
+  `MoreLink` gets block spacing.
+- `RecordHeader` titles size between h2 and h1, so long headlines stay calm.
 - `.sidebar__footer` plain text reads as a caption.
+- A panel body with nothing visible collapses instead of leaving padding.
+- Map: the selected label moves to the left of its point near the right edge
+  (it always draws, so MapLibre never flipped it).
 - Browser fixture `compat/composition` covers each case.
 
 ## 0.8.2

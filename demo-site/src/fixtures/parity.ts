@@ -16,5 +16,7 @@ export const PARITY = {
   metrics: { label: "Node details", size: "compact" as const, items: [{ label: "Battery", value: 4.07, unit: "V" }, { label: "Noise", value: null, missing: "Not reported" }, { label: "Gateways", identifiers: ["0b0b037985e4980662d3e7862d35aebb", "0f0f038de5fd9631e7c6e6de50844a69", "131248"] }] },
   sign: { location: "EB 4 W/O MURPHYS", route: "SR-4", direction: "East", pages: [["EBBETTS PASS", "CLOSED", ""], ["USE", "HWY 88", ""]], inService: true, detail: "Showing since Wed 4 Nov, 06:20 PT" },
   header: { title: "Power outage <1> & crew", badges: [{ label: "Info" }, { label: "Active", dot: false }], tags: ["Power"], subtitle: "Arnold", meta: "PG&E · Reported Mon 9 Nov, 09:59 PT" },
+  properties: { label: "Closure details", items: [{ label: "Route", value: "SR-4" }, { label: "Lanes closed", value: "Right <shoulder>" }, { label: "Delay", value: "" }, { label: "Gateways", identifiers: ["0b0b037985e4980662d3e7862d35aebb", "131248"] }] },
+  stat: { label: "Active events", value: "11", sub: "14 scheduled separately", href: "/events/?a=1&b=2", actionLabel: "Browse events" },
   select: { options: [{ value: "arnold", label: "Arnold" }, { value: "murphys", label: "Murphys" }, { value: "closed", label: "Closed", disabled: true }], value: "murphys", name: "station" },
 };

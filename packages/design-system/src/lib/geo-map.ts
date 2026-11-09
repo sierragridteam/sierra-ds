@@ -108,9 +108,24 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
     const id = index ?? -1;
     map.setPaintProperty("ds-points", "circle-radius", ["case", ["==", ["id"], id], 10, 6]);
     const points: maplibregl.FilterSpecification = ["==", ["geometry-type"], "Point"];
-    if (map.getLayer("ds-label-selected")) map.setFilter("ds-label-selected", ["all", points, ["==", ["id"], id]]);
+    if (map.getLayer("ds-label-selected")) {
+      map.setFilter("ds-label-selected", ["all", points, ["==", ["id"], id]]);
+      this.placeSelectedLabel();
+    }
     if (map.getLayer("ds-labels") && this.props.labels !== "selected")
       map.setFilter("ds-labels", ["all", points, ["!=", ["id"], id]]);
+  }
+
+  /**
+   * The selected label always draws (it may overlap), so MapLibre keeps it in
+   * its first anchor even at the map edge. Put it on the side with room.
+   */
+  private placeSelectedLabel() {
+    const map = this.map, feature = this.props.selected !== undefined ? this.props.data.features[this.props.selected] : undefined;
+    if (!map?.getLayer("ds-label-selected") || feature?.geometry?.type !== "Point") return;
+    const [lng, lat] = feature.geometry.coordinates as [number, number];
+    const x = map.project([lng, lat]).x, width = map.getCanvas().clientWidth;
+    map.setLayoutProperty("ds-label-selected", "text-variable-anchor", x > width * 0.55 ? ["right", "left"] : ["left", "right"]);
   }
 
   private fit(data: FeatureCollection<Geometry | null>) {
@@ -231,7 +246,7 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
             "text-font": ["Noto Sans Bold"],
             "text-size": selected ? 11 : 10,
             "text-letter-spacing": 0.11,
-            // Right of the dot, or left of it when the right would run off the map.
+            // Right of the dot; the selected label moves left near the right edge (placeSelectedLabel).
             "text-variable-anchor": ["left", "right"],
             "text-radial-offset": selected ? 1.1 : 0.9,
             "text-padding": 2,
@@ -260,6 +275,8 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
             map.on("mouseleave", layer, () => (map.getCanvas().style.cursor = ""));
           }
         this.fit(this.props.data);
+        map.on("moveend", () => this.placeSelectedLabel());
+        map.on("resize", () => this.placeSelectedLabel());
       });
       this.#observer = new ResizeObserver(() => map.resize());
       this.#observer.observe(this);

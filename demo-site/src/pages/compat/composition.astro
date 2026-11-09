@@ -61,4 +61,18 @@ import ThemeSwitcher from "@sierragridteam/design-system/components/ThemeSwitche
     data: { type: "FeatureCollection", features: [{ type: "Feature", properties: { label: "Arnold" }, geometry: { type: "Point", coordinates: [-120.35, 38.25] } }] },
   });
   document.querySelector("#map-host")!.append(map);
+  // Selected point at the east edge: its label must sit to the left of the dot.
+  const edge = createGeoMap({
+    label: "Edge label fixture",
+    compact: true,
+    featureList: false,
+    labels: "selected",
+    selected: 1,
+    data: { type: "FeatureCollection", features: [
+      { type: "Feature", properties: { label: "Murphys" }, geometry: { type: "Point", coordinates: [-120.46, 38.14] } },
+      { type: "Feature", properties: { label: "Road closed at Bear Valley" }, geometry: { type: "Point", coordinates: [-120.04, 38.46] } },
+    ] },
+  });
+  edge.id = "edge-map";
+  document.querySelector("#main")!.append(edge);
 </script>

@@ -374,17 +374,78 @@ export interface MessageSignProps {
   /** A short note under the location, e.g. "Showing since Wed 4 Nov, 06:20 PT". */
   detail?: string;
 }
-/** A roadside changeable message sign: its text as drivers see it. */
+/**
+ * A roadside changeable message sign: one face, its text as drivers see it.
+ * Multi-page messages alternate like the sign does (stacked when the viewer
+ * prefers reduced motion); dots show the page count.
+ */
 export function messageSign(p: MessageSignProps) {
   const pages = (p.pages ?? []).map((page) => page.filter((line) => line.trim())).filter((page) => page.length);
   const where = [p.route, p.direction].filter(Boolean).join(" ");
   const text = pages.map((page) => page.join(" ")).join(" / ");
-  return html`<figure class=${classMap({ "message-sign": true, "message-sign--blank": !pages.length, "message-sign--off": p.inService === false })}>
-    <div class="message-sign__face" role="img" aria-label=${p.inService === false ? "Sign not in service" : pages.length ? `Sign reads: ${text}` : "Sign is blank"}>
-      ${pages.length
-        ? pages.map((page, i) => html`<div class="message-sign__page">${page.map((line) => html`<span>${line}</span>`)}${pages.length > 1 ? html`<span class="message-sign__count" aria-hidden="true">${i + 1}/${pages.length}</span>` : nothing}</div>`)
-        : html`<div class="message-sign__page"><span>${p.inService === false ? "Not in service" : "Blank"}</span></div>`}
+  const label = p.inService === false ? "Sign not in service" : pages.length ? `Sign reads: ${text}` : "Sign is blank";
+  return html`<figure class=${classMap({ "message-sign": true, "message-sign--blank": !pages.length, "message-sign--off": p.inService === false })} data-pages=${ifDefined(pages.length > 1 ? String(pages.length) : undefined)}>
+    <div class="message-sign__face" role="img" aria-label=${label}>
+      <div class="message-sign__display">${pages.length
+        ? pages.map((page, i) => html`<div class="message-sign__page" style=${`--sign-page: ${i}`}>${page.map((line) => html`<span>${line}</span>`)}</div>`)
+        : html`<div class="message-sign__page"><span>${p.inService === false ? "Not in service" : "Blank"}</span></div>`}</div>
+      ${pages.length > 1 ? html`<div class="message-sign__dots" aria-hidden="true">${pages.map((_, i) => html`<span style=${`--sign-page: ${i}`}></span>`)}</div>` : nothing}
     </div>
     <figcaption><strong>${p.location}</strong>${where ? html`<span class="meta">${where}</span>` : nothing}${p.detail ? html`<span class="message-sign__detail">${p.detail}</span>` : nothing}</figcaption>
   </figure>`;
+}
+
+export interface StatProps {
+  label: string;
+  value: Content;
+  /** A short line under the value. */
+  sub?: Content;
+  /** Where the tile leads. The action is an arrow icon at the top right; the whole tile is the target. */
+  href?: string;
+  /** Accessible name for the action, e.g. "Browse events". Required with `href`. */
+  actionLabel?: string;
+  /** Extra content after the sub line, e.g. a sparkline. */
+  extra?: Content;
+}
+/** A headline number in `.stats`. */
+export function stat(p: StatProps) {
+  return html`<div class=${classMap({ stat: true, "stat--action": !!p.href })}>
+    <div class="stat__top">
+      <span class="stat__label">${p.label}</span>
+      ${p.href ? html`<a class="stat__action" href=${p.href} aria-label=${p.actionLabel ?? p.label} title=${p.actionLabel ?? p.label}>${icon("arrow-right")}</a>` : nothing}
+    </div>
+    <span class="stat__value">${p.value}</span>
+    ${p.sub ? html`<span class="stat__sub">${p.sub}</span>` : nothing}
+    ${p.extra ?? nothing}
+  </div>`;
+}
+
+export interface PropertyItem {
+  label: string;
+  value?: Content;
+  /** Hashes or keys, shown as pills. */
+  identifiers?: string[];
+  missing?: string;
+}
+export interface PropertyListProps {
+  label: string;
+  items: PropertyItem[];
+}
+/**
+ * Record details: label and value rows with hairlines, in reading type, in as
+ * many columns as fit. For headline numbers use `metricGrid()`.
+ */
+export function propertyList(p: PropertyListProps) {
+  return html`<dl class="ds-properties" aria-label=${p.label}>${p.items.map(
+    (item) => html`<div class=${classMap({ "ds-property": true, "ds-property--wide": !!item.identifiers && item.identifiers.length > 4 })}>
+      <dt>${item.label}</dt>
+      <dd>${item.identifiers
+        ? item.identifiers.length
+          ? identifierPills(item.identifiers, { label: item.label })
+          : html`<span class="ds-property-missing">${item.missing ?? "None"}</span>`
+        : item.value === undefined || item.value === null || item.value === ""
+          ? html`<span class="ds-property-missing">${item.missing ?? "Not reported"}</span>`
+          : item.value}</dd>
+    </div>`,
+  )}</dl>`;
 }

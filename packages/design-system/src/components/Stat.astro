@@ -1,0 +1,28 @@
+---
+/**
+ * Stat — a headline number in `.stats`. `href` + `actionLabel` add an arrow
+ * action at the top right; the whole tile is the target. Put a Sparkline in the
+ * default slot. Client code uses `stat()` from lib/ui.
+ */
+import Icon from "./Icon.astro";
+interface Props {
+  label: string;
+  value: string | number;
+  sub?: string;
+  href?: string;
+  actionLabel?: string;
+}
+const { label, value, sub, href, actionLabel } = Astro.props;
+---
+
+<div class:list={["stat", href && "stat--action"]}>
+  <div class="stat__top">
+    <span class="stat__label">{label}</span>
+    {href && (
+      <a class="stat__action" href={href} aria-label={actionLabel ?? label} title={actionLabel ?? label}><Icon name="arrow-right" /></a>
+    )}
+  </div>
+  <span class="stat__value">{value}</span>
+  {sub && <span class="stat__sub">{sub}</span>}
+  <slot />
+</div>

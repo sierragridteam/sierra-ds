@@ -20,7 +20,7 @@ test("shell content starts beside the sidebar on wide screens", async ({ page })
 test("client-built map controls follow the theme", async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem("sierra-theme", "dark"));
   await page.goto("/compat/composition");
-  const group = page.locator(".ds-geo-map .maplibregl-ctrl-group");
+  const group = page.locator("#map-host .ds-geo-map .maplibregl-ctrl-group");
   await expect(group).toBeVisible({ timeout: 15000 });
   const [background, raised] = await group.evaluate((el) => [
     getComputedStyle(el).backgroundColor,
@@ -79,4 +79,23 @@ test("plain sidebar footer text reads as a caption", async ({ page }) => {
   ]);
   expect(parseFloat(place)).toBeLessThan(parseFloat(body));
   expect(parseFloat(detail)).toBeLessThan(parseFloat(body));
+});
+
+test("a selected map label near the right edge sits left of its point", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/compat/composition");
+  await expect(page.locator("#edge-map .ds-map-canvas canvas")).toBeVisible({ timeout: 15000 });
+  await expect.poll(() => page.locator("#edge-map").evaluate((el: any) => el.map?.getLayer("ds-label-selected") ? el.map.getLayoutProperty("ds-label-selected", "text-variable-anchor")?.[0] : null), { timeout: 15000 }).toBe("right");
+});
+
+test("a stat tile's action is a top-right icon and the whole tile is the target", async ({ page }) => {
+  await page.goto("/compat/elements");
+  const tile = page.locator("#client-stat .stat");
+  const action = tile.getByRole("link", { name: "Browse events" });
+  const [t, a] = [(await tile.boundingBox())!, (await action.boundingBox())!];
+  expect(a.x + a.width).toBeGreaterThan(t.x + t.width - 40);
+  expect(a.y).toBeLessThan(t.y + 40);
+  // Clicking the tile's lower area follows the link.
+  await tile.click({ position: { x: 20, y: t.height - 10 } });
+  await expect(page).toHaveURL(/\/events\/\?a=1&b=2$/);
 });

@@ -460,6 +460,10 @@
   margin: 0;
   min-width: 0;
 }
+/* A panel body with nothing visible (e.g. a key shown only on errors) collapses. */
+.card--panel > .card__body:not(:has(> :not([hidden]))) {
+  display: none;
+}
 /* Flow: blocks an app nests inside a panel body or banner aside (a region
    host, a key, a status note) keep the same rhythm as direct children. */
 :where(.card--panel > .card__body, .summary-banner__aside)
@@ -736,23 +740,33 @@
   font-weight: var(--fw-semibold);
   margin-bottom: var(--space-3);
 }
+/* Badges in one column, titles in the next: titles share a left edge whatever
+   the badge width, and a long title wraps beside its badge. */
 .summary-banner__aside ul {
   display: grid;
-  gap: var(--space-3);
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: var(--space-3) var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .summary-banner__aside li {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: baseline;
-  gap: var(--space-2);
+  row-gap: var(--space-1);
 }
-/* A long title wraps beside its badge instead of dropping below it. */
-.summary-banner__aside li > a {
-  flex: 1 1 12rem;
+.summary-banner__aside li > :not(.badge) {
+  grid-column: 2;
   min-width: 0;
+}
+.summary-banner__aside li > .badge {
+  justify-self: start;
+}
+/* "Browse all …" after the list gets the block rhythm, not the list gap. */
+.summary-banner__aside .link-more {
+  margin-top: var(--space-4);
 }
 /* Badges on the deep ground: a quiet outline, light text, lifted status dot. */
 .summary-banner .badge {
@@ -1910,6 +1924,49 @@ a.stat:hover {
   text-decoration: none;
 }
 
+/* A tile with an action: arrow icon top right, the whole tile is the link. */
+.stat__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: 1.5rem;
+}
+.stat--action {
+  position: relative;
+}
+.stat__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: calc(var(--space-1) * -1) calc(var(--space-2) * -1) calc(var(--space-1) * -1) 0;
+  border-radius: var(--radius-sm);
+  color: var(--ink-muted);
+  transition: color var(--transition), background-color var(--transition);
+}
+.stat__action::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+}
+.stat__action:focus-visible {
+  outline: none;
+}
+.stat--action:has(.stat__action:focus-visible) {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
+}
+.stat--action:hover {
+  border-color: var(--brand-green);
+}
+.stat--action:hover .stat__action {
+  color: var(--brand-green);
+  background: var(--brand-green-tint);
+}
+
 .stat__label {
   font-size: var(--fs-label);
   font-weight: var(--fw-semibold);
@@ -2885,7 +2942,8 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
 .record-header__title {
   margin: var(--space-1) 0 0;
   font-family: var(--font-display);
-  font-size: var(--fs-h1);
+  /* Between h2 and h1: long source headlines stay readable in a detail pane. */
+  font-size: clamp(var(--fs-h2), 1.1rem + 0.6vw, 1.75rem);
   font-weight: var(--fw-medium);
   line-height: var(--lh-heading);
   color: var(--ink-strong);
@@ -2963,52 +3021,103 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   margin-top: var(--space-1);
 }
 
-/* Roadside message sign: the text drivers see, amber on a dark face. */
+/* Roadside message sign: one dark face with a bezel, amber text as drivers
+   see it. Multi-page messages alternate (3s a page); reduced motion stacks them. */
 .message-sign {
   display: grid;
   gap: var(--space-2);
   margin: 0;
   min-width: 0;
+  max-width: 26rem;
 }
 .message-sign__face {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  padding: var(--space-3);
+  position: relative;
+  display: grid;
+  padding: var(--space-4);
   background: var(--sign-face);
-  border-radius: var(--radius-sm);
+  border: 3px solid color-mix(in srgb, var(--sign-face) 70%, var(--ink-muted));
+  border-radius: var(--radius);
+}
+.message-sign__display {
+  display: grid;
+  min-height: 5.5rem;
 }
 .message-sign__page {
-  position: relative;
-  flex: 1 1 10rem;
+  grid-area: 1 / 1;
   display: grid;
   place-content: center;
   justify-items: center;
-  min-height: 4.5rem;
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid color-mix(in srgb, var(--sign-text) 18%, transparent);
-  border-radius: 2px;
   font-family: var(--font-mono);
-  font-size: var(--fs-ui);
+  font-size: var(--fs-lead);
   font-weight: var(--fw-semibold);
-  letter-spacing: 0.08em;
-  line-height: 1.5;
+  letter-spacing: 0.1em;
+  line-height: 1.45;
   text-align: center;
   text-transform: uppercase;
   color: var(--sign-text);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--sign-text) 35%, transparent);
 }
-.message-sign__count {
+/* Inside the bottom padding, so one- and multi-page faces are the same height. */
+.message-sign__dots {
   position: absolute;
-  right: var(--space-1);
-  bottom: 0;
-  font-size: var(--fs-label);
-  color: var(--sign-text-off);
+  inset: auto 0 var(--space-2);
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+}
+.message-sign__dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sign-text-off);
+}
+/* Up to three pages alternate, 3s each; longer messages stack. */
+.message-sign:is([data-pages="2"], [data-pages="3"]) .message-sign__page {
+  opacity: 0;
+  animation-timing-function: step-end;
+  animation-iteration-count: infinite;
+  animation-delay: calc(var(--sign-page) * 3s);
+}
+.message-sign:is([data-pages="2"], [data-pages="3"]) .message-sign__dots span {
+  animation-timing-function: step-end;
+  animation-iteration-count: infinite;
+  animation-delay: calc(var(--sign-page) * 3s);
+}
+.message-sign[data-pages="2"] .message-sign__page { animation-name: message-sign-page-2; animation-duration: 6s; }
+.message-sign[data-pages="2"] .message-sign__dots span { animation-name: message-sign-dot-2; animation-duration: 6s; }
+.message-sign[data-pages="3"] .message-sign__page { animation-name: message-sign-page-3; animation-duration: 9s; }
+.message-sign[data-pages="3"] .message-sign__dots span { animation-name: message-sign-dot-3; animation-duration: 9s; }
+@keyframes message-sign-page-2 { 0% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes message-sign-page-3 { 0% { opacity: 1; } 33.333%, 100% { opacity: 0; } }
+@keyframes message-sign-dot-2 { 0% { background: var(--sign-text); } 50%, 100% { background: var(--sign-text-off); } }
+@keyframes message-sign-dot-3 { 0% { background: var(--sign-text); } 33.333%, 100% { background: var(--sign-text-off); } }
+.message-sign[data-pages]:not([data-pages="2"], [data-pages="3"]) .message-sign__page {
+  grid-area: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .message-sign[data-pages] .message-sign__page {
+    grid-area: auto;
+    opacity: 1;
+    animation: none;
+  }
+  .message-sign[data-pages] .message-sign__page + .message-sign__page {
+    padding-top: var(--space-2);
+    border-top: 1px dashed color-mix(in srgb, var(--sign-text) 30%, transparent);
+  }
+  .message-sign__dots {
+    display: none;
+  }
+}
+.message-sign--blank .message-sign__display,
+.message-sign--off .message-sign__display {
+  min-height: 3rem;
 }
 .message-sign--blank .message-sign__page,
 .message-sign--off .message-sign__page {
-  min-height: 2.5rem;
-  color: var(--sign-text-off);
+  font-size: var(--fs-ui);
   font-weight: var(--fw-medium);
+  text-shadow: none;
+  color: var(--sign-text-off);
 }
 .message-sign figcaption {
   display: flex;
@@ -3024,4 +3133,41 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
 @media (forced-colors: active) {
   .message-sign__face { border: 1px solid CanvasText; }
   .message-sign__page { color: CanvasText; }
+}
+
+/* Property list: record details as rows, label then value, hairline between. */
+.ds-properties {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  column-gap: var(--space-6);
+  margin: 0;
+  border-bottom: var(--border-soft);
+}
+.ds-property {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: var(--space-3);
+  align-items: baseline;
+  padding-block: var(--space-2);
+  border-top: var(--border-soft);
+  min-width: 0;
+}
+.ds-property--wide {
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-1);
+}
+.ds-property dt {
+  color: var(--ink-secondary);
+  font-size: var(--fs-small);
+}
+.ds-property dd {
+  margin: 0;
+  color: var(--ink-body);
+  font-size: var(--fs-ui);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.ds-property-missing {
+  color: var(--ink-muted);
 }

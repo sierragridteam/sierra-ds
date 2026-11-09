@@ -84,7 +84,7 @@ full reference):
    no empty band.
 6. **A selected record** starts with `RecordHeader`: badges, title, place, source
    and time, and a `closeLink()` in `actions` (not a "Back to results" link).
-   Its fields go in `MetricGrid size="compact"`; its history in `DataDiff`s
+   Its fields go in `PropertyList` (not boxed metrics); its history in `DataDiff`s
    labelled "Update 3 · Mon 9 Nov, 09:59 PT" with `count: false`.
 7. **Space with the system.** `.stack` between sections, `.columns` for side by
    side. Panel bodies and the banner aside space their blocks (`p`, lists,
@@ -120,8 +120,8 @@ Do not:
 | Dropdown | `Select` + `Field` | `createSelect()` |
 | Form fields | `Field`, `.input`, `.textarea` | `field()`, `input()` in `lib/controls` |
 | Tables | `.table` (`.table--cards` on phones), `DataTable`, `DataRow`, `ValueTable` | classes |
-| Numbers | `.stats`/`.stat`, `MetricGrid`, `Sparkline` | `metricGrid()`, `sparkline()` |
-| Record details | `MetricGrid size="compact"` (`identifiers` for hashes/keys) | `metricGrid()`, `identifierPills()` |
+| Numbers | `.stats` of `Stat` (`href` + `actionLabel`: arrow at top right, whole tile links), `MetricGrid`, `Sparkline` | `stat()`, `metricGrid()`, `sparkline()` |
+| Record details | `PropertyList` (label/value rows; `identifiers` for hashes/keys) | `propertyList()`, `identifierPills()` |
 | Charts | `LineChart`, `BarChart` | `createLineChart()`, `createBarChart()` |
 | Maps | `MapFrame`, `GeoJSONMap` (`labels`, `featureList`, `selected`) | `createGeoMap()` |
 | Record changes | `DataDiff` (`count={false}`; lists diff as pills), `IdentifierList` | `createDataDiff()` |
