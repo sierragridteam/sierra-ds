@@ -12,6 +12,7 @@ import ChoiceTiles from "@sierragridteam/design-system/components/ChoiceTiles.as
 import DataDiff from "@sierragridteam/design-system/components/DataDiff.astro";
 import FeedItem from "@sierragridteam/design-system/components/FeedItem.astro";
 import GeoJSONMap from "@sierragridteam/design-system/components/GeoJSONMap.astro";
+import Icon from "@sierragridteam/design-system/components/Icon.astro";
 import LineChart from "@sierragridteam/design-system/components/LineChart.astro";
 import MoreLink from "@sierragridteam/design-system/components/MoreLink.astro";
 import SegmentedControl from "@sierragridteam/design-system/components/SegmentedControl.astro";
@@ -25,8 +26,17 @@ const station = STATIONS[0];
 const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
 ---
 
-<DemoLayout title="Dashboard pattern" description="An overview composed from design-system panels, feed and regions." sections={[]}>
+<DemoLayout
+  title="Dashboard pattern"
+  description="An overview composed from design-system panels, feed and regions."
+  sections={[
+    { id: "summary", label: "Summary" },
+    { id: "reports", label: "Reports" },
+    { id: "conditions", label: "Map and weather" },
+  ]}
+>
   <div class="stack dashboard">
+    <div id="summary">
     <SummaryBanner kicker="Ebbetts Pass corridor" meta="3 active · 2 scheduled · synthetic data" asideTitle="Worth your attention">
       {REPORTS.length} reports are active or scheduled. {severe.length} are severe.
       <ul slot="aside">
@@ -35,6 +45,7 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
         ))}
       </ul>
     </SummaryBanner>
+    </div>
 
     <div class="stats">
       <div class="stat">
@@ -54,7 +65,7 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
       </div>
     </div>
 
-    <section aria-labelledby="reports-title">
+    <section id="reports" aria-labelledby="reports-title">
       <div class="section-header">
         <h2 id="reports-title">Reports</h2>
         <MoreLink href="#reports-title" text="Browse all reports" />
@@ -78,23 +89,23 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
       </div>
     </section>
 
-    <div class="columns columns--wide-narrow">
+    <div id="conditions" class="columns columns--wide-narrow">
       <Card variant="panel" kicker="On the ground" title="Where reports are" source="Markers locate source reports; they do not mark closure extents.">
         <MoreLink slot="actions" href="#reports-title" text="Explore roads" />
-        <GeoJSONMap slot="media" id="report-map" data={toFeatures(REPORTS)} label="Report locations" basemap selectable={false} />
-        <p class="meta">Choose a report in the list to highlight it here.</p>
+        <GeoJSONMap slot="media" id="report-map" data={toFeatures(REPORTS)} label="Report locations" basemap featureList={false} labels selected={0} />
+        <p class="meta">Select a marker or a report in the list; the two stay in step.</p>
       </Card>
 
       <Card variant="panel" kicker="Looking ahead" title="Weather" source="Synthetic forecast. Temperatures vary across the region.">
         <MoreLink slot="actions" href="/charts" text="Forecast" />
         <div id="weather-region" class="dashboard__weather">
-          <div class="dashboard__now">
-            <span class="stat__value">{station.now}°F</span>
+          <div class="cluster cluster--between">
+            <span class="reading"><span class="reading__value">{station.now}°F</span><span class="reading__condition"><Icon name={station.icon} />{station.condition}</span></span>
             <SegmentedControl label="Temperature unit" name="unit" options={[{ value: "f", label: "°F" }, { value: "c", label: "°C" }]} value="f" />
           </div>
           <LineChart label={`Next 24 hours, ${station.label}`} series={[{ id: "temp", label: "Temperature", color: "manzanita", area: true, points: forecast(station) }]} unit="°F" decimals={0} height={180} />
           <ChoiceTiles label="Reporting location" showLabel name="station" size="compact" value={station.value}
-            options={STATIONS.map((s) => ({ value: s.value, label: s.label, detail: `${s.now}°F` }))} />
+            options={STATIONS.map((s) => ({ value: s.value, label: s.label, detail: `${s.now}°F`, icon: s.icon }))} />
         </div>
       </Card>
     </div>
@@ -106,7 +117,7 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
   import { param } from "@sierragridteam/design-system/lib/url-state";
   import { region } from "@sierragridteam/design-system/lib/region";
   import { html, repeat } from "@sierragridteam/design-system/lib/template";
-  import { badge, card, choiceTiles, feedItem, segmented } from "@sierragridteam/design-system/lib/ui";
+  import { badge, card, choiceTiles, feedItem, reading, segmented } from "@sierragridteam/design-system/lib/ui";
   import { defineDataDiff } from "@sierragridteam/design-system/lib/data-diff";
   import { defineChartElements, type LineChartElement } from "@sierragridteam/design-system/lib/charts";
   import type { SierraGeoMap } from "@sierragridteam/design-system/lib/geo-map";
@@ -161,6 +172,12 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
     const syncMap = (s: S) => (map.selected = REPORTS.findIndex((r) => r.id === s.report));
     syncMap(state.get());
     state.subscribe(syncMap, { signal });
+    map.addEventListener("feature-select", (event) => {
+      const { index } = (event as CustomEvent<{ index: number }>).detail;
+      // A report hidden by the category filter becomes visible again when chosen on the map.
+      const report = REPORTS[index];
+      state.set((s) => ({ report: report.id, category: s.category === "all" || s.category === report.category ? s.category : "all" }));
+    }, { signal });
 
     // Weather: unit and location re-render the panel body; the chart updates in place.
     region(root.querySelector<HTMLElement>("#weather-region")!, state, (s) => {
@@ -175,13 +192,13 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
         height: 180,
       };
       return html`
-        <div class="dashboard__now">
-          <span class="stat__value">${t(station.now)}${unit}</span>
+        <div class="cluster cluster--between">
+          ${reading(`${t(station.now)}${unit}`, { condition: station.condition, icon: station.icon })}
           ${segmented({ label: "Temperature unit", name: "unit", options: [{ value: "f", label: "°F" }, { value: "c", label: "°C" }], value: s.unit, onChange: (unit) => state.set({ unit: unit as S["unit"] }) })}
         </div>
         <sierra-line-chart class="ds-chart" .props=${chart}></sierra-line-chart>
         ${choiceTiles({ label: "Reporting location", showLabel: true, name: "station", size: "compact", value: s.station,
-          options: STATIONS.map((x) => ({ value: x.value, label: x.label, detail: `${t(x.now)}${unit}` })),
+          options: STATIONS.map((x) => ({ value: x.value, label: x.label, detail: `${t(x.now)}${unit}`, icon: x.icon })),
           onChange: (station) => state.set({ station: station as S["station"] }) })}`;
     }, { signal });
   });
@@ -200,12 +217,5 @@ const severe = REPORTS.filter((r) => r.severity.tone === "alarm");
   .dashboard__weather {
     display: grid;
     gap: var(--space-4);
-  }
-  .dashboard__now {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-3);
   }
 </style>

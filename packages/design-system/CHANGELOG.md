@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.8.1
+
+- `GeoJSONMap`: feature labels in the website's treatment (`labels`,
+  `shortLabel`), click selection with a pointer cursor, `featureList` to hide the
+  duplicate button list, and an initial `selected`.
+- `.cluster` / `.cluster--between` layout, and `.reading` + `reading()` for a
+  value with its condition and icon. Weather icons: `cloud`, `cloud-sun`,
+  `cloud-rain`, `cloud-snow`, `wind`.
+- `ChoiceTiles size="compact"` uses its own `.choices--tiles` layout (name
+  above, icon and value below); `.choices--compact` keeps its dialog layout.
+- Badges inside `SummaryBanner` use a deep-ground treatment
+  (`--state-*-on-deep` tokens).
+- Feed items have more inset, so the selection bar has room.
+- README: Astro scoped styles do not reach client-rendered markup.
+
 ## 0.8.0
 
 App patterns and a client layer, so apps compose pages from the system and

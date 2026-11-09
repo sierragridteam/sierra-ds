@@ -144,7 +144,7 @@ test.describe("dashboard regions", () => {
     const weather = page.locator("#weather-region");
     await weather.getByRole("radio", { name: "°C" }).check();
     await weather.getByRole("radio", { name: /Bear Valley/ }).check();
-    await expect(weather.locator(".stat__value")).toHaveText("2°C");
+    await expect(weather.locator(".reading__value")).toHaveText("2°C");
     await expect(weather.locator(".ds-chart__title")).toHaveText("Next 24 hours, Bear Valley");
     await expect(weather.locator(".ds-chart__meta")).toHaveText("Values in °C · Times in PT");
     expect(await page.evaluate(() => (document.querySelector("#weather-region sierra-line-chart") as any).__mark)).toBe("chart");
@@ -153,7 +153,31 @@ test.describe("dashboard regions", () => {
     await page.reload();
     await expect(feed.locator(".feed-item")).toHaveCount(3);
     await expect(detail.locator(".card__title")).toHaveText("Hwy 49 lane closure for drainage work");
-    await expect(weather.locator(".stat__value")).toHaveText("2°C");
+    await expect(weather.locator(".reading__value")).toHaveText("2°C");
+  });
+
+  test("selecting a marker selects the report, even when filtered out", async ({ page }) => {
+    await page.goto("/dashboard");
+    const feed = page.locator("#feed-region");
+    await feed.getByRole("radio", { name: "Wildfires" }).check();
+    await expect(feed.locator(".feed-item")).toHaveCount(1);
+    // The same path as a click on a marker or its label.
+    await page.locator("#report-map").evaluate((el: HTMLElement & { select(i: number): void }) => el.select(2));
+    await expect(feed.locator(".feed-item.is-selected")).toContainText("Hwy 49 lane closure");
+    await expect(feed.getByRole("radio", { name: "All" })).toBeChecked();
+    await expect(page.locator("#detail-region .card__title")).toHaveText("Hwy 49 lane closure for drainage work");
+    // The page lists the reports already, so the map's own button list is off.
+    await expect(page.locator("#report-map .ds-map-feature-list")).toHaveCount(0);
+  });
+
+  test("badges on the summary banner use the deep-ground treatment", async ({ page }) => {
+    await page.goto("/dashboard");
+    const badge = page.locator(".summary-banner .badge").first();
+    const colours = await badge.evaluate((el) => {
+      const banner = getComputedStyle(el.closest(".summary-banner")!);
+      return { text: getComputedStyle(el).color, ink: banner.color };
+    });
+    expect(colours.text).toBe(colours.ink);
   });
 
   test("choosing a report highlights it on the map", async ({ page }) => {

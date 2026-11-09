@@ -14,6 +14,12 @@ interface Props {
   basemap?: boolean;
   /** Disable feature selection for a treatment overview; pan and zoom remain available. */
   selectable?: boolean;
+  /** Keyboard list of features under the map; turn off when the page lists them already. */
+  featureList?: boolean;
+  /** Name points on the map (`shortLabel` or `label`); "selected" names only the selection. */
+  labels?: boolean | "selected";
+  /** Index of the initially selected feature. */
+  selected?: number;
   id?: string;
 }
 const { id, ...props } = Astro.props;

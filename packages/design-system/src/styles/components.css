@@ -505,6 +505,44 @@
   transform: translateX(2px);
 }
 
+/* Cluster: items in a row that wrap, centred on one line — a value beside its
+   controls, a group of badges. `--between` pushes the last item to the end.
+   Use it (not page styles) in client-rendered markup: Astro's scoped styles do
+   not reach elements created in the browser. */
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  min-width: 0;
+}
+.cluster--between {
+  justify-content: space-between;
+}
+
+/* A reading: a large value with its condition, e.g. "50°F, clear". */
+.reading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.reading__value {
+  font-family: var(--font-display);
+  font-size: var(--fs-stat);
+  font-weight: var(--fw-medium);
+  line-height: 1;
+  color: var(--ink-strong);
+  font-variant-numeric: tabular-nums;
+}
+.reading__condition {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--ink-secondary);
+  font-size: var(--fs-ui);
+}
+
 /* Layout: columns that collapse on narrow screens; `--wide-narrow` for a main
    panel beside a secondary one. Children stretch to equal height. */
 .columns {
@@ -542,7 +580,7 @@
 .feed-item {
   display: grid;
   gap: var(--space-1);
-  padding: var(--space-4) var(--space-2);
+  padding: var(--space-4);
   min-width: 0;
 }
 .feed-item__top {
@@ -663,12 +701,23 @@
   align-items: center;
   gap: var(--space-2);
 }
+/* Badges on the deep ground: a quiet outline, light text, lifted status dot. */
+.summary-banner .badge {
+  border-color: var(--surface-deep-line);
+  background: color-mix(in srgb, var(--ink-on-deep) 7%, transparent);
+  color: var(--ink-on-deep);
+}
+.summary-banner .badge--ok::before { background: var(--state-ok-on-deep); }
+.summary-banner .badge--elevated::before { background: var(--state-elevated-on-deep); }
+.summary-banner .badge--alarm::before { background: var(--state-alarm-on-deep); }
 .summary-banner a {
   color: var(--ink-on-deep);
   text-underline-offset: 3px;
 }
 
-/* Choice groups: tiles as native radios; compact tiles for panels. */
+/* Choice groups: tiles as native radios; `.choices--tiles` packs small tiles
+   (name above, icon and value below) into panels. `.choices--compact` is the
+   older icon-beside-label layout used in dialogs. */
 .segmented {
   display: inline-flex;
   vertical-align: middle;
@@ -692,19 +741,22 @@ sierra-geo-map {
 .choice {
   position: relative;
 }
-.choices.choices--compact {
+.choices.choices--tiles {
   grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
   gap: var(--space-2);
 }
-.choices--compact .choice {
+.choices--tiles .choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 2px;
   padding: var(--space-2) var(--space-3);
 }
-.choices--compact .choice__label {
+.choices--tiles .choice__label {
   font-size: var(--fs-small);
   color: var(--ink-secondary);
 }
-.choices--compact .choice__text {
+.choices--tiles .choice__text {
   display: flex;
   align-items: center;
   gap: var(--space-1);
@@ -712,7 +764,7 @@ sierra-geo-map {
   font-family: var(--font-mono);
   font-size: var(--fs-ui);
 }
-.choices--compact .choice__text .icon {
+.choices--tiles .choice__text .icon {
   width: 16px;
   height: 16px;
 }

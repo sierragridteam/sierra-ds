@@ -96,8 +96,14 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
   }
 
   private emphasise(index: number | undefined) {
-    if (!this.map?.getLayer("ds-points")) return;
-    this.map.setPaintProperty("ds-points", "circle-radius", ["case", ["==", ["id"], index ?? -1], 10, 6]);
+    const map = this.map;
+    if (!map?.getLayer("ds-points")) return;
+    const id = index ?? -1;
+    map.setPaintProperty("ds-points", "circle-radius", ["case", ["==", ["id"], id], 10, 6]);
+    const points: maplibregl.FilterSpecification = ["==", ["geometry-type"], "Point"];
+    if (map.getLayer("ds-label-selected")) map.setFilter("ds-label-selected", ["all", points, ["==", ["id"], id]]);
+    if (map.getLayer("ds-labels") && this.props.labels !== "selected")
+      map.setFilter("ds-labels", ["all", points, ["!=", ["id"], id]]);
   }
 
   private fit(data: FeatureCollection<Geometry | null>) {
@@ -136,6 +142,8 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
     const token = (name: string) => colors.getPropertyValue(name).trim();
     let style: maplibregl.StyleSpecification = {
       version: 8,
+      // The basemap's font server, so feature labels draw on plain ground too.
+      glyphs: "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
       sources: {},
       layers: [{ id: "ground", type: "background", paint: { "background-color": token("--surface-hero") } }],
     };
@@ -201,14 +209,46 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
           filter: ["==", ["geometry-type"], "Point"],
           paint: { "circle-color": color, "circle-radius": 6, "circle-stroke-color": token("--surface-raised"), "circle-stroke-width": 2 },
         });
+        // Labels: the website's treatment — uppercase, letter-spaced, a halo in the
+        // land colour, dropped where they would collide; the selection always shows.
+        const name: maplibregl.ExpressionSpecification = ["upcase", ["coalesce", ["get", "shortLabel"], ["get", "label"], ""]];
+        const label = (id: string, filter: maplibregl.FilterSpecification, selected: boolean): maplibregl.SymbolLayerSpecification => ({
+          id,
+          type: "symbol",
+          source: "features",
+          filter,
+          layout: {
+            "text-field": name,
+            "text-font": ["Noto Sans Bold"],
+            "text-size": selected ? 11 : 10,
+            "text-letter-spacing": 0.11,
+            "text-anchor": "left",
+            "text-offset": [selected ? 1.1 : 0.9, 0],
+            "text-padding": 2,
+            "text-optional": true,
+            "text-allow-overlap": selected,
+            "symbol-placement": "point",
+          },
+          paint: { "text-color": token("--ink-strong"), "text-halo-color": token("--surface-hero"), "text-halo-width": 1.6 },
+        });
+        const points: maplibregl.FilterSpecification = ["==", ["geometry-type"], "Point"];
+        const isSelected = (): maplibregl.FilterSpecification => ["all", points, ["==", ["id"], this.props.selected ?? -1]];
+        if (this.props.labels) {
+          map.addLayer(label("ds-labels", this.props.labels === "selected" ? ["==", ["id"], -1] : ["all", points, ["!=", ["id"], this.props.selected ?? -1]], false));
+          map.addLayer(label("ds-label-selected", isSelected(), true));
+        }
         this.#loaded = true;
         this.emphasise(this.props.selected);
         if (this.props.selectable !== false)
-          for (const layer of ["ds-areas", "ds-lines", "ds-points"])
+          for (const layer of ["ds-areas", "ds-lines", "ds-points", "ds-labels", "ds-label-selected"]) {
+            if (!map.getLayer(layer)) continue;
             map.on("click", layer, (event) => {
               const id = event.features?.[0]?.id;
               if (typeof id === "number") this.select(id);
             });
+            map.on("mouseenter", layer, () => (map.getCanvas().style.cursor = "pointer"));
+            map.on("mouseleave", layer, () => (map.getCanvas().style.cursor = ""));
+          }
         this.fit(this.props.data);
       });
       this.#observer = new ResizeObserver(() => map.resize());

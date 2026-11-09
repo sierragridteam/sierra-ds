@@ -93,13 +93,15 @@ Do not:
 | Notice | `Callout` (orange = risk only) | `callout()` |
 | Buttons | `Button` | `button()`/`iconButton()` in `lib/controls`, or `.btn` classes |
 | Short choice (°F/°C, 24h/7d) | `SegmentedControl` | `segmented()` |
+| A value with its condition (50°F, clear) | `.reading` classes | `reading()` |
+| Value beside its controls | `.cluster` (`.cluster--between`) | classes |
 | Pick a place or item | `ChoiceTiles` (`size="compact"` in panels) | `choiceTiles()` |
 | Dropdown | `Select` + `Field` | `createSelect()` |
 | Form fields | `Field`, `.input`, `.textarea` | `field()`, `input()` in `lib/controls` |
 | Tables | `.table` (`.table--cards` on phones), `DataTable`, `DataRow`, `ValueTable` | classes |
 | Numbers | `.stats`/`.stat`, `MetricGrid`, `Sparkline` | `sparkline()` |
 | Charts | `LineChart`, `BarChart` | `createLineChart()`, `createBarChart()` |
-| Maps | `MapFrame`, `GeoJSONMap` | `createGeoMap()` |
+| Maps | `MapFrame`, `GeoJSONMap` (`labels`, `featureList`, `selected`) | `createGeoMap()` |
 | Record changes | `DataDiff`, `IdentifierList` | `createDataDiff()` |
 | Data freshness | `DataStatus` | classes |
 | Copy | `CopyButton` | `copyButton()` |
@@ -156,6 +158,10 @@ Rules:
   cleans them up.
 - Server-render the first view (Astro components) for fast first paint and
   no-JavaScript reading; the region replaces it once data arrives.
+- Astro's scoped `<style>` does not reach markup rendered in the browser. Lay
+  out client-rendered markup with design-system classes (`.cluster`, `.columns`,
+  `.stack`, panel bodies); for page-specific rules use `<style is:global>` with a
+  page-level prefix.
 
 `createStore(initial)` (lib/region) is a plain store when state does not belong
 in the URL. `renderInto(container, template)` renders once without a store.
@@ -193,6 +199,16 @@ ochre, manzanita, glacier, lupine, pine); pass `color` to pin an entity. Colour
 means identity, never status. Times default to Pacific with a 24-hour clock.
 Every chart has a caption, a text summary and a data table that copies as
 Markdown. See the demo's `/charts` page and CHANGELOG 0.7.
+
+## Maps
+
+`GeoJSONMap` draws points, lines and areas over the site basemap. Feature
+properties: `label`, `shortLabel` (map label), `description`, `tone`
+(`alarm` | `brass`). `labels` names points the way the website's maps do;
+`labels="selected"` names only the selection. Clicking a feature emits
+`feature-select` with `{ feature, index }`; drive the selection back with
+`map.selected`. Set `featureList={false}` when the page already lists the same
+features (a feed), so they are not listed twice.
 
 ## Tokens and theme
 
