@@ -11,7 +11,7 @@ import { classMap } from "lit-html/directives/class-map.js";
 import { ifDefined } from "lit-html/directives/if-defined.js";
 import { live } from "lit-html/directives/live.js";
 import { isServer } from "lit-html/is-server.js";
-import { buildSparkline, chartColorVar, type SparklineOptions } from "./chart-model";
+import { buildSparkline, CHART_COLORS, chartColorVar, type SparklineOptions } from "./chart-model";
 
 /**
  * Radios: the attribute sets the initial choice (server and first render); the
@@ -501,15 +501,18 @@ export interface TrendListProps {
 }
 /**
  * Several measurements at once, each a row of label, latest value and a
- * sparkline: small multiples for a sidebar or panel. For one measurement in
- * detail use a LineChart.
+ * sparkline: small multiples for a sidebar or panel. Rows take the chart
+ * palette in turn unless an item sets `color`. For one measurement in detail
+ * use a LineChart.
  */
 export function trendList(p: TrendListProps) {
+  // Rows are separate measurements, not compared series: cycle the palette so
+  // neighbours differ, rather than greying out rows past the sixth.
   return html`<ul class="ds-trends" aria-label=${p.label}>${p.items.map(
-    (item) => html`<li class="ds-trend">
+    (item, index) => html`<li class="ds-trend">
       <span class="ds-trend__label">${item.label}</span>
       <span class="ds-trend__value">${item.value}</span>
-      ${sparkline({ label: `${item.label} trend`, values: item.values, unit: item.unit, decimals: item.decimals, color: item.color, class: "ds-trend__spark", width: 240, height: 36 })}
+      ${sparkline({ label: `${item.label} trend`, values: item.values, unit: item.unit, decimals: item.decimals, color: item.color ?? CHART_COLORS[index % CHART_COLORS.length], class: "ds-trend__spark", width: 240, height: 36 })}
       ${item.detail ? html`<span class="ds-trend__detail">${item.detail}</span>` : nothing}
     </li>`,
   )}</ul>`;

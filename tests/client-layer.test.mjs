@@ -143,4 +143,6 @@ test("trend list: one row per measurement with label, value, detail and sparklin
   assert.match(out, /Battery &lt;V&gt;/);
   assert.match(out, /\+0\.02 over 24 h/);
   assert.equal((out.match(/sierra-sparkline/g) ?? []).length >= 2, true);
+  // Rows take the palette in turn.
+  assert.match(out, /--spark: var\(--chart-lake\)[\s\S]*--spark: var\(--chart-ochre\)/);
 });

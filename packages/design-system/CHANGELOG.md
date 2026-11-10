@@ -15,7 +15,7 @@ and event browser. Each case is covered by browser fixtures.
   `identifierPills()` / `shortIdentifier()`: long hex values show six
   characters, with the full value as title and accessible name.
 - `trendList()`: small multiples, one row per measurement (label, latest
-  value, detail, sparkline). Stacks in narrow containers (a sidebar), one row
+  value, detail, sparkline), coloured from the chart palette in turn. Stacks in narrow containers (a sidebar), one row
   from 30rem (container query).
 - `<sierra-load-more>` (`lib/load-more`, `createLoadMore`): infinite scroll
   for paged lists. Fires `load-more` as its sentinel nears view inside the
