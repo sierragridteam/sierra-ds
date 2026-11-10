@@ -25,6 +25,13 @@ and event browser. Each case is covered by browser fixtures.
   with its button, Escape or an empty-map click and fires `feature-clear`.
   Thin lines get a 14 px invisible hit area, and points win over lines
   under them.
+- `corridor()`: a route as a straight strip — sections coloured by state
+  with travel text (hatched with `partial` when the status covers an
+  unknown part), named stops, and work-zone / sign / closure / incident /
+  camera markers. Vertical below about 34rem; an ordered list for screen
+  readers.
+- `schedule()`: planned windows on a shared time axis — one row per job,
+  bars per window, local-midnight day ticks and a "now" line.
 - `heatmap()`: rows × time grid with a single or two-colour ramp
   (`lowColor`), a 5th–95th percentile range by default, empty cells for
   missing data, and day ticks. `.dashboard` 12-column panel grid (`--span`).

@@ -35,7 +35,7 @@ import { PARITY } from "../../fixtures/parity";
 <script>
   import { createStore, region, renderInto } from "@sierragridteam/design-system/lib/region";
   import { html, repeat } from "@sierragridteam/design-system/lib/template";
-  import { choiceTiles, feedItem, segmented, metricGrid, messageSign, recordHeader, stat, propertyList, timeline } from "@sierragridteam/design-system/lib/ui";
+  import { choiceTiles, feedItem, segmented, metricGrid, messageSign, recordHeader, stat, propertyList, timeline, corridor, schedule } from "@sierragridteam/design-system/lib/ui";
   import { createSelect } from "@sierragridteam/design-system/lib/select";
   import { createDataDiff } from "@sierragridteam/design-system/lib/data-diff";
   import { createLineChart } from "@sierragridteam/design-system/lib/charts";
@@ -51,7 +51,33 @@ import { PARITY } from "../../fixtures/parity";
     <div id="client-header">${recordHeader(PARITY.header)}</div>
     <div id="client-stat">${stat(PARITY.stat)}</div>
     <div id="client-properties">${propertyList(PARITY.properties)}</div>
-    <div id="client-timeline">${timeline(PARITY.timeline)}</div>`);
+    <div id="client-timeline">${timeline(PARITY.timeline)}</div>
+    <div id="client-corridor" style="max-width: 900px">${corridor({
+      name: "Hwy 4", summary: "Closed beyond Mt Reba turnoff", summaryTone: "alarm", length: 71,
+      stops: [{ at: 0, label: "Angels Camp" }, { at: 13, label: "Murphys" }, { at: 33, label: "Arnold" }, { at: 71, label: "Bear Valley" }],
+      sections: [
+        { from: 0, to: 13, tone: "ok", label: "Open · 11 min" },
+        { from: 13, to: 33, tone: "ok", label: "Open · 16 min" },
+        { from: 33, to: 71, tone: "alarm", label: "Closure notice", detail: "Closed east of Mt Reba turnoff (snow)", partial: true },
+      ],
+      markers: [
+        { at: 25, kind: "work", tone: "elevated", label: "One-way traffic control", href: "/events/?record=1" },
+        { at: 70, kind: "closure", tone: "alarm", label: "Road closed eastbound" },
+      ],
+    })}</div>
+    <div id="client-corridor-narrow" style="max-width: 360px">${corridor({
+      name: "Hwy 49", length: 25,
+      stops: [{ at: 0, label: "Angels Camp" }, { at: 25, label: "Sonora" }],
+      sections: [{ from: 0, to: 25, tone: "ok", label: "Open · 24 min" }],
+    })}</div>
+    <div id="client-schedule" style="max-width: 900px">${schedule({
+      label: "Planned road work", timeZone: "America/Los_Angeles",
+      from: Date.parse("2026-11-10T08:00:00Z"), to: Date.parse("2026-11-17T08:00:00Z"), now: Date.parse("2026-11-11T20:00:00Z"),
+      rows: [
+        { label: "Hwy 4 one-way traffic control", detail: "Horseshoe Drive, near Hathaway Pines", href: "/events/?record=2", bars: [0, 1, 2].map((d) => ({ start: Date.parse("2026-11-10T15:01:00Z") + d * 864e5, end: Date.parse("2026-11-10T23:59:00Z") + d * 864e5, label: "Drainage work" })) },
+        { label: "Hwy 49 lane closure", detail: "Solinski Street, near Sonora", bars: [{ start: Date.parse("2026-11-07T01:01:00Z"), end: Date.parse("2026-12-07T08:01:00Z"), tone: "alarm", label: "Active" }] },
+      ],
+    })}</div>`);
   const select = createSelect({ id: "client-select", ...PARITY.select });
   const diff = createDataDiff(PARITY.diff);
   diff.id = "client-diff";

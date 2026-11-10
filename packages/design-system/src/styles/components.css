@@ -3581,3 +3581,221 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* Corridor: a route as a straight strip (corridor()). Tones use the state tokens. */
+.ds-corridor {
+  --c-ok: var(--state-ok);
+  --c-elevated: var(--state-elevated);
+  --c-alarm: var(--state-alarm);
+  --c-muted: var(--state-muted);
+  container-type: inline-size;
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  min-width: 0;
+}
+.ds-corridor__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-1) var(--space-3);
+}
+.ds-corridor__name {
+  font-family: var(--font-ui);
+  font-size: var(--fs-ui);
+  color: var(--ink-strong);
+}
+.ds-corridor__summary {
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+}
+.ds-corridor__summary--alarm { color: var(--signal-orange-text); font-weight: var(--fw-semibold); }
+.ds-corridor__summary--elevated { color: var(--brand-brass-text); font-weight: var(--fw-semibold); }
+.ds-corridor__summary--ok { color: var(--brand-green); }
+.ds-corridor__strip {
+  display: grid;
+  gap: 6px;
+  padding: 0 2px;
+}
+.ds-corridor__labels,
+.ds-corridor__track,
+.ds-corridor__stops {
+  position: relative;
+}
+.ds-corridor__labels { height: 1.3rem; }
+.ds-corridor__label {
+  position: absolute;
+  left: var(--from);
+  width: calc(var(--to) - var(--from));
+  bottom: 0;
+  overflow: hidden;
+  padding: 0 4px;
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--ink-secondary);
+}
+.ds-corridor__label--alarm { color: var(--signal-orange-text); font-weight: var(--fw-semibold); }
+.ds-corridor__label--elevated { color: var(--brand-brass-text); font-weight: var(--fw-semibold); }
+.ds-corridor__track { height: 10px; }
+.ds-corridor__section {
+  position: absolute;
+  inset-block: 0;
+  left: var(--from);
+  width: calc(var(--to) - var(--from));
+  background: var(--tone);
+  --tone: var(--c-muted);
+}
+.ds-corridor__section--ok { --tone: var(--c-ok); }
+.ds-corridor__section--elevated { --tone: var(--c-elevated); }
+.ds-corridor__section--alarm { --tone: var(--c-alarm); }
+.ds-corridor__section.is-partial {
+  background: repeating-linear-gradient(135deg, var(--tone) 0 6px, color-mix(in oklab, var(--tone) 35%, transparent) 6px 12px);
+}
+.ds-corridor__section:first-child { border-radius: 999px 0 0 999px; }
+.ds-corridor__section:nth-last-child(1 of .ds-corridor__section) { border-radius: 0 999px 999px 0; }
+.ds-corridor__joint {
+  position: absolute;
+  top: -3px;
+  left: var(--at);
+  width: 4px;
+  height: 16px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--surface-card);
+  box-shadow: 0 0 0 1.5px var(--ink-muted);
+}
+.ds-corridor__marker {
+  position: absolute;
+  top: 50%;
+  left: var(--at);
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  translate: -50% -50%;
+  border: 2px solid var(--surface-card);
+  border-radius: 50%;
+  background: var(--tone, var(--c-muted));
+  color: var(--surface-card);
+  font-size: 10px;
+  line-height: 1;
+  text-decoration: none;
+  z-index: 1;
+}
+.ds-corridor__marker--ok { --tone: var(--c-ok); }
+.ds-corridor__marker--elevated { --tone: var(--c-elevated); }
+.ds-corridor__marker--alarm { --tone: var(--c-alarm); }
+.ds-corridor__stops { height: 1.2rem; }
+.ds-corridor__stop {
+  position: absolute;
+  left: var(--at);
+  translate: -50% 0;
+  font-size: var(--fs-label);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.ds-corridor__stop.is-first { translate: 0 0; }
+.ds-corridor__stop.is-last { translate: -100% 0; }
+/* Narrow: the strip runs down the page, labels to the right. */
+@container (max-width: 34rem) {
+  .ds-corridor__strip {
+    grid-template-columns: 6.5rem 10px minmax(0, 1fr);
+    grid-template-rows: none;
+    gap: 0 var(--space-3);
+    height: 16rem;
+    padding: 2px 0;
+  }
+  .ds-corridor__stops { order: -1; height: auto; }
+  .ds-corridor__track { height: auto; }
+  .ds-corridor__labels { order: 1; height: auto; }
+  .ds-corridor__label { left: 0; width: auto; right: 0; top: calc((var(--from) + var(--to)) / 2); bottom: auto; translate: 0 -50%; text-align: left; padding: 0; }
+  .ds-corridor__section { inset-block: auto; inset-inline: 0; top: var(--from); left: 0; width: auto; height: calc(var(--to) - var(--from)); }
+  .ds-corridor__section:first-child { border-radius: 999px 999px 0 0; }
+  .ds-corridor__section:nth-last-child(1 of .ds-corridor__section) { border-radius: 0 0 999px 999px; }
+  .ds-corridor__joint { top: var(--at); left: -3px; width: 16px; height: 4px; margin: -2px 0 0; }
+  .ds-corridor__marker { top: var(--at); left: 50%; }
+  /* .is-first keeps translate 0 0 from the base rule (higher specificity). */
+  .ds-corridor__stop { left: auto; right: 0; top: var(--at); translate: 0 -50%; text-align: right; }
+  .ds-corridor__stop.is-last { translate: 0 -100%; }
+}
+@media (forced-colors: active) {
+  .ds-corridor__section, .ds-corridor__marker { forced-color-adjust: none; }
+}
+
+/* Schedule: windows on a time axis, one row per job (schedule()). */
+.ds-schedule {
+  container-type: inline-size;
+  --c-ok: var(--state-ok);
+  --c-elevated: var(--state-elevated);
+  --c-alarm: var(--state-alarm);
+  --c-muted: var(--state-muted);
+  margin: 0;
+  min-width: 0;
+}
+.ds-schedule__grid { display: grid; gap: 2px; }
+.ds-schedule__row {
+  display: grid;
+  grid-template-columns: minmax(8rem, 16rem) minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 2px 0;
+  border-bottom: 1px solid var(--line);
+}
+.ds-schedule__axis { min-height: 1.4rem; border-bottom: 0; }
+.ds-schedule__label { display: grid; min-width: 0; line-height: 1.3; }
+.ds-schedule__title,
+.ds-schedule__detail { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.ds-schedule__title { font-size: var(--fs-small); color: var(--ink-strong); }
+.ds-schedule__detail { font-size: var(--fs-label); color: var(--ink-muted); }
+.ds-schedule__track { position: relative; height: 100%; min-height: 1.25rem; }
+.ds-schedule__day {
+  position: absolute;
+  inset-block: -2px;
+  left: var(--at);
+  border-left: 1px dashed var(--line);
+}
+.ds-schedule__bar {
+  position: absolute;
+  top: 50%;
+  left: var(--from);
+  width: max(3px, calc(var(--to) - var(--from)));
+  height: 12px;
+  translate: 0 -50%;
+  border-radius: 3px;
+  background: var(--tone, var(--c-elevated));
+}
+.ds-schedule__bar--ok { --tone: var(--c-ok); }
+.ds-schedule__bar--elevated { --tone: var(--c-elevated); }
+.ds-schedule__bar--alarm { --tone: var(--c-alarm); }
+.ds-schedule__bar--muted { --tone: var(--c-muted); }
+.ds-schedule__now {
+  position: absolute;
+  inset-block: -2px;
+  left: var(--at);
+  border-left: 2px solid var(--signal-orange);
+  z-index: 1;
+}
+.ds-schedule__tick,
+.ds-schedule__now-label {
+  position: absolute;
+  top: 0;
+  left: var(--at);
+  padding-left: 4px;
+  font-size: var(--fs-label);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.ds-schedule__now-label { color: var(--signal-orange-text); font-weight: var(--fw-semibold); translate: -50% 0; padding: 0; }
+.ds-schedule__head { min-height: 1.1rem; }
+@container (max-width: 34rem) {
+  .ds-schedule__row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .ds-schedule__axis > span:first-child { display: none; }
+  .ds-schedule__label { padding-top: var(--space-1); }
+}
+@media (forced-colors: active) {
+  .ds-schedule__bar { forced-color-adjust: none; }
+}

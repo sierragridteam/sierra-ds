@@ -132,3 +132,44 @@ test("a stat tile's action is a top-right icon and the whole tile is the target"
   await tile.click({ position: { x: 20, y: t.height - 10 } });
   await expect(page).toHaveURL(/\/events\/\?a=1&b=2$/);
 });
+
+test("a corridor strip places sections, stops and markers along the route, and turns vertical when narrow", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/compat/elements");
+  const strip = page.locator("#client-corridor .ds-corridor__track");
+  const track = (await strip.boundingBox())!;
+  const closed = (await page.locator("#client-corridor .ds-corridor__section--alarm").boundingBox())!;
+  // 33..71 of 71 km.
+  expect(Math.abs(closed.x - (track.x + track.width * 33 / 71))).toBeLessThan(2);
+  expect(Math.abs(closed.x + closed.width - (track.x + track.width))).toBeLessThan(2);
+  const work = (await page.locator("#client-corridor .ds-corridor__marker").first().boundingBox())!;
+  expect(Math.abs(work.x + work.width / 2 - (track.x + track.width * 25 / 71))).toBeLessThan(2);
+  // The last stop label ends at the right edge, not past it.
+  const last = (await page.locator("#client-corridor .ds-corridor__stop.is-last").boundingBox())!;
+  expect(last.x + last.width).toBeLessThanOrEqual(track.x + track.width + 3);
+  // Screen readers get the sections and markers in order, with the marker's link.
+  await expect(page.locator("#client-corridor ol.sr-only li")).toHaveCount(5);
+  await expect(page.locator("#client-corridor ol.sr-only a")).toHaveAttribute("href", "/events/?record=1");
+  // Narrow: the track runs vertically.
+  const narrow = (await page.locator("#client-corridor-narrow .ds-corridor__track").boundingBox())!;
+  expect(narrow.height).toBeGreaterThan(narrow.width * 5);
+});
+
+test("a schedule draws windows on a shared time axis with day ticks and a now line", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/compat/elements");
+  const root = page.locator("#client-schedule");
+  await expect(root.locator(".ds-schedule__row:not(.ds-schedule__axis)")).toHaveCount(2);
+  await expect(root.locator(".ds-schedule__now-label")).toHaveText("Now");
+  await expect(root.locator(".ds-schedule__bar")).toHaveCount(4);
+  // 7 local midnights in a 7-day window starting at midnight Pacific.
+  await expect(root.locator(".ds-schedule__tick")).toHaveCount(7);
+  await expect(root.locator(".ds-schedule__tick").first()).toHaveText("Tue 10");
+  await expect(root.locator(".ds-schedule__now")).toHaveCount(2);
+  // A window that started before the domain is clipped to its start.
+  const track = (await root.locator(".ds-schedule__track").nth(1).boundingBox())!;
+  const long = (await root.locator(".ds-schedule__bar--alarm").boundingBox())!;
+  expect(Math.abs(long.x - track.x)).toBeLessThan(2);
+  expect(Math.abs(long.x + long.width - (track.x + track.width))).toBeLessThan(2);
+  await expect(root.locator(".ds-schedule__bar").first().locator(".sr-only")).toContainText("Drainage work");
+});

@@ -571,3 +571,141 @@ export function heatmap(p: HeatmapProps) {
     <figcaption class="ds-heatmap__legend"><span>${p.legend?.[0] ?? "low"} ${min.toFixed(digits)}${unit}</span><span class="ds-heatmap__ramp" aria-hidden="true"></span><span>${max.toFixed(digits)}${unit} ${p.legend?.[1] ?? "high"}</span></figcaption>
   </figure>`;
 }
+
+export type StateTone = "ok" | "elevated" | "alarm" | "muted";
+
+export interface CorridorSection {
+  /** Distance along the route where the section starts and ends (same unit as `length`). */
+  from: number;
+  to: number;
+  tone: StateTone;
+  /** Short text over the section, e.g. "Open · 16 min". */
+  label: string;
+  /** Longer text for its tooltip and the screen-reader list, e.g. the closure notice. */
+  detail?: string;
+  /** Draw hatched: the status covers part of the section but the source does not say which part. */
+  partial?: boolean;
+}
+export interface CorridorMarker {
+  at: number;
+  label: string;
+  /** Glyph: work zone, closure point, highway sign, incident, camera. */
+  kind: "work" | "closure" | "sign" | "incident" | "camera";
+  tone?: StateTone;
+  detail?: string;
+  href?: string;
+}
+export interface CorridorProps {
+  /** The route, e.g. "Hwy 4". */
+  name: string;
+  /** One line after the name, e.g. "Closed beyond Mt Reba turnoff". */
+  summary?: Content;
+  summaryTone?: StateTone;
+  length: number;
+  unit?: string;
+  /** Named places along the route: the ends and the joints between sections. */
+  stops: { at: number; label: string }[];
+  sections: CorridorSection[];
+  markers?: CorridorMarker[];
+}
+const corridorGlyph: Record<CorridorMarker["kind"], string> = { work: "◆", closure: "■", sign: "▭", incident: "▲", camera: "●" };
+const corridorKind: Record<CorridorMarker["kind"], string> = { work: "Work zone", closure: "Closure point", sign: "Highway sign", incident: "Incident", camera: "Camera" };
+/**
+ * A route as a straight strip: sections coloured by status with their travel
+ * text, the places between them, and what sits along it (work zones, signs,
+ * closure points). Answers "can I get from A to B" faster than a map. Below
+ * about 34rem it turns vertical.
+ */
+export function corridor(p: CorridorProps) {
+  const at = (v: number) => `${Math.max(0, Math.min(100, (v / (p.length || 1)) * 100)).toFixed(2)}%`;
+  const unit = p.unit ?? "km";
+  const markers = [...(p.markers ?? [])].sort((a, b) => a.at - b.at);
+  const markerText = (m: CorridorMarker) => `${corridorKind[m.kind]}: ${m.label}${m.detail ? ` — ${m.detail}` : ""}`;
+  return html`<figure class="ds-corridor">
+    <figcaption class="ds-corridor__head">
+      <strong class="ds-corridor__name">${p.name}</strong>
+      ${p.summary ? html`<span class=${`ds-corridor__summary ds-corridor__summary--${p.summaryTone ?? "muted"}`}>${p.summary}</span>` : nothing}
+    </figcaption>
+    <div class="ds-corridor__strip" aria-hidden="true">
+      <div class="ds-corridor__labels">
+        ${p.sections.map((s) => html`<span class=${`ds-corridor__label ds-corridor__label--${s.tone}`} style=${`--from: ${at(s.from)}; --to: ${at(s.to)}`} title=${s.detail ?? s.label}>${s.label}</span>`)}
+      </div>
+      <div class="ds-corridor__track">
+        ${p.sections.map((s) => html`<span class=${classMap({ "ds-corridor__section": true, [`ds-corridor__section--${s.tone}`]: true, "is-partial": !!s.partial })} style=${`--from: ${at(s.from)}; --to: ${at(s.to)}`} title=${s.detail ?? s.label}></span>`)}
+        ${p.stops.map((s) => html`<span class="ds-corridor__joint" style=${`--at: ${at(s.at)}`}></span>`)}
+        ${markers.map((m) => m.href
+          ? html`<a class=${`ds-corridor__marker ds-corridor__marker--${m.tone ?? "muted"}`} href=${m.href} style=${`--at: ${at(m.at)}`} title=${markerText(m)} tabindex="-1">${corridorGlyph[m.kind]}</a>`
+          : html`<span class=${`ds-corridor__marker ds-corridor__marker--${m.tone ?? "muted"}`} style=${`--at: ${at(m.at)}`} title=${markerText(m)}>${corridorGlyph[m.kind]}</span>`)}
+      </div>
+      <div class="ds-corridor__stops">
+        ${p.stops.map((s, i) => html`<span class=${classMap({ "ds-corridor__stop": true, "is-first": i === 0, "is-last": i === p.stops.length - 1 })} style=${`--at: ${at(s.at)}`}>${s.label}</span>`)}
+      </div>
+    </div>
+    <ol class="sr-only">
+      ${p.sections.map((s) => html`<li>${p.stops.find((x) => x.at === s.from)?.label ?? `${s.from} ${unit}`} to ${p.stops.find((x) => x.at === s.to)?.label ?? `${s.to} ${unit}`}: ${s.label}${s.detail ? `. ${s.detail}` : ""}</li>`)}
+      ${markers.map((m) => html`<li>${m.href ? html`<a href=${m.href}>${markerText(m)}</a>` : markerText(m)}, ${m.at.toFixed(0)} ${unit} along</li>`)}
+    </ol>
+  </figure>`;
+}
+
+export interface ScheduleBar {
+  start: number;
+  end: number;
+  tone?: StateTone;
+  /** For the tooltip and screen readers, e.g. "One-way traffic control". */
+  label?: string;
+}
+export interface ScheduleProps {
+  label: string;
+  /** Time domain, epoch ms. */
+  from: number;
+  to: number;
+  /** Draws a "now" line. */
+  now?: number;
+  timeZone?: string;
+  rows: { label: string; detail?: string; href?: string; bars: ScheduleBar[] }[];
+}
+/**
+ * Planned windows on a shared time axis: one row per job, a bar per window, a
+ * line for now, day ticks at local midnight. For work schedules, outages,
+ * restrictions: repeated daily windows read as one job, not a long list.
+ */
+export function schedule(p: ScheduleProps) {
+  const span = p.to - p.from || 1;
+  const pct = (t: number) => `${Math.max(0, Math.min(100, ((t - p.from) / span) * 100)).toFixed(3)}%`;
+  const tz = p.timeZone;
+  const weekday = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" });
+  const date = new Intl.DateTimeFormat("en-US", { timeZone: tz, day: "numeric" });
+  const day = { format: (t: number) => `${weekday.format(t)} ${date.format(t)}` };
+  const time = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  const hourOf = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", hourCycle: "h23" });
+  // Local midnights within the domain (hourly scan copes with DST).
+  const ticks: number[] = [];
+  // Number(): browsers format hour 0 as "0", "00" or "24" depending on the engine.
+  for (let t = Math.ceil(p.from / 3_600_000) * 3_600_000; t < p.to; t += 3_600_000) if (Number(hourOf.format(t)) % 24 === 0) ticks.push(t);
+  const range = (b: ScheduleBar) => `${time.format(b.start)} – ${time.format(b.end)}`;
+  return html`<figure class="ds-schedule" aria-label=${p.label}>
+    <div class="ds-schedule__grid">
+      ${p.now !== undefined && p.now >= p.from && p.now <= p.to
+        ? html`<div class="ds-schedule__row ds-schedule__axis ds-schedule__head" aria-hidden="true"><span></span><div class="ds-schedule__track"><span class="ds-schedule__now-label" style=${`--at: ${pct(p.now)}`}>Now</span></div></div>`
+        : nothing}
+      ${p.rows.map((row) => html`<div class="ds-schedule__row">
+        <div class="ds-schedule__label">
+          <span class="ds-schedule__title">${row.href ? html`<a href=${row.href}>${row.label}</a>` : row.label}</span>
+          ${row.detail ? html`<span class="ds-schedule__detail">${row.detail}</span>` : nothing}
+        </div>
+        <div class="ds-schedule__track">
+          ${ticks.map((t) => html`<span class="ds-schedule__day" style=${`--at: ${pct(t)}`} aria-hidden="true"></span>`)}
+          ${row.bars.filter((b) => b.end > p.from && b.start < p.to).map((b) => html`<span class=${`ds-schedule__bar ds-schedule__bar--${b.tone ?? "elevated"}`} style=${`--from: ${pct(b.start)}; --to: ${pct(b.end)}`} title=${`${b.label ? b.label + " · " : ""}${range(b)}`}><span class="sr-only">${b.label ? b.label + ", " : ""}${range(b)}</span></span>`)}
+          ${p.now !== undefined && p.now >= p.from && p.now <= p.to ? html`<span class="ds-schedule__now" style=${`--at: ${pct(p.now)}`} aria-hidden="true"></span>` : nothing}
+        </div>
+      </div>`)}
+      <div class="ds-schedule__row ds-schedule__axis" aria-hidden="true">
+        <span></span>
+        <div class="ds-schedule__track">
+          ${ticks.map((t) => html`<span class="ds-schedule__tick" style=${`--at: ${pct(t)}`}>${day.format(t)}</span>`)}
+        </div>
+      </div>
+    </div>
+  </figure>`;
+}
