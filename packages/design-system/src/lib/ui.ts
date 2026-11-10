@@ -589,11 +589,18 @@ export interface CorridorSection {
 export interface CorridorMarker {
   at: number;
   label: string;
-  /** Glyph: work zone, closure point, highway sign, incident, camera. */
+  /** What it is: work zone, closure point, highway sign, incident, camera. Signs draw as a small sign board. */
   kind: "work" | "closure" | "sign" | "incident" | "camera";
-  tone?: StateTone;
+  /** Colour; "info" is the chart blue (signs default to it). */
+  tone?: StateTone | "info";
+  /** A line under the label in the card, e.g. the place and time window. */
   detail?: string;
+  /** Richer card content, e.g. a message sign's face. Shown after the label. */
+  card?: Content;
+  /** The card's link, e.g. the report. */
   href?: string;
+  /** Link text (default "Details"). */
+  linkLabel?: string;
 }
 export interface CorridorProps {
   /** The route, e.g. "Hwy 4". */
@@ -608,42 +615,62 @@ export interface CorridorProps {
   sections: CorridorSection[];
   markers?: CorridorMarker[];
 }
-const corridorGlyph: Record<CorridorMarker["kind"], string> = { work: "◆", closure: "■", sign: "▭", incident: "▲", camera: "●" };
+const corridorGlyph: Record<CorridorMarker["kind"], string> = { work: "◆", closure: "■", sign: "", incident: "▲", camera: "●" };
 const corridorKind: Record<CorridorMarker["kind"], string> = { work: "Work zone", closure: "Closure point", sign: "Highway sign", incident: "Incident", camera: "Camera" };
+const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+/** Escape closes a marker's card (it is open while the marker has focus). */
+const blurOnEscape = (event: KeyboardEvent) => {
+  if (event.key === "Escape") (document.activeElement as HTMLElement | null)?.blur();
+};
 /**
  * A route as a straight strip: sections coloured by status with their travel
  * text, the places between them, and what sits along it (work zones, signs,
- * closure points). Answers "can I get from A to B" faster than a map. Below
- * about 34rem it turns vertical.
+ * closure points). Answers "can I get from A to B" faster than a map. Each
+ * marker opens a card on hover, click or keyboard focus. Below about 34rem the
+ * strip turns vertical.
  */
 export function corridor(p: CorridorProps) {
-  const at = (v: number) => `${Math.max(0, Math.min(100, (v / (p.length || 1)) * 100)).toFixed(2)}%`;
+  const pct = (v: number) => Math.max(0, Math.min(100, (v / (p.length || 1)) * 100));
+  const at = (v: number) => `${pct(v).toFixed(2)}%`;
   const unit = p.unit ?? "km";
   const markers = [...(p.markers ?? [])].sort((a, b) => a.at - b.at);
-  const markerText = (m: CorridorMarker) => `${corridorKind[m.kind]}: ${m.label}${m.detail ? ` — ${m.detail}` : ""}`;
+  const id = `ds-corridor-${slug(p.name)}`;
   return html`<figure class="ds-corridor">
     <figcaption class="ds-corridor__head">
       <strong class="ds-corridor__name">${p.name}</strong>
       ${p.summary ? html`<span class=${`ds-corridor__summary ds-corridor__summary--${p.summaryTone ?? "muted"}`}>${p.summary}</span>` : nothing}
     </figcaption>
-    <div class="ds-corridor__strip" aria-hidden="true">
-      <div class="ds-corridor__labels">
+    <div class="ds-corridor__strip">
+      <div class="ds-corridor__labels" aria-hidden="true">
         ${p.sections.map((s) => html`<span class=${`ds-corridor__label ds-corridor__label--${s.tone}`} style=${`--from: ${at(s.from)}; --to: ${at(s.to)}`} title=${s.detail ?? s.label}>${s.label}</span>`)}
       </div>
       <div class="ds-corridor__track">
-        ${p.sections.map((s) => html`<span class=${classMap({ "ds-corridor__section": true, [`ds-corridor__section--${s.tone}`]: true, "is-partial": !!s.partial })} style=${`--from: ${at(s.from)}; --to: ${at(s.to)}`} title=${s.detail ?? s.label}></span>`)}
-        ${p.stops.map((s) => html`<span class="ds-corridor__joint" style=${`--at: ${at(s.at)}`}></span>`)}
-        ${markers.map((m) => m.href
-          ? html`<a class=${`ds-corridor__marker ds-corridor__marker--${m.tone ?? "muted"}`} href=${m.href} style=${`--at: ${at(m.at)}`} title=${markerText(m)} tabindex="-1">${corridorGlyph[m.kind]}</a>`
-          : html`<span class=${`ds-corridor__marker ds-corridor__marker--${m.tone ?? "muted"}`} style=${`--at: ${at(m.at)}`} title=${markerText(m)}>${corridorGlyph[m.kind]}</span>`)}
+        ${p.sections.map((s) => html`<span aria-hidden="true" class=${classMap({ "ds-corridor__section": true, [`ds-corridor__section--${s.tone}`]: true, "is-partial": !!s.partial })} style=${`--from: ${at(s.from)}; --to: ${at(s.to)}`} title=${s.detail ?? s.label}></span>`)}
+        ${p.stops.map((s) => html`<span aria-hidden="true" class="ds-corridor__joint" style=${`--at: ${at(s.at)}`}></span>`)}
+        ${markers.map((m, i) => {
+          const tone = m.tone ?? (m.kind === "sign" ? "info" : "muted");
+          const side = pct(m.at) < 18 ? "start" : pct(m.at) > 82 ? "end" : "middle";
+          // A marker on a stop's joint would sit on top of it: nudge it clear, inward from the ends.
+          const joint = p.stops.find((x) => Math.abs(pct(x.at) - pct(m.at)) < 2.5);
+          const nudge = joint ? (pct(joint.at) > 98 || pct(m.at) < pct(joint.at) ? -14 : 14) : 0;
+          return html`<span class=${`ds-corridor__pin ds-corridor__pin--${side}`} style=${`--at: ${at(m.at)}; --nudge: ${nudge}px`} @keydown=${blurOnEscape}>
+            <button type="button" class=${`ds-corridor__marker ds-corridor__marker--${m.kind} ds-corridor__marker--${tone}`} aria-label=${`${corridorKind[m.kind]}: ${m.label}`} aria-describedby=${`${id}-${i}`}>${corridorGlyph[m.kind]}</button>
+            <span class="ds-corridor__card" id=${`${id}-${i}`}>
+              <span class="ds-corridor__card-kind">${corridorKind[m.kind]}</span>
+              <strong class="ds-corridor__card-title">${m.label}</strong>
+              ${m.detail ? html`<span class="ds-corridor__card-detail">${m.detail}</span>` : nothing}
+              ${m.card ?? nothing}
+              ${m.href ? html`<a class="ds-corridor__card-link" href=${m.href}>${m.linkLabel ?? "Details"} →</a>` : nothing}
+            </span>
+          </span>`;
+        })}
       </div>
-      <div class="ds-corridor__stops">
+      <div class="ds-corridor__stops" aria-hidden="true">
         ${p.stops.map((s, i) => html`<span class=${classMap({ "ds-corridor__stop": true, "is-first": i === 0, "is-last": i === p.stops.length - 1 })} style=${`--at: ${at(s.at)}`}>${s.label}</span>`)}
       </div>
     </div>
     <ol class="sr-only">
       ${p.sections.map((s) => html`<li>${p.stops.find((x) => x.at === s.from)?.label ?? `${s.from} ${unit}`} to ${p.stops.find((x) => x.at === s.to)?.label ?? `${s.to} ${unit}`}: ${s.label}${s.detail ? `. ${s.detail}` : ""}</li>`)}
-      ${markers.map((m) => html`<li>${m.href ? html`<a href=${m.href}>${markerText(m)}</a>` : markerText(m)}, ${m.at.toFixed(0)} ${unit} along</li>`)}
     </ol>
   </figure>`;
 }
@@ -652,8 +679,12 @@ export interface ScheduleBar {
   start: number;
   end: number;
   tone?: StateTone;
-  /** For the tooltip and screen readers, e.g. "One-way traffic control". */
+  /** For the card and screen readers, e.g. "One-way traffic control". */
   label?: string;
+  /** A line under the time in the card, e.g. "Now" or "1 of 2 lanes". */
+  detail?: string;
+  /** The window's own page; the card links to it. */
+  href?: string;
 }
 export interface ScheduleProps {
   label: string;
@@ -696,7 +727,19 @@ export function schedule(p: ScheduleProps) {
         </div>
         <div class="ds-schedule__track">
           ${ticks.map((t) => html`<span class="ds-schedule__day" style=${`--at: ${pct(t)}`} aria-hidden="true"></span>`)}
-          ${row.bars.filter((b) => b.end > p.from && b.start < p.to).map((b) => html`<span class=${`ds-schedule__bar ds-schedule__bar--${b.tone ?? "elevated"}`} style=${`--from: ${pct(b.start)}; --to: ${pct(b.end)}`} title=${`${b.label ? b.label + " · " : ""}${range(b)}`}><span class="sr-only">${b.label ? b.label + ", " : ""}${range(b)}</span></span>`)}
+          ${row.bars.filter((b) => b.end > p.from && b.start < p.to).map((b) => {
+            const mid = (Math.max(b.start, p.from) + Math.min(b.end, p.to)) / 2;
+            const side = (mid - p.from) / span < 0.2 ? "start" : (mid - p.from) / span > 0.8 ? "end" : "middle";
+            return html`<span class=${`ds-schedule__pin ds-schedule__pin--${side}`} style=${`--from: ${pct(b.start)}; --to: ${pct(b.end)}`} @keydown=${blurOnEscape}>
+              <button type="button" class=${`ds-schedule__bar ds-schedule__bar--${b.tone ?? "elevated"}`} aria-label=${`${row.label}: ${b.label ? b.label + ", " : ""}${range(b)}`}></button>
+              <span class="ds-schedule__card" aria-hidden="true">
+                <strong class="ds-schedule__card-title">${row.label}</strong>
+                <span>${range(b)}</span>
+                ${b.label || b.detail ? html`<span class="ds-schedule__card-detail">${[b.label, b.detail].filter(Boolean).join(" · ")}</span>` : nothing}
+                ${b.href ? html`<a class="ds-schedule__card-link" href=${b.href} tabindex="-1">Report →</a>` : nothing}
+              </span>
+            </span>`;
+          })}
           ${p.now !== undefined && p.now >= p.from && p.now <= p.to ? html`<span class="ds-schedule__now" style=${`--at: ${pct(p.now)}`} aria-hidden="true"></span>` : nothing}
         </div>
       </div>`)}

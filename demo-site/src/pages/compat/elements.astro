@@ -63,6 +63,7 @@ import { PARITY } from "../../fixtures/parity";
       markers: [
         { at: 25, kind: "work", tone: "elevated", label: "One-way traffic control", href: "/events/?record=1" },
         { at: 70, kind: "closure", tone: "alarm", label: "Road closed eastbound" },
+        { at: 13.8, kind: "sign", label: "EB 4 W/O Murphys", detail: "EBBETTS PASS CLOSED" },
       ],
     })}</div>
     <div id="client-corridor-narrow" style="max-width: 360px">${corridor({
@@ -74,7 +75,7 @@ import { PARITY } from "../../fixtures/parity";
       label: "Planned road work", timeZone: "America/Los_Angeles",
       from: Date.parse("2026-11-10T08:00:00Z"), to: Date.parse("2026-11-17T08:00:00Z"), now: Date.parse("2026-11-11T20:00:00Z"),
       rows: [
-        { label: "Hwy 4 one-way traffic control", detail: "Horseshoe Drive, near Hathaway Pines", href: "/events/?record=2", bars: [0, 1, 2].map((d) => ({ start: Date.parse("2026-11-10T15:01:00Z") + d * 864e5, end: Date.parse("2026-11-10T23:59:00Z") + d * 864e5, label: "Drainage work" })) },
+        { label: "Hwy 4 one-way traffic control", detail: "Horseshoe Drive, near Hathaway Pines", href: "/events/?record=2", bars: [0, 1, 2].map((d) => ({ start: Date.parse("2026-11-10T15:01:00Z") + d * 864e5, end: Date.parse("2026-11-10T23:59:00Z") + d * 864e5, label: "Drainage work", href: `/events/?record=w${d}` })) },
         { label: "Hwy 49 lane closure", detail: "Solinski Street, near Sonora", bars: [{ start: Date.parse("2026-11-07T01:01:00Z"), end: Date.parse("2026-12-07T08:01:00Z"), tone: "alarm", label: "Active" }] },
       ],
     })}</div>`);

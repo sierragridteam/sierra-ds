@@ -3667,10 +3667,20 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   background: var(--surface-card);
   box-shadow: 0 0 0 1.5px var(--ink-muted);
 }
-.ds-corridor__marker {
+.ds-corridor__pin {
   position: absolute;
   top: 50%;
   left: var(--at);
+  translate: var(--nudge, 0) 0;
+  z-index: 1;
+}
+.ds-corridor__pin:is(:hover, :focus-within) { z-index: 3; }
+.ds-corridor__marker {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0;
+  cursor: pointer;
   display: grid;
   place-items: center;
   width: 20px;
@@ -3688,6 +3698,48 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
 .ds-corridor__marker--ok { --tone: var(--c-ok); }
 .ds-corridor__marker--elevated { --tone: var(--c-elevated); }
 .ds-corridor__marker--alarm { --tone: var(--c-alarm); }
+.ds-corridor__marker--info { --tone: var(--chart-lake); }
+.ds-corridor__marker:focus-visible { outline: 2px solid var(--brand-green); outline-offset: 2px; }
+/* A sign is a small sign board: a rounded rectangle with two text lines. */
+.ds-corridor__marker--sign {
+  width: 22px;
+  height: 15px;
+  border-radius: 3px;
+  background:
+    linear-gradient(var(--surface-card), var(--surface-card)) 50% 35% / 60% 1.5px no-repeat,
+    linear-gradient(var(--surface-card), var(--surface-card)) 50% 68% / 45% 1.5px no-repeat,
+    var(--tone);
+}
+/* The marker's card: shown on hover, click (focus) and keyboard focus. */
+.ds-corridor__card {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  display: none;
+  gap: 2px;
+  width: max-content;
+  max-width: min(18rem, 80vw);
+  padding: var(--space-2) var(--space-3);
+  translate: -50% 0;
+  background: var(--surface-raised);
+  color: var(--ink-body);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  text-align: left;
+}
+/* A bridge over the gap, so the pointer can reach the card's link. */
+.ds-corridor__card::after { content: ""; position: absolute; inset: 100% 0 -14px; }
+.ds-corridor__pin--start .ds-corridor__card { translate: -16px 0; }
+.ds-corridor__pin--end .ds-corridor__card { translate: calc(-100% + 16px) 0; }
+.ds-corridor__pin:is(:hover, :focus-within) .ds-corridor__card { display: grid; }
+.ds-corridor__card-kind { font-size: var(--fs-label); color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.ds-corridor__card-title { color: var(--ink-strong); }
+.ds-corridor__card-detail { color: var(--ink-secondary); }
+.ds-corridor__card > .message-sign { margin-top: var(--space-1); width: 15rem; max-width: 100%; }
+.ds-corridor__card-link { margin-top: var(--space-1); font-weight: var(--fw-semibold); }
 .ds-corridor__stops { height: 1.2rem; }
 .ds-corridor__stop {
   position: absolute;
@@ -3716,7 +3768,10 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   .ds-corridor__section:first-child { border-radius: 999px 999px 0 0; }
   .ds-corridor__section:nth-last-child(1 of .ds-corridor__section) { border-radius: 0 0 999px 999px; }
   .ds-corridor__joint { top: var(--at); left: -3px; width: 16px; height: 4px; margin: -2px 0 0; }
-  .ds-corridor__marker { top: var(--at); left: 50%; }
+  .ds-corridor__pin { top: var(--at); left: 50%; translate: 0 var(--nudge, 0); }
+  /* Vertical: the card opens to the right of the strip, over the labels. */
+  .ds-corridor__card, .ds-corridor__pin--start .ds-corridor__card, .ds-corridor__pin--end .ds-corridor__card { bottom: auto; top: 0; left: 18px; translate: 0 -50%; }
+  .ds-corridor__card::after { inset: 0 auto 0 -14px; width: 14px; }
   /* .is-first keeps translate 0 0 from the base rule (higher specificity). */
   .ds-corridor__stop { left: auto; right: 0; top: var(--at); translate: 0 -50%; text-align: right; }
   .ds-corridor__stop.is-last { translate: 0 -100%; }
@@ -3758,16 +3813,54 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   left: var(--at);
   border-left: 1px dashed var(--line);
 }
-.ds-schedule__bar {
+.ds-schedule__pin {
   position: absolute;
   top: 50%;
   left: var(--from);
   width: max(3px, calc(var(--to) - var(--from)));
   height: 12px;
   translate: 0 -50%;
+  z-index: 1;
+}
+.ds-schedule__pin:is(:hover, :focus-within) { z-index: 3; }
+.ds-schedule__bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
   border-radius: 3px;
   background: var(--tone, var(--c-elevated));
+  cursor: pointer;
 }
+.ds-schedule__bar:hover { filter: brightness(1.12); }
+.ds-schedule__bar:focus-visible { outline: 2px solid var(--brand-green); outline-offset: 2px; }
+/* The window's card: hover, click (focus) or keyboard focus. */
+.ds-schedule__card {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  display: none;
+  gap: 2px;
+  width: max-content;
+  max-width: min(18rem, 80vw);
+  padding: var(--space-2) var(--space-3);
+  translate: -50% 0;
+  background: var(--surface-raised);
+  color: var(--ink-body);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+}
+.ds-schedule__card::after { content: ""; position: absolute; inset: 100% 0 -10px; }
+.ds-schedule__pin--start .ds-schedule__card { left: 0; translate: 0 0; }
+.ds-schedule__pin--end .ds-schedule__card { left: auto; right: 0; translate: 0 0; }
+.ds-schedule__pin:is(:hover, :focus-within) .ds-schedule__card { display: grid; }
+.ds-schedule__card-title { color: var(--ink-strong); }
+.ds-schedule__card-detail { color: var(--ink-secondary); }
+.ds-schedule__card-link { margin-top: var(--space-1); font-weight: var(--fw-semibold); }
 .ds-schedule__bar--ok { --tone: var(--c-ok); }
 .ds-schedule__bar--elevated { --tone: var(--c-elevated); }
 .ds-schedule__bar--alarm { --tone: var(--c-alarm); }

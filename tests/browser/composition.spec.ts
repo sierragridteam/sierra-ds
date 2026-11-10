@@ -142,14 +142,36 @@ test("a corridor strip places sections, stops and markers along the route, and t
   // 33..71 of 71 km.
   expect(Math.abs(closed.x - (track.x + track.width * 33 / 71))).toBeLessThan(2);
   expect(Math.abs(closed.x + closed.width - (track.x + track.width))).toBeLessThan(2);
-  const work = (await page.locator("#client-corridor .ds-corridor__marker").first().boundingBox())!;
+  const work = (await page.locator("#client-corridor .ds-corridor__marker--work").boundingBox())!;
   expect(Math.abs(work.x + work.width / 2 - (track.x + track.width * 25 / 71))).toBeLessThan(2);
   // The last stop label ends at the right edge, not past it.
   const last = (await page.locator("#client-corridor .ds-corridor__stop.is-last").boundingBox())!;
   expect(last.x + last.width).toBeLessThanOrEqual(track.x + track.width + 3);
-  // Screen readers get the sections and markers in order, with the marker's link.
-  await expect(page.locator("#client-corridor ol.sr-only li")).toHaveCount(5);
-  await expect(page.locator("#client-corridor ol.sr-only a")).toHaveAttribute("href", "/events/?record=1");
+  // Screen readers get the sections in order; markers are named buttons.
+  await expect(page.locator("#client-corridor ol.sr-only li")).toHaveCount(3);
+  await expect(page.getByRole("button", { name: "Work zone: One-way traffic control" })).toBeVisible();
+  // A sign is a sign board, not a dot, and blue by default.
+  const sign = page.locator("#client-corridor .ds-corridor__marker--sign");
+  const board = (await sign.boundingBox())!;
+  expect(board.width).toBeGreaterThan(board.height * 1.3);
+  await expect(sign).toHaveClass(/ds-corridor__marker--info/);
+  // Hover opens the card with its link; the pointer can reach the link.
+  const card = page.locator("#client-corridor .ds-corridor__pin:has(.ds-corridor__marker--work) .ds-corridor__card");
+  await expect(card).toBeHidden();
+  await page.locator("#client-corridor .ds-corridor__marker--work").hover();
+  await expect(card).toBeVisible();
+  await card.getByRole("link", { name: "Details →" }).hover();
+  await expect(card).toBeVisible();
+  await expect(card.getByRole("link")).toHaveAttribute("href", "/events/?record=1");
+  // A marker on a stop (the sign at Murphys, 13) is nudged clear of the joint.
+  const joint = (await page.locator("#client-corridor .ds-corridor__joint").nth(1).boundingBox())!;
+  expect(board.x).toBeGreaterThan(joint.x + joint.width);
+  // Keyboard: focus opens it, Escape closes it.
+  await page.mouse.move(0, 0);
+  await page.locator("#client-corridor .ds-corridor__marker--sign").focus();
+  await expect(page.locator("#client-corridor .ds-corridor__pin:has(.ds-corridor__marker--sign) .ds-corridor__card")).toContainText("EBBETTS PASS CLOSED");
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#client-corridor .ds-corridor__pin:has(.ds-corridor__marker--sign) .ds-corridor__card")).toBeHidden();
   // Narrow: the track runs vertically.
   const narrow = (await page.locator("#client-corridor-narrow .ds-corridor__track").boundingBox())!;
   expect(narrow.height).toBeGreaterThan(narrow.width * 5);
@@ -171,5 +193,12 @@ test("a schedule draws windows on a shared time axis with day ticks and a now li
   const long = (await root.locator(".ds-schedule__bar--alarm").boundingBox())!;
   expect(Math.abs(long.x - track.x)).toBeLessThan(2);
   expect(Math.abs(long.x + long.width - (track.x + track.width))).toBeLessThan(2);
-  await expect(root.locator(".ds-schedule__bar").first().locator(".sr-only")).toContainText("Drainage work");
+  // Each window is a named button with a card on hover.
+  const first = root.locator(".ds-schedule__pin").first();
+  await expect(first.locator(".ds-schedule__bar")).toHaveAttribute("aria-label", /Drainage work/);
+  await expect(first.locator(".ds-schedule__card")).toBeHidden();
+  await first.locator(".ds-schedule__bar").hover();
+  await expect(first.locator(".ds-schedule__card")).toBeVisible();
+  await expect(first.locator(".ds-schedule__card")).toContainText("Hwy 4 one-way traffic control");
+  await expect(first.locator(".ds-schedule__card a")).toHaveAttribute("href", "/events/?record=w0");
 });

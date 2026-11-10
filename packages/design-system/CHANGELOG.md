@@ -30,6 +30,12 @@ and event browser. Each case is covered by browser fixtures.
   unknown part), named stops, and work-zone / sign / closure / incident /
   camera markers. Vertical below about 34rem; an ordered list for screen
   readers.
+- `corridor()` markers are buttons with a card on hover, click or focus
+  (`detail`, rich `card` content, `href` + `linkLabel`); Escape closes it.
+  Signs draw as a small sign board in the chart blue (`tone: "info"`), and
+  a marker on a stop's joint is nudged clear of it.
+- `schedule()` windows are buttons with a card (time, `label`, `detail`,
+  `href`).
 - `schedule()`: planned windows on a shared time axis — one row per job,
   bars per window, local-midnight day ticks and a "now" line.
 - `heatmap()`: rows × time grid with a single or two-colour ramp
