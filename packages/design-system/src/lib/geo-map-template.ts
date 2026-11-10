@@ -25,7 +25,33 @@ export interface GeoMapProps {
    */
   labels?: boolean | "selected";
   selected?: number;
+  /** A tall map for a page whose subject is the map (a network, a region). */
+  large?: boolean;
+  /**
+   * Fit to features whose `properties.focus` is true; the rest stay drawn as
+   * context outside the initial view (e.g. links leaving the region).
+   */
+  fitFocus?: boolean;
+  /** Animate `pulse` points and `flow` lines (default true; never under reduced motion). */
+  animate?: boolean;
 }
+
+/**
+ * Feature properties the map reads, all optional:
+ * - `label`, `shortLabel`, `description`: names (see `labels`).
+ * - `tone`: "alarm" | "brass" | "muted" | a chart colour ("lake", "ochre",
+ *   "manzanita", "glacier", "lupine", "pine"); default the brand green.
+ * - `weight` (line width, px), `radius` (point radius, px), `opacity` (0–1).
+ * - `z`: draw order; higher draws on top (context below, focus above).
+ * - `pulse`: a point that is live now gets an expanding ring.
+ * - `flow`: a line carrying traffic now gets moving dashes.
+ * - `focus`: with `fitFocus`, the features the map fits to.
+ */
+export type GeoMapFeatureProperties = {
+  label?: string; shortLabel?: string; description?: string;
+  tone?: string; weight?: number; radius?: number; opacity?: number; z?: number;
+  pulse?: boolean; flow?: boolean; focus?: boolean;
+};
 
 const featureLabel = (f: Feature<Geometry | null>, i: number) =>
   String(f.properties?.label ?? `Feature ${i + 1}`);

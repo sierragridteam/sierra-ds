@@ -1074,6 +1074,21 @@ button.row:hover .row__icon {
   white-space: nowrap;
 }
 
+/* Row headers in the body are data (a name), not column labels. */
+.table tbody th {
+  font-size: inherit;
+  font-weight: var(--fw-medium);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink-body);
+  background: none;
+  border-bottom: 0;
+  border-top: var(--border-soft);
+}
+.table tbody tr:first-child th {
+  border-top: 0;
+}
+
 .table td {
   padding: var(--space-2) var(--space-4);
   height: var(--row-h);
@@ -2512,6 +2527,9 @@ sierra-select {
 .ds-map-compact .ds-map-canvas {
   height: 220px;
 }
+.ds-map-large .ds-map-canvas {
+  height: clamp(420px, 68vh, 720px);
+}
 /* Applies to the Astro frame and to createGeoMap() elements alike. */
 :is(.ds-map-frame, .ds-geo-map) .maplibregl-ctrl-group {
   background: var(--surface-raised);
@@ -3376,4 +3394,133 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   display: block;
   width: 100%;
   height: auto;
+}
+
+/* Heatmap: rows × time, single-hue intensity; empty cells are missing data. */
+.ds-heatmap {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  min-width: 0;
+}
+.ds-heatmap__grid {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.ds-heatmap__row {
+  display: grid;
+  grid-template-columns: minmax(5rem, 9rem) repeat(var(--cols), minmax(1px, 1fr));
+  gap: 0;
+  align-items: stretch;
+}
+.ds-heatmap__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+  padding-right: var(--space-2);
+  overflow: hidden;
+  font-size: var(--fs-small);
+  color: var(--ink-secondary);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ds-heatmap__label a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: inherit;
+}
+.ds-heatmap__note {
+  color: var(--signal-orange-text, var(--brand-brass-text));
+  font-weight: var(--fw-semibold);
+}
+.ds-heatmap__cell {
+  height: 1.25rem;
+  /* From --heat-low (the card, unless a low colour is set) to --heat. */
+  background: color-mix(in oklab, var(--heat) calc(var(--v) * 100%), var(--heat-low));
+}
+.ds-heatmap__cell.is-empty {
+  background: repeating-linear-gradient(135deg, var(--line) 0 2px, transparent 2px 5px);
+  opacity: 0.6;
+}
+.ds-heatmap__ticks {
+  height: 1.1rem;
+}
+.ds-heatmap__tick {
+  overflow: visible;
+  font-size: var(--fs-label);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.ds-heatmap__legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}
+.ds-heatmap__ramp {
+  width: 8rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--heat-low), var(--heat));
+}
+@media (forced-colors: active) {
+  .ds-heatmap__cell { forced-color-adjust: none; }
+}
+
+/* Dashboard: a dense panel grid (12 columns); panels span with --span. */
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--space-4);
+  align-items: stretch;
+}
+.dashboard > * {
+  grid-column: span var(--span, 12);
+  min-width: 0;
+}
+.dashboard > .card--panel {
+  --card-inset: var(--space-4);
+}
+.dashboard > .card--panel .card__title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-semibold);
+}
+@media (max-width: 1100px) {
+  .dashboard > * { grid-column: span min(var(--span, 12), 6); }
+}
+@media (max-width: 720px) {
+  .dashboard > * { grid-column: 1 / -1; }
+}
+
+/* Live indicator: a dot that breathes while data is current (static under reduced motion). */
+.live-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--chart-pine);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--chart-pine) 55%, transparent);
+  animation: live-dot 2s ease-out infinite;
+}
+@keyframes live-dot {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--chart-pine) 55%, transparent); }
+  100% { box-shadow: 0 0 0 0.6rem color-mix(in srgb, var(--chart-pine) 0%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--chart-pine) 30%, transparent); }
+}
+
+/* A chart inside a titled panel: the caption is for screen readers only. */
+.ds-chart--quiet .ds-chart__caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }

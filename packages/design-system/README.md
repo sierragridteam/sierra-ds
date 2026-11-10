@@ -120,6 +120,7 @@ Do not:
 | Dropdown | `Select` + `Field` | `createSelect()` |
 | Form fields | `Field`, `.input`, `.textarea` | `field()`, `input()` in `lib/controls` |
 | Tables | `.table` (`.table--cards` on phones), `DataTable`, `DataRow`, `ValueTable` | classes |
+| Fleet patterns over time | — | `heatmap()` (rows × hourly columns, `lowColor` for a diverging ramp) inside a `.dashboard` panel grid |
 | Several measurements at once (sidebar) | — | `trendList()`: label, latest value, detail and a sparkline per row; one row on wide containers |
 | Numbers | `.stats` of `Stat` (`href` + `actionLabel`: arrow at top right, whole tile links), `MetricGrid`, `Sparkline` | `stat()`, `metricGrid()`, `sparkline()` |
 | Record details | `PropertyList` (label/value rows; `identifiers` for hashes/keys) | `propertyList()`, `identifierPills()` |
@@ -329,7 +330,10 @@ same features and selecting there drives `map.selected` (a feed), so keyboard
 users have the same path. The basemap style and label fonts load from
 `tiles.openfreemap.org`; without it the map shows geometry on plain ground.
 Zoom controls follow the theme whether the map comes from `GeoJSONMap` or
-`createGeoMap()`.
+`createGeoMap()`. For a network or overview map, set feature `tone`,
+`weight`, `opacity` and `z` to rank what matters, `pulse`/`flow` for what is
+live now (animation stops under reduced motion), and `large` + `fitFocus` so
+the view frames the region while context reaches beyond it.
 
 ## Tokens and theme
 

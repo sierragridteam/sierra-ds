@@ -44,7 +44,7 @@ test("auto: false leaves loading to the button", async ({ page }) => {
 });
 
 test("one scroll to the end loads one page, not a burst", async ({ page }) => {
-  // The column fixture loads 100px ahead; one page adds 400px, which puts the
+  // The column fixture loads 40px ahead; one page adds 400px, which puts the
   // end out of reach. The re-check after a page must measure, not reuse the
   // observer's last reading (which predates the new rows).
   const rows = page.locator("#column-list li");

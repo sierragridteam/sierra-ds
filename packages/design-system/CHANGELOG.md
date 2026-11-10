@@ -14,6 +14,17 @@ and event browser. Each case is covered by browser fixtures.
   for record details, and `identifiers` items rendered as pills.
   `identifierPills()` / `shortIdentifier()`: long hex values show six
   characters, with the full value as title and accessible name.
+- `GeoMap` feature styling and motion: `tone` takes chart colours and
+  `muted`; `weight`, `radius`, `opacity`, `z` per feature; `pulse` points
+  get an expanding ring and `flow` lines moving dashes (static under reduced
+  motion, `animate: false` to stop); `large` for a page-sized map;
+  `fitFocus` fits to `focus` features and keeps the rest as context.
+  Labelled maps fit with more edge room.
+- `heatmap()`: rows × time grid with a single or two-colour ramp
+  (`lowColor`), a 5th–95th percentile range by default, empty cells for
+  missing data, and day ticks. `.dashboard` 12-column panel grid (`--span`).
+- `.live-dot` indicator; `.ds-chart--quiet` hides a chart's caption visually
+  inside a titled panel; table body row headers read as data, not labels.
 - `trendList()`: small multiples, one row per measurement (label, latest
   value, detail, sparkline), coloured from the chart palette in turn. Stacks in narrow containers (a sidebar), one row
   from 30rem (container query).

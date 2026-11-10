@@ -38,7 +38,7 @@ import DemoLayout from "../../layouts/DemoLayout.astro";
       more.update({ loading: false, error: undefined, hasMore: page < pages });
     });
   }
-  feed(document.querySelector("#column-list")!, document.querySelector("#column-more")!, { pages: 4, size: 10, label: "Load more rows", rootMargin: "100px 0px" });
+  feed(document.querySelector("#column-list")!, document.querySelector("#column-more")!, { pages: 4, size: 10, label: "Load more rows", rootMargin: "40px 0px" });
   feed(document.querySelector("#short-list")!, document.querySelector("#short-more")!, { pages: 3, size: 1, label: "Load more short" });
   feed(document.querySelector("#manual-list")!, document.querySelector("#manual-more")!, { pages: 2, size: 2, label: "Load more manual", auto: false });
   feed(document.querySelector("#fail-list")!, document.querySelector("#fail-more")!, { pages: 3, size: 5, failOnce: true, label: "Load more failing" });

@@ -112,7 +112,8 @@ export class SierraLoadMore extends SierraElement<LoadMoreProps> {
 
   #maybeLoad() {
     const p = this.props;
-    if (p.auto === false || !this.#visible || p.error) return;
+    // Observer readings can predate the rows a page just added; confirm by measuring.
+    if (p.auto === false || !this.#visible || p.error || !this.#inReach()) return;
     this.#fire(false);
   }
 

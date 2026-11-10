@@ -517,3 +517,57 @@ export function trendList(p: TrendListProps) {
     </li>`,
   )}</ul>`;
 }
+
+export interface HeatmapProps {
+  label: string;
+  /** One sentence for screen readers, e.g. "Battery voltage, 8 nodes, hourly over 7 days; lowest Eagle One." */
+  summary: string;
+  /** Column headings; `tick` is shown under the grid (e.g. only at midnight). */
+  columns: { label: string; tick?: string }[];
+  rows: { label: string; href?: string; values: (number | null)[]; note?: string }[];
+  unit?: string;
+  decimals?: number;
+  /** Colour range; defaults to the data's min and max. */
+  min?: number;
+  max?: number;
+  /** Chart palette colour for the high end. */
+  color?: ChartColor;
+  /** Chart palette colour for the low end (a diverging ramp); default a pale tint of `color`. */
+  lowColor?: ChartColor;
+  /** Labels for the legend ends, e.g. ["low", "high"]. */
+  legend?: [string, string];
+}
+type ChartColor = SparklineOptions["color"];
+/**
+ * A rows × time grid coloured by value: one row per entity (node, sensor), one
+ * column per time bucket. Spots patterns across a fleet (all nodes dipping at
+ * night, one row out of step). Empty cells are missing data, never zero.
+ */
+export function heatmap(p: HeatmapProps) {
+  // Default range: 5th to 95th percentile, so one spike does not wash out the rest.
+  const values = p.rows.flatMap((r) => r.values.filter((v): v is number => v !== null && Number.isFinite(v))).sort((a, b) => a - b);
+  const pct = (q: number) => values[Math.min(values.length - 1, Math.max(0, Math.round(q * (values.length - 1))))];
+  const min = p.min ?? (values.length ? pct(0.05) : 0);
+  const max = p.max ?? (values.length ? pct(0.95) : 1);
+  const span = max - min || 1;
+  const digits = p.decimals ?? 1;
+  const unit = p.unit ? ` ${p.unit}` : "";
+  const color = `var(${chartColorVar(p.color ?? "lake")})`;
+  const low = p.lowColor ? `var(${chartColorVar(p.lowColor)})` : `color-mix(in oklab, ${color} 10%, var(--surface-card))`;
+  return html`<figure class="ds-heatmap" style=${`--heat: ${color}; --heat-low: ${low}; --cols: ${p.columns.length}`}>
+    <div class="ds-heatmap__grid" role="img" aria-label=${`${p.label}. ${p.summary}`}>
+      ${p.rows.map(
+        (row) => html`<div class="ds-heatmap__row">
+          <span class="ds-heatmap__label" title=${row.label}>${row.href ? html`<a href=${row.href}>${row.label}</a>` : row.label}${row.note ? html`<span class="ds-heatmap__note">${row.note}</span>` : nothing}</span>
+          ${row.values.map((v, i) =>
+            v === null || !Number.isFinite(v)
+              ? html`<span class="ds-heatmap__cell is-empty" title=${`${row.label} · ${p.columns[i]?.label ?? ""}: no reading`}></span>`
+              : html`<span class="ds-heatmap__cell" style=${`--v: ${Math.max(0, Math.min(1, (v - min) / span)).toFixed(3)}`} title=${`${row.label} · ${p.columns[i]?.label ?? ""}: ${v.toFixed(digits)}${unit}`}></span>`,
+          )}
+        </div>`,
+      )}
+      <div class="ds-heatmap__row ds-heatmap__ticks" aria-hidden="true"><span></span>${p.columns.map((c) => html`<span class="ds-heatmap__tick">${c.tick ?? ""}</span>`)}</div>
+    </div>
+    <figcaption class="ds-heatmap__legend"><span>${p.legend?.[0] ?? "low"} ${min.toFixed(digits)}${unit}</span><span class="ds-heatmap__ramp" aria-hidden="true"></span><span>${max.toFixed(digits)}${unit} ${p.legend?.[1] ?? "high"}</span></figcaption>
+  </figure>`;
+}

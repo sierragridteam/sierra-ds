@@ -146,3 +146,17 @@ test("trend list: one row per measurement with label, value, detail and sparklin
   // Rows take the palette in turn.
   assert.match(out, /--spark: var\(--chart-lake\)[\s\S]*--spark: var\(--chart-ochre\)/);
 });
+
+test("heatmap: percentile range, empty cells for missing data, escaped labels", async () => {
+  const { heatmap } = await import("../packages/design-system/src/lib/ui.ts");
+  const values = [...Array(20).keys()].map((i) => i); // 0..19, plus an outlier
+  const out = toHTML(heatmap({ label: "Battery", summary: "2 nodes.", columns: values.concat(0, 0).map((_, i) => ({ label: `h${i}`, tick: i === 0 ? "Mon" : undefined })),
+    rows: [{ label: "Node <A>", values: [...values, 1000, null] }, { label: "B", values: values.concat(5, 5) }], unit: "V", decimals: 0, lowColor: "manzanita" }));
+  assert.match(out, /Node &lt;A&gt;/);
+  assert.match(out, /is-empty/);
+  assert.match(out, /no reading/);
+  assert.match(out, /--heat-low: var\(--chart-manzanita\)/);
+  // The 1000 outlier does not set the top of the range (95th percentile does).
+  assert.doesNotMatch(out, /1000 V high/);
+  assert.match(out, /role="img" aria-label="Battery\. 2 nodes\."/);
+});
