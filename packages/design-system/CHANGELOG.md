@@ -14,6 +14,9 @@ and event browser. Each case is covered by browser fixtures.
   for record details, and `identifiers` items rendered as pills.
   `identifierPills()` / `shortIdentifier()`: long hex values show six
   characters, with the full value as title and accessible name.
+- `trendList()`: small multiples, one row per measurement (label, latest
+  value, detail, sparkline). Stacks in narrow containers (a sidebar), one row
+  from 30rem (container query).
 - `<sierra-load-more>` (`lib/load-more`, `createLoadMore`): infinite scroll
   for paged lists. Fires `load-more` as its sentinel nears view inside the
   nearest scrolling ancestor or the page, again while a short page leaves it

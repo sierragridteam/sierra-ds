@@ -120,6 +120,7 @@ Do not:
 | Dropdown | `Select` + `Field` | `createSelect()` |
 | Form fields | `Field`, `.input`, `.textarea` | `field()`, `input()` in `lib/controls` |
 | Tables | `.table` (`.table--cards` on phones), `DataTable`, `DataRow`, `ValueTable` | classes |
+| Several measurements at once (sidebar) | — | `trendList()`: label, latest value, detail and a sparkline per row; one row on wide containers |
 | Numbers | `.stats` of `Stat` (`href` + `actionLabel`: arrow at top right, whole tile links), `MetricGrid`, `Sparkline` | `stat()`, `metricGrid()`, `sparkline()` |
 | Record details | `PropertyList` (label/value rows; `identifiers` for hashes/keys) | `propertyList()`, `identifierPills()` |
 | Charts | `LineChart`, `BarChart` | `createLineChart()`, `createBarChart()` |

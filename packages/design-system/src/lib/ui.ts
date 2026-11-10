@@ -482,3 +482,35 @@ export function progress({ value, label, text }: { value: number; label: string;
   const v = Math.max(0, Math.min(1, value));
   return html`<div class="ds-progress"><div class="ds-progress__track" role="progressbar" aria-label=${label} aria-valuemin="0" aria-valuemax="100" aria-valuenow=${Math.round(v * 100)}><span class="ds-progress__fill" style=${`width: ${(v * 100).toFixed(1)}%`}></span></div>${text ? html`<span class="ds-progress__text">${text}</span>` : nothing}</div>`;
 }
+
+export interface TrendItem {
+  label: string;
+  /** Latest value, formatted ("4.02 V"). */
+  value: Content;
+  /** A short qualifier: change over the period, a mean, "as of …". */
+  detail?: string;
+  /** Plotted left to right; null breaks the line. */
+  values: (number | null)[];
+  unit?: string;
+  decimals?: number;
+  color?: SparklineOptions["color"];
+}
+export interface TrendListProps {
+  label: string;
+  items: TrendItem[];
+}
+/**
+ * Several measurements at once, each a row of label, latest value and a
+ * sparkline: small multiples for a sidebar or panel. For one measurement in
+ * detail use a LineChart.
+ */
+export function trendList(p: TrendListProps) {
+  return html`<ul class="ds-trends" aria-label=${p.label}>${p.items.map(
+    (item) => html`<li class="ds-trend">
+      <span class="ds-trend__label">${item.label}</span>
+      <span class="ds-trend__value">${item.value}</span>
+      ${sparkline({ label: `${item.label} trend`, values: item.values, unit: item.unit, decimals: item.decimals, color: item.color, class: "ds-trend__spark", width: 240, height: 36 })}
+      ${item.detail ? html`<span class="ds-trend__detail">${item.detail}</span>` : nothing}
+    </li>`,
+  )}</ul>`;
+}

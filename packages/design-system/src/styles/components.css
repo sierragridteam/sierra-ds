@@ -3318,3 +3318,62 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
 .ds-load-more__error {
   color: var(--ink-body);
 }
+
+/* Trend list: small multiples. Narrow (a sidebar): label and value on one
+   line, the sparkline full width beneath, the detail under it. Wide: one row. */
+.ds-trends {
+  container-type: inline-size;
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.ds-trend {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "label value" "spark spark" "detail detail";
+  align-items: baseline;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+  padding-block: var(--space-3);
+  border-top: var(--border-soft);
+}
+.ds-trend:first-child {
+  border-top: 0;
+  padding-top: var(--space-1);
+}
+.ds-trend__label {
+  grid-area: label;
+  min-width: 0;
+  color: var(--ink-secondary);
+  font-size: var(--fs-small);
+}
+.ds-trend__value {
+  grid-area: value;
+  color: var(--ink-strong);
+  font-size: var(--fs-ui);
+  font-weight: var(--fw-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ds-trend__detail {
+  grid-area: detail;
+  color: var(--ink-muted);
+  font-size: var(--fs-small);
+}
+.ds-trend__spark {
+  grid-area: spark;
+  width: 100%;
+}
+@container (min-width: 30rem) {
+  .ds-trend {
+    grid-template-columns: minmax(8rem, 1fr) auto minmax(8rem, 2fr);
+    grid-template-areas: "label value spark" "detail detail spark";
+    align-items: center;
+  }
+}
+.ds-trend__spark svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}

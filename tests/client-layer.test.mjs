@@ -132,3 +132,15 @@ test("timeline marks now, planned and system moments; progress clamps", async ()
   assert.match(out, /is-future/);
   assert.match(toHTML(progress({ value: 1.4, label: "P" })), /aria-valuenow="100"/);
 });
+
+test("trend list: one row per measurement with label, value, detail and sparkline", async () => {
+  const { trendList } = await import("../packages/design-system/src/lib/ui.ts");
+  const out = toHTML(trendList({ label: "Measurements", items: [
+    { label: "Battery <V>", value: "4.01 V", detail: "+0.02 over 24 h", values: [4, null, 4.01], unit: "V", decimals: 2 },
+    { label: "Noise floor", value: "-120 dBm", values: [-120, -118] },
+  ] }));
+  assert.equal((out.match(/class="ds-trend"/g) ?? []).length, 2);
+  assert.match(out, /Battery &lt;V&gt;/);
+  assert.match(out, /\+0\.02 over 24 h/);
+  assert.equal((out.match(/sierra-sparkline/g) ?? []).length >= 2, true);
+});
