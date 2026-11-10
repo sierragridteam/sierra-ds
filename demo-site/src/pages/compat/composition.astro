@@ -54,6 +54,7 @@ import ThemeSwitcher from "@sierragridteam/design-system/components/ThemeSwitche
 
 <script>
   import { createGeoMap } from "@sierragridteam/design-system/lib/geo-map";
+  import { html } from "@sierragridteam/design-system/lib/template";
   const map = createGeoMap({
     label: "Fixture map",
     compact: true,
@@ -75,4 +76,17 @@ import ThemeSwitcher from "@sierragridteam/design-system/components/ThemeSwitche
   });
   edge.id = "edge-map";
   document.querySelector("#main")!.append(edge);
+  // A selection card over the map: a point and a thin line.
+  const carded = createGeoMap({
+    label: "Card fixture",
+    featureList: false,
+    card: (f) => html`<p><strong>${f.properties?.label}</strong></p><p>${f.properties?.description}</p>`,
+    data: { type: "FeatureCollection", features: [
+      { type: "Feature", properties: { label: "Sonora ↔ Arnold", description: "A link", weight: 1 }, geometry: { type: "LineString", coordinates: [[-120.38, 37.98], [-120.35, 38.25]] } },
+      { type: "Feature", properties: { label: "Arnold", description: "A node" }, geometry: { type: "Point", coordinates: [-120.35, 38.25] } },
+    ] },
+  });
+  carded.id = "card-map";
+  carded.addEventListener("feature-clear", () => carded.setAttribute("data-cleared", ""));
+  document.querySelector("#main")!.append(carded);
 </script>

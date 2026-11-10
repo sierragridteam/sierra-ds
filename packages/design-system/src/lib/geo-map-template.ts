@@ -1,6 +1,6 @@
 /** Markup for <sierra-geo-map>; separate so server rendering never loads MapLibre. */
 import type { Feature, FeatureCollection, Geometry } from "geojson";
-import { html, nothing } from "lit-html";
+import { html, nothing, type TemplateResult } from "lit-html";
 import { repeat } from "lit-html/directives/repeat.js";
 import { callout } from "./ui";
 
@@ -34,6 +34,13 @@ export interface GeoMapProps {
   fitFocus?: boolean;
   /** Animate `pulse` points and `flow` lines (default true; never under reduced motion). */
   animate?: boolean;
+  /**
+   * A card for the selected feature, drawn over the map beside it (where it was
+   * clicked, or its point or line middle when chosen from a list). Closes with
+   * its button, Escape, or a click on empty map, and fires `feature-clear`.
+   * Client-only. Call `map.update({})` to refresh it when its content changes.
+   */
+  card?: (feature: Feature<Geometry | null>, index: number) => TemplateResult | typeof nothing | undefined;
 }
 
 /**

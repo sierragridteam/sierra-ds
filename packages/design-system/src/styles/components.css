@@ -2545,6 +2545,63 @@ sierra-select {
 .ds-map-fallback {
   padding: var(--space-3);
 }
+/* The selection card (GeoMap `card`): a themed MapLibre popup. */
+.ds-map-card {
+  z-index: 3;
+}
+.ds-map-card .maplibregl-popup-content {
+  padding: var(--space-3) var(--space-4);
+  /* Room for the close button beside a long title. */
+  padding-right: 2.5rem;
+  background: var(--surface-raised);
+  color: var(--ink-body);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  line-height: 1.45;
+}
+.ds-map-card .maplibregl-popup-close-button {
+  top: var(--space-1);
+  right: var(--space-1);
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius);
+  color: var(--ink-secondary);
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.ds-map-card .maplibregl-popup-close-button:hover {
+  background: var(--surface-card);
+  color: var(--ink-strong);
+}
+.ds-map-card .maplibregl-popup-close-button:focus-visible {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 1px;
+}
+.ds-map-card.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.ds-map-card.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.ds-map-card.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: var(--surface-raised);
+}
+.ds-map-card.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.ds-map-card.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.ds-map-card.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: var(--surface-raised);
+}
+.ds-map-card.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: var(--surface-raised);
+}
+.ds-map-card.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: var(--surface-raised);
+}
+.ds-map-card__body > :first-child {
+  margin-top: 0;
+}
+.ds-map-card__body > :last-child {
+  margin-bottom: 0;
+}
 .ds-map-feature-list {
   display: flex;
   flex-wrap: wrap;

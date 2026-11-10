@@ -20,6 +20,11 @@ and event browser. Each case is covered by browser fixtures.
   motion, `animate: false` to stop); `large` for a page-sized map;
   `fitFocus` fits to `focus` features and keeps the rest as context.
   Labelled maps fit with more edge room.
+- `GeoMap` `card`: a themed card over the map beside the selected feature
+  (at the click, or the point / line middle when chosen from a list); closes
+  with its button, Escape or an empty-map click and fires `feature-clear`.
+  Thin lines get a 14 px invisible hit area, and points win over lines
+  under them.
 - `heatmap()`: rows × time grid with a single or two-colour ramp
   (`lowColor`), a 5th–95th percentile range by default, empty cells for
   missing data, and day ticks. `.dashboard` 12-column panel grid (`--span`).
