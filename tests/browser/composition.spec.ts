@@ -184,9 +184,14 @@ test("a schedule draws windows on a shared time axis with day ticks and a now li
   await expect(root.locator(".ds-schedule__row:not(.ds-schedule__axis)")).toHaveCount(2);
   await expect(root.locator(".ds-schedule__now-label")).toHaveText("Now");
   await expect(root.locator(".ds-schedule__bar")).toHaveCount(4);
-  // 7 local midnights in a 7-day window starting at midnight Pacific.
-  await expect(root.locator(".ds-schedule__tick")).toHaveCount(7);
-  await expect(root.locator(".ds-schedule__tick").first()).toHaveText("Tue 10");
+  // 7 day columns in a 7-day window from midnight Pacific, labelled at the top, every other shaded.
+  const days = root.locator(".ds-schedule__axis").first().locator(".ds-schedule__day");
+  await expect(days).toHaveCount(7);
+  await expect(days.first()).toHaveText("Tue 10");
+  await expect(days.nth(1)).toHaveClass(/is-shaded/);
+  // Rows sit under their group heading; planned windows are outlined.
+  await expect(root.locator(".ds-schedule__group")).toHaveText(["Hwy 4", "Hwy 49"]);
+  await expect(root.locator(".ds-schedule__bar.is-planned")).toHaveCount(3);
   await expect(root.locator(".ds-schedule__now")).toHaveCount(2);
   // A window that started before the domain is clipped to its start.
   const track = (await root.locator(".ds-schedule__track").nth(1).boundingBox())!;
@@ -199,6 +204,6 @@ test("a schedule draws windows on a shared time axis with day ticks and a now li
   await expect(first.locator(".ds-schedule__card")).toBeHidden();
   await first.locator(".ds-schedule__bar").hover();
   await expect(first.locator(".ds-schedule__card")).toBeVisible();
-  await expect(first.locator(".ds-schedule__card")).toContainText("Hwy 4 one-way traffic control");
+  await expect(first.locator(".ds-schedule__card")).toContainText("Hwy 4 · One-way traffic control");
   await expect(first.locator(".ds-schedule__card a")).toHaveAttribute("href", "/events/?record=w0");
 });

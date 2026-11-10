@@ -679,12 +679,22 @@ export interface ScheduleBar {
   start: number;
   end: number;
   tone?: StateTone;
+  /** Planned, not yet in place: a tinted bar with an outline; in-place windows are solid. */
+  planned?: boolean;
   /** For the card and screen readers, e.g. "One-way traffic control". */
   label?: string;
-  /** A line under the time in the card, e.g. "Now" or "1 of 2 lanes". */
+  /** A line under the time in the card, e.g. "In place now". */
   detail?: string;
   /** The window's own page; the card links to it. */
   href?: string;
+}
+export interface ScheduleRow {
+  label: string;
+  detail?: string;
+  href?: string;
+  /** Rows with the same group sit under one heading (e.g. the highway), in the order given. */
+  group?: string;
+  bars: ScheduleBar[];
 }
 export interface ScheduleProps {
   label: string;
@@ -694,61 +704,65 @@ export interface ScheduleProps {
   /** Draws a "now" line. */
   now?: number;
   timeZone?: string;
-  rows: { label: string; detail?: string; href?: string; bars: ScheduleBar[] }[];
+  rows: ScheduleRow[];
 }
 /**
- * Planned windows on a shared time axis: one row per job, a bar per window, a
- * line for now, day ticks at local midnight. For work schedules, outages,
- * restrictions: repeated daily windows read as one job, not a long list.
+ * Planned windows on a shared time axis: one row per job, a bar per window,
+ * shaded day columns labelled at the top, a line for now. For work schedules,
+ * outages, restrictions: repeated daily windows read as one job, not a list.
  */
 export function schedule(p: ScheduleProps) {
   const span = p.to - p.from || 1;
-  const pct = (t: number) => `${Math.max(0, Math.min(100, ((t - p.from) / span) * 100)).toFixed(3)}%`;
+  const frac = (t: number) => Math.max(0, Math.min(1, (t - p.from) / span));
+  const pct = (t: number) => `${(frac(t) * 100).toFixed(3)}%`;
   const tz = p.timeZone;
   const weekday = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short" });
   const date = new Intl.DateTimeFormat("en-US", { timeZone: tz, day: "numeric" });
-  const day = { format: (t: number) => `${weekday.format(t)} ${date.format(t)}` };
   const time = new Intl.DateTimeFormat("en-US", { timeZone: tz, weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
   const hourOf = new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", hourCycle: "h23" });
   // Local midnights within the domain (hourly scan copes with DST).
   const ticks: number[] = [];
   // Number(): browsers format hour 0 as "0", "00" or "24" depending on the engine.
   for (let t = Math.ceil(p.from / 3_600_000) * 3_600_000; t < p.to; t += 3_600_000) if (Number(hourOf.format(t)) % 24 === 0) ticks.push(t);
+  // Day columns between midnights (the first and last may be partial); every other one shaded.
+  const edges = [p.from, ...ticks.filter((t) => t > p.from), p.to];
+  const days = edges.slice(0, -1).map((start, i) => ({ start, end: edges[i + 1], label: `${weekday.format(start)} ${date.format(start)}`, shade: i % 2 === 1 }));
   const range = (b: ScheduleBar) => `${time.format(b.start)} – ${time.format(b.end)}`;
+  const showNow = p.now !== undefined && p.now >= p.from && p.now <= p.to;
+  const columns = (labels: boolean) => days.map((d) => html`<span class=${classMap({ "ds-schedule__day": true, "is-shaded": d.shade })} style=${`--from: ${pct(d.start)}; --to: ${pct(d.end)}`} aria-hidden="true">${labels && frac(d.end) - frac(d.start) > 0.07 ? d.label : nothing}</span>`);
+  let group: string | undefined;
   return html`<figure class="ds-schedule" aria-label=${p.label}>
     <div class="ds-schedule__grid">
-      ${p.now !== undefined && p.now >= p.from && p.now <= p.to
-        ? html`<div class="ds-schedule__row ds-schedule__axis ds-schedule__head" aria-hidden="true"><span></span><div class="ds-schedule__track"><span class="ds-schedule__now-label" style=${`--at: ${pct(p.now)}`}>Now</span></div></div>`
-        : nothing}
-      ${p.rows.map((row) => html`<div class="ds-schedule__row">
+      <div class="ds-schedule__row ds-schedule__axis" aria-hidden="true"><span></span><div class="ds-schedule__track">${columns(true)}</div></div>
+      ${p.rows.map((row) => {
+        const heading = row.group && row.group !== group ? html`<div class="ds-schedule__group">${row.group}</div>` : nothing;
+        group = row.group;
+        return html`${heading}<div class="ds-schedule__row">
         <div class="ds-schedule__label">
           <span class="ds-schedule__title">${row.href ? html`<a href=${row.href}>${row.label}</a>` : row.label}</span>
           ${row.detail ? html`<span class="ds-schedule__detail">${row.detail}</span>` : nothing}
         </div>
         <div class="ds-schedule__track">
-          ${ticks.map((t) => html`<span class="ds-schedule__day" style=${`--at: ${pct(t)}`} aria-hidden="true"></span>`)}
+          ${columns(false)}
           ${row.bars.filter((b) => b.end > p.from && b.start < p.to).map((b) => {
-            const mid = (Math.max(b.start, p.from) + Math.min(b.end, p.to)) / 2;
-            const side = (mid - p.from) / span < 0.2 ? "start" : (mid - p.from) / span > 0.8 ? "end" : "middle";
+            const mid = frac((Math.max(b.start, p.from) + Math.min(b.end, p.to)) / 2);
+            const side = mid < 0.2 ? "start" : mid > 0.8 ? "end" : "middle";
             return html`<span class=${`ds-schedule__pin ds-schedule__pin--${side}`} style=${`--from: ${pct(b.start)}; --to: ${pct(b.end)}`} @keydown=${blurOnEscape}>
-              <button type="button" class=${`ds-schedule__bar ds-schedule__bar--${b.tone ?? "elevated"}`} aria-label=${`${row.label}: ${b.label ? b.label + ", " : ""}${range(b)}`}></button>
+              <button type="button" class=${classMap({ "ds-schedule__bar": true, [`ds-schedule__bar--${b.tone ?? "elevated"}`]: true, "is-planned": !!b.planned })} aria-label=${`${row.group ? row.group + " " : ""}${row.label}: ${b.label ? b.label + ", " : ""}${b.planned ? "planned, " : ""}${range(b)}`}></button>
               <span class="ds-schedule__card" aria-hidden="true">
-                <strong class="ds-schedule__card-title">${row.label}</strong>
+                <strong class="ds-schedule__card-title">${row.group ? `${row.group} · ` : ""}${row.label}</strong>
+                ${row.detail ? html`<span class="ds-schedule__card-detail">${row.detail}</span>` : nothing}
                 <span>${range(b)}</span>
                 ${b.label || b.detail ? html`<span class="ds-schedule__card-detail">${[b.label, b.detail].filter(Boolean).join(" · ")}</span>` : nothing}
                 ${b.href ? html`<a class="ds-schedule__card-link" href=${b.href} tabindex="-1">Report →</a>` : nothing}
               </span>
             </span>`;
           })}
-          ${p.now !== undefined && p.now >= p.from && p.now <= p.to ? html`<span class="ds-schedule__now" style=${`--at: ${pct(p.now)}`} aria-hidden="true"></span>` : nothing}
+          ${showNow ? html`<span class="ds-schedule__now" style=${`--at: ${pct(p.now!)}`} aria-hidden="true"></span>` : nothing}
         </div>
-      </div>`)}
-      <div class="ds-schedule__row ds-schedule__axis" aria-hidden="true">
-        <span></span>
-        <div class="ds-schedule__track">
-          ${ticks.map((t) => html`<span class="ds-schedule__tick" style=${`--at: ${pct(t)}`}>${day.format(t)}</span>`)}
-        </div>
-      </div>
+      </div>`;
+      })}
+      ${showNow ? html`<div class="ds-schedule__row ds-schedule__axis ds-schedule__foot" aria-hidden="true"><span></span><div class="ds-schedule__track"><span class="ds-schedule__now-label" style=${`--at: ${pct(p.now!)}`}>Now</span></div></div>` : nothing}
     </div>
   </figure>`;
 }

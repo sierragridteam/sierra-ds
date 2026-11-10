@@ -3790,35 +3790,56 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   margin: 0;
   min-width: 0;
 }
-.ds-schedule__grid { display: grid; gap: 2px; }
+.ds-schedule__grid { display: grid; }
 .ds-schedule__row {
   display: grid;
-  grid-template-columns: minmax(8rem, 16rem) minmax(0, 1fr);
+  grid-template-columns: minmax(8rem, 15rem) minmax(0, 1fr);
   gap: var(--space-3);
-  align-items: center;
-  min-height: 2.25rem;
-  padding: 2px 0;
+  align-items: stretch;
+  min-height: 2.5rem;
+}
+.ds-schedule__row:not(.ds-schedule__axis) { border-bottom: 1px solid var(--line); }
+.ds-schedule__axis { min-height: 1.6rem; }
+.ds-schedule__foot { min-height: 1.2rem; }
+.ds-schedule__group {
+  padding: var(--space-3) 0 var(--space-1);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-secondary);
   border-bottom: 1px solid var(--line);
 }
-.ds-schedule__axis { min-height: 1.4rem; border-bottom: 0; }
-.ds-schedule__label { display: grid; min-width: 0; line-height: 1.3; }
+.ds-schedule__label { display: grid; align-content: center; min-width: 0; padding-block: 4px; line-height: 1.3; }
 .ds-schedule__title,
 .ds-schedule__detail { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .ds-schedule__title { font-size: var(--fs-small); color: var(--ink-strong); }
-.ds-schedule__detail { font-size: var(--fs-label); color: var(--ink-muted); }
-.ds-schedule__track { position: relative; height: 100%; min-height: 1.25rem; }
+.ds-schedule__detail { font-size: var(--fs-label); color: var(--ink-secondary); }
+.ds-schedule__track { position: relative; min-height: 1.25rem; }
+/* Day columns: shaded every other day; the top axis carries the labels, centred. */
 .ds-schedule__day {
   position: absolute;
-  inset-block: -2px;
-  left: var(--at);
-  border-left: 1px dashed var(--line);
+  inset-block: 0;
+  left: var(--from);
+  width: calc(var(--to) - var(--from));
+  border-left: 1px solid var(--line);
+}
+.ds-schedule__day.is-shaded { background: color-mix(in oklab, var(--ink-muted) 7%, transparent); }
+.ds-schedule__axis .ds-schedule__day {
+  display: grid;
+  place-items: end center;
+  padding-bottom: 3px;
+  overflow: hidden;
+  font-size: var(--fs-label);
+  color: var(--ink-secondary);
+  white-space: nowrap;
 }
 .ds-schedule__pin {
   position: absolute;
   top: 50%;
   left: var(--from);
-  width: max(3px, calc(var(--to) - var(--from)));
-  height: 12px;
+  width: max(4px, calc(var(--to) - var(--from)));
+  height: 14px;
   translate: 0 -50%;
   z-index: 1;
 }
@@ -3833,8 +3854,17 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   background: var(--tone, var(--c-elevated));
   cursor: pointer;
 }
-.ds-schedule__bar:hover { filter: brightness(1.12); }
+/* Planned: tinted with an outline, so the windows in place now stand out. */
+.ds-schedule__bar.is-planned {
+  background: color-mix(in oklab, var(--tone, var(--c-elevated)) 28%, var(--surface-card));
+  box-shadow: inset 0 0 0 1.5px var(--tone, var(--c-elevated));
+}
+.ds-schedule__bar:hover { filter: brightness(1.1); }
 .ds-schedule__bar:focus-visible { outline: 2px solid var(--brand-green); outline-offset: 2px; }
+.ds-schedule__bar--ok { --tone: var(--c-ok); }
+.ds-schedule__bar--elevated { --tone: var(--c-elevated); }
+.ds-schedule__bar--alarm { --tone: var(--c-alarm); }
+.ds-schedule__bar--muted { --tone: var(--c-muted); }
 /* The window's card: hover, click (focus) or keyboard focus. */
 .ds-schedule__card {
   position: absolute;
@@ -3861,33 +3891,28 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
 .ds-schedule__card-title { color: var(--ink-strong); }
 .ds-schedule__card-detail { color: var(--ink-secondary); }
 .ds-schedule__card-link { margin-top: var(--space-1); font-weight: var(--fw-semibold); }
-.ds-schedule__bar--ok { --tone: var(--c-ok); }
-.ds-schedule__bar--elevated { --tone: var(--c-elevated); }
-.ds-schedule__bar--alarm { --tone: var(--c-alarm); }
-.ds-schedule__bar--muted { --tone: var(--c-muted); }
 .ds-schedule__now {
   position: absolute;
-  inset-block: -2px;
+  inset-block: 0;
   left: var(--at);
   border-left: 2px solid var(--signal-orange);
-  z-index: 1;
+  z-index: 2;
+  pointer-events: none;
 }
-.ds-schedule__tick,
 .ds-schedule__now-label {
   position: absolute;
-  top: 0;
+  top: 2px;
   left: var(--at);
-  padding-left: 4px;
+  translate: -50% 0;
   font-size: var(--fs-label);
-  color: var(--ink-muted);
+  font-weight: var(--fw-semibold);
+  color: var(--signal-orange-text);
   white-space: nowrap;
 }
-.ds-schedule__now-label { color: var(--signal-orange-text); font-weight: var(--fw-semibold); translate: -50% 0; padding: 0; }
-.ds-schedule__head { min-height: 1.1rem; }
 @container (max-width: 34rem) {
   .ds-schedule__row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
   .ds-schedule__axis > span:first-child { display: none; }
-  .ds-schedule__label { padding-top: var(--space-1); }
+  .ds-schedule__track { min-height: 1.5rem; }
 }
 @media (forced-colors: active) {
   .ds-schedule__bar { forced-color-adjust: none; }

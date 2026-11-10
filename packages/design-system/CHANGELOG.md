@@ -34,6 +34,8 @@ and event browser. Each case is covered by browser fixtures.
   (`detail`, rich `card` content, `href` + `linkLabel`); Escape closes it.
   Signs draw as a small sign board in the chart blue (`tone: "info"`), and
   a marker on a stop's joint is nudged clear of it.
+- `schedule()` readability: shaded day columns labelled at the top, row
+  `group` headings, `planned` windows outlined so in-place ones stand out.
 - `schedule()` windows are buttons with a card (time, `label`, `detail`,
   `href`).
 - `schedule()`: planned windows on a shared time axis — one row per job,
