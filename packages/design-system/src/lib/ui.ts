@@ -589,8 +589,8 @@ export interface CorridorSection {
 export interface CorridorMarker {
   at: number;
   label: string;
-  /** What it is: work zone, closure point, highway sign, incident, camera. Signs draw as a small sign board. */
-  kind: "work" | "closure" | "sign" | "incident" | "camera";
+  /** What it is: work zone, closure point, highway sign, incident, camera, chain control. Signs draw as a small sign board. */
+  kind: "work" | "closure" | "sign" | "incident" | "camera" | "chain";
   /** Colour; "info" is the chart blue (signs default to it). */
   tone?: StateTone | "info";
   /** A line under the label in the card, e.g. the place and time window. */
@@ -615,8 +615,8 @@ export interface CorridorProps {
   sections: CorridorSection[];
   markers?: CorridorMarker[];
 }
-const corridorGlyph: Record<CorridorMarker["kind"], string> = { work: "◆", closure: "■", sign: "", incident: "▲", camera: "●" };
-const corridorKind: Record<CorridorMarker["kind"], string> = { work: "Work zone", closure: "Closure point", sign: "Highway sign", incident: "Incident", camera: "Camera" };
+const corridorGlyph: Record<CorridorMarker["kind"], string> = { work: "◆", closure: "■", sign: "", incident: "▲", camera: "●", chain: "✱" };
+const corridorKind: Record<CorridorMarker["kind"], string> = { work: "Work zone", closure: "Closure point", sign: "Highway sign", incident: "Incident", camera: "Camera", chain: "Chain control" };
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 /** Escape closes a marker's card (it is open while the marker has focus). */
 const blurOnEscape = (event: KeyboardEvent) => {

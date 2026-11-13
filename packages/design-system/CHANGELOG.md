@@ -41,6 +41,7 @@ and event browser. Each case is covered by browser fixtures.
   unknown part), named stops, and work-zone / sign / closure / incident /
   camera markers. Vertical below about 34rem; an ordered list for screen
   readers.
+- `corridor()` marker kind `chain`: a chain control checkpoint.
 - `corridor()` markers are buttons with a card on hover, click or focus
   (`detail`, rich `card` content, `href` + `linkLabel`); Escape closes it.
   Signs draw as a small sign board in the chart blue (`tone: "info"`), and
