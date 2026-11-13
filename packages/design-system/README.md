@@ -130,6 +130,8 @@ Do not:
 | Long lists (infinite scroll) | — | `<sierra-load-more>` / `createLoadMore()` (lib/load-more): fires `load-more` near the end of its scroll container, keeps a real button, stops on `error` |
 | Record timeline | `Timeline` (`state`, `kind: "system"` for the app's own events) | `timeline()` |
 | Progress through a window | — | `progress()` (in a `stat()` `extra`) |
+| Places by elevation against a level (snow level) | — | `elevationProfile()` |
+| A week of daily forecasts | — | `dayStrip()` |
 | Highway message sign | `MessageSign` | `messageSign()` |
 | Data freshness | `DataStatus` | classes |
 | Copy | `CopyButton` | `copyButton()` |
@@ -331,7 +333,7 @@ users have the same path. The basemap style and label fonts load from
 `tiles.openfreemap.org`; without it the map shows geometry on plain ground.
 Zoom controls follow the theme whether the map comes from `GeoJSONMap` or
 `createGeoMap()`. For a network or overview map, set feature `tone`,
-`weight`, `opacity` and `z` to rank what matters, `pulse`/`flow` for what is
+`weight`, `opacity`, `fill` (an area's fill opacity) and `z` to rank what matters, `pulse`/`flow` for what is
 live now (animation stops under reduced motion), and `large` + `fitFocus` so
 the view frames the region while context reaches beyond it.
 

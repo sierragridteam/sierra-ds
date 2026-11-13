@@ -322,7 +322,7 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
         const opacity: maplibregl.ExpressionSpecification = ["coalesce", ["get", "opacity"], 1];
         const z: maplibregl.ExpressionSpecification = ["coalesce", ["get", "z"], 0];
         const lines: maplibregl.FilterSpecification = ["!=", ["geometry-type"], "Point"];
-        map.addLayer({ id: "ds-areas", type: "fill", source: "features", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": color, "fill-opacity": ["*", 0.12, opacity] } });
+        map.addLayer({ id: "ds-areas", type: "fill", source: "features", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": color, "fill-opacity": ["coalesce", ["get", "fill"], ["*", 0.12, opacity]] } });
         map.addLayer({
           id: "ds-lines", type: "line", source: "features", filter: lines,
           layout: { "line-cap": "round", "line-join": "round", "line-sort-key": z },

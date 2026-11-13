@@ -35,7 +35,7 @@ import { PARITY } from "../../fixtures/parity";
 <script>
   import { createStore, region, renderInto } from "@sierragridteam/design-system/lib/region";
   import { html, repeat } from "@sierragridteam/design-system/lib/template";
-  import { choiceTiles, feedItem, segmented, metricGrid, messageSign, recordHeader, stat, propertyList, timeline, corridor, schedule } from "@sierragridteam/design-system/lib/ui";
+  import { choiceTiles, feedItem, segmented, metricGrid, messageSign, recordHeader, stat, propertyList, timeline, corridor, schedule, elevationProfile, dayStrip } from "@sierragridteam/design-system/lib/ui";
   import { createSelect } from "@sierragridteam/design-system/lib/select";
   import { createDataDiff } from "@sierragridteam/design-system/lib/data-diff";
   import { createLineChart } from "@sierragridteam/design-system/lib/charts";
@@ -71,6 +71,28 @@ import { PARITY } from "../../fixtures/parity";
       stops: [{ at: 0, label: "Angels Camp" }, { at: 25, label: "Sonora" }],
       sections: [{ from: 0, to: 25, tone: "ok", label: "Open · 24 min" }],
     })}</div>
+    <div id="client-profile" style="max-width: 900px">${elevationProfile({
+      label: "Hwy 4 towns by elevation with the snow level", summary: "Snow level 2,400 m now, as low as 1,600 m overnight.",
+      stops: [
+        { label: "Murphys", elevation: 667, at: 0, value: "11°", icon: "cloud-rain", detail: "Light rain" },
+        { label: "Arnold", elevation: 1295, at: 18, value: "7°", icon: "cloud-rain" },
+        { label: "Dorrington", elevation: 1637, at: 27, value: "5°", tone: "info" },
+        { label: "Bear Valley", elevation: 2155, at: 51, value: "2°", icon: "cloud-snow", tone: "info", detail: "12 cm snow" },
+      ],
+      levels: [{ label: "Snow level now · 2,400 m", elevation: 2400, cover: true, range: [1600, 2400], rangeLabel: "Lowest · 1,600 m" }],
+    })}</div>
+    <div id="client-profile-narrow" style="max-width: 340px">${elevationProfile({
+      label: "Towns by elevation", summary: "Snow level 1,800 m.",
+      stops: [{ label: "Murphys", elevation: 667, value: "11°" }, { label: "Arnold", elevation: 1295, value: "7°" }, { label: "Bear Valley", elevation: 2155, value: "2°", tone: "info" }],
+      levels: [{ label: "Snow level · 1,800 m", elevation: 1800, cover: true }],
+    })}</div>
+    <div id="client-days" style="max-width: 340px">${dayStrip({ label: "Daily forecast", items: [
+      { label: "Today", icon: "cloud-rain", high: "9°", low: "1°", note: "Showers", chance: 100 },
+      { label: "Sat 14", icon: "cloud-sun", high: "10°", low: "3°", note: "Mostly sunny", chance: 2 },
+      { label: "Sun 15", icon: "cloud-rain", high: "11°", low: "4°", note: "Chance of rain", chance: 88 },
+      { label: "Mon 16", icon: "cloud-snow", high: "4°", low: "-1°", note: "Rain and snow", chance: null },
+      { label: "Tue 17", icon: "sun", high: "7°", low: "0°", note: "Sunny", chance: 0 },
+    ] })}</div>
     <div id="client-schedule" style="max-width: 900px">${schedule({
       label: "Planned road work", timeZone: "America/Los_Angeles",
       from: Date.parse("2026-11-10T08:00:00Z"), to: Date.parse("2026-11-17T08:00:00Z"), now: Date.parse("2026-11-11T20:00:00Z"),

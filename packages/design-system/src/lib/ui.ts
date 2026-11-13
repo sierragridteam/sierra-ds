@@ -766,3 +766,123 @@ export function schedule(p: ScheduleProps) {
     </div>
   </figure>`;
 }
+
+export interface ProfileStop {
+  label: string;
+  elevation: number;
+  /** Distance along the route; stops are evenly spaced when any is missing. */
+  at?: number;
+  /** The reading at the stop, e.g. "36°F". */
+  value?: Content;
+  /** A short condition under the name, e.g. "Snow". Hidden when narrow. */
+  detail?: string;
+  icon?: string;
+  /** Draw the stop as affected (e.g. above the snow level). */
+  tone?: StateTone | "info";
+}
+export interface ProfileLevel {
+  /** Text on the line, e.g. "Snow level now · 7,700 ft". */
+  label: Content;
+  /** Plain text for screen readers when `label` is rich. */
+  text?: string;
+  elevation: number;
+  color?: ChartColor;
+  /** Where the level is expected to move, drawn as a band, e.g. the next 24 hours. */
+  range?: [number, number];
+  /** Text on the band's far edge, e.g. "Lowest · 5,200 ft · Sat 04:00". */
+  rangeLabel?: string;
+  /** Tint the ground above the level (snow cover). */
+  cover?: boolean;
+}
+export interface ElevationProfileProps {
+  label: string;
+  /** One sentence for screen readers. */
+  summary: string;
+  /** In route order, low end first. */
+  stops: ProfileStop[];
+  levels?: ProfileLevel[];
+  /** Formats an elevation for the stop captions and the screen-reader list. */
+  format?: (elevation: number) => string;
+}
+/**
+ * A route seen from the side: places at their elevation on a slope, with
+ * levels (snow level, freezing level) drawn across it. Answers "which towns
+ * are above the line" at a glance. Stops are placed by distance when every
+ * stop has `at`, otherwise evenly.
+ */
+export function elevationProfile(p: ElevationProfileProps) {
+  const format = p.format ?? ((n: number) => `${Math.round(n).toLocaleString("en-US")} m`);
+  const levels = p.levels ?? [];
+  const elevations = p.stops.map((s) => s.elevation);
+  const low = Math.min(...elevations);
+  const high = Math.max(...elevations, ...levels.flatMap((l) => [l.elevation, ...(l.range ?? [])]));
+  const span = high - low || 1;
+  // Ground under the lowest stop, and sky for the captions over the highest.
+  const floor = low - span * 0.22, ceiling = high + span * 0.34;
+  const y = (elevation: number) => ((ceiling - elevation) / (ceiling - floor)) * 100;
+  const placed = p.stops.every((s) => typeof s.at === "number");
+  const first = placed ? p.stops[0].at! : 0, last = placed ? p.stops.at(-1)!.at! : Math.max(1, p.stops.length - 1);
+  const x = (s: ProfileStop, i: number) => 9 + (((placed ? s.at! : i) - first) / (last - first || 1)) * 82;
+  const points = p.stops.map((s, i) => [x(s, i), y(s.elevation)] as const);
+  // The slope runs on past the first and last stop to the frame.
+  const ridge = [[0, Math.min(98, points[0][1] + 5)] as const, ...points, [100, Math.max(2, points.at(-1)![1] - 5)] as const];
+  const path = ridge.map(([px, py]) => `${px.toFixed(2)},${py.toFixed(2)}`).join(" ");
+  const ground = svg`<polygon points=${`${path} 100,100 0,100`}></polygon>`;
+  const cover = levels.find((l) => l.cover);
+  return html`<figure class="ds-profile">
+    <div class="ds-profile__plot" role="img" aria-label=${`${p.label}. ${p.summary}`}>
+      <svg class="ds-profile__ground" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${ground}</svg>
+      ${cover ? html`<svg class="ds-profile__ground ds-profile__ground--cover" style=${`--level: var(${chartColorVar(cover.color ?? "glacier")}); clip-path: inset(0 0 ${(100 - y(cover.elevation)).toFixed(2)}% 0)`} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${ground}</svg>` : nothing}
+      <svg class="ds-profile__ridge" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><polyline points=${path} vector-effect="non-scaling-stroke"></polyline></svg>
+      ${levels.map((l) => {
+        const style = `--level: var(${chartColorVar(l.color ?? "glacier")})`;
+        // The band's label sits on the edge the level is heading for.
+        const below = l.range ? l.elevation - Math.min(...l.range) >= Math.max(...l.range) - l.elevation : true;
+        return html`${l.range ? html`<span class="ds-profile__band" style=${`${style}; top: ${y(Math.max(...l.range)).toFixed(2)}%; height: ${(y(Math.min(...l.range)) - y(Math.max(...l.range))).toFixed(2)}%`}>${l.rangeLabel ? html`<span class=${`ds-profile__band-label ds-profile__band-label--${below ? "low" : "high"}`}>${l.rangeLabel}</span>` : nothing}</span>` : nothing}
+          <span class="ds-profile__level" style=${`${style}; top: ${y(l.elevation).toFixed(2)}%`}><span class="ds-profile__level-label">${l.label}</span></span>`;
+      })}
+      ${p.stops.map((s, i) => html`<span class=${classMap({ "ds-profile__stop": true, "is-first": i === 0, "is-last": i === p.stops.length - 1, "is-alt": i % 2 === 1, [`ds-profile__stop--${s.tone ?? "plain"}`]: true })} style=${`left: ${points[i][0].toFixed(2)}%; top: ${points[i][1].toFixed(2)}%`}>
+        <span class="ds-profile__caption">
+          ${s.value !== undefined ? html`<strong class="ds-profile__value">${s.icon ? icon(s.icon) : nothing}${s.value}</strong>` : nothing}
+          <span class="ds-profile__name">${s.label}</span>
+          <span class="ds-profile__elevation">${format(s.elevation)}</span>
+          ${s.detail ? html`<span class="ds-profile__detail">${s.detail}</span>` : nothing}
+        </span>
+        <span class="ds-profile__dot"></span>
+      </span>`)}
+    </div>
+    <ol class="sr-only">
+      ${p.stops.map((s) => html`<li>${s.label}, ${format(s.elevation)}${s.value !== undefined ? html`: ${s.value}` : nothing}${s.detail ? `, ${s.detail}` : ""}</li>`)}
+      ${levels.map((l) => html`<li>${l.text ?? l.label}${l.rangeLabel ? `. ${l.rangeLabel}` : ""}${l.range ? `, between ${format(Math.min(...l.range))} and ${format(Math.max(...l.range))}` : ""}</li>`)}
+    </ol>
+  </figure>`;
+}
+
+export interface DayStripItem {
+  /** The day, e.g. "Sat 14" or "Today". */
+  label: string;
+  icon?: string;
+  /** The main reading, e.g. the high. */
+  high?: Content;
+  /** The secondary reading, e.g. the overnight low. */
+  low?: Content;
+  /** A few words, e.g. "Rain and snow". */
+  note?: string;
+  /** Chance of precipitation, 0–100; null hides the meter. */
+  chance?: number | null;
+  /** Longer text for the tooltip, e.g. the detailed forecast. */
+  title?: string;
+}
+/**
+ * A run of days side by side: day, icon, high and low, a few words and the
+ * chance of precipitation. Scrolls sideways when the days do not fit.
+ */
+export function dayStrip(p: { label: string; items: DayStripItem[] }) {
+  return html`<ol class="ds-days" aria-label=${p.label}>${p.items.map((d) => html`<li class="ds-day" title=${ifDefined(d.title)}>
+    <span class="ds-day__label">${d.label}</span>
+    ${d.icon ? html`<span class="ds-day__icon">${icon(d.icon)}</span>` : html`<span class="ds-day__icon" aria-hidden="true"></span>`}
+    <span class="ds-day__temps">${d.high !== undefined ? html`<strong class="ds-day__high">${d.high}</strong>` : nothing}${d.low !== undefined ? html`<span class="ds-day__low">${d.low}</span>` : nothing}</span>
+    ${d.note ? html`<span class="ds-day__note">${d.note}</span>` : nothing}
+    ${d.chance === null || d.chance === undefined ? nothing : html`<span class="ds-day__chance"><span class="ds-day__meter" aria-hidden="true"><span style=${`width: ${Math.max(0, Math.min(100, d.chance))}%`}></span></span><span class="ds-day__chance-text">${Math.round(d.chance)}%<span class="sr-only"> chance of precipitation</span></span></span>`}
+  </li>`)}</ol>`;
+}

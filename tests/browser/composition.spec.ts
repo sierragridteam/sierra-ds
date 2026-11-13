@@ -207,3 +207,43 @@ test("a schedule draws windows on a shared time axis with day ticks and a now li
   await expect(first.locator(".ds-schedule__card")).toContainText("Hwy 4 · One-way traffic control");
   await expect(first.locator(".ds-schedule__card a")).toHaveAttribute("href", "/events/?record=w0");
 });
+
+test("an elevation profile places stops by height and distance, and draws the level above the towns it has not reached", async ({ page }) => {
+  await page.goto("/compat/elements/");
+  const plot = (await page.locator("#client-profile .ds-profile__plot").boundingBox())!;
+  const dots = page.locator("#client-profile .ds-profile__dot");
+  await expect(dots).toHaveCount(4);
+  const boxes = await Promise.all([0, 1, 2, 3].map(async (i) => (await dots.nth(i).boundingBox())!));
+  // Higher towns sit higher and further along.
+  for (let i = 1; i < 4; i++) {
+    expect(boxes[i].y).toBeLessThan(boxes[i - 1].y);
+    expect(boxes[i].x).toBeGreaterThan(boxes[i - 1].x);
+  }
+  // Dorrington is 27 of 51 km along: nearer Arnold than Bear Valley.
+  expect(boxes[2].x - boxes[1].x).toBeLessThan(boxes[3].x - boxes[2].x);
+  const level = (await page.locator("#client-profile .ds-profile__level").boundingBox())!;
+  expect(level.y).toBeLessThan(boxes[3].y);
+  expect(level.y).toBeGreaterThan(plot.y);
+  const band = (await page.locator("#client-profile .ds-profile__band").boundingBox())!;
+  // The band reaches down past Dorrington (1,637 m) but not Arnold (1,295 m).
+  expect(band.y + band.height).toBeGreaterThan(boxes[2].y);
+  expect(band.y + band.height).toBeLessThan(boxes[1].y);
+  await expect(page.locator("#client-profile .ds-profile__band-label")).toHaveText("Lowest · 1,600 m");
+  await expect(page.locator("#client-profile ol.sr-only li")).toHaveCount(5);
+  await expect(page.locator("#client-profile ol.sr-only li").first()).toHaveText("Murphys, 667 m: 11°, Light rain");
+  // Narrow: every other caption goes under its dot.
+  const dot = (await page.locator("#client-profile-narrow .ds-profile__dot").nth(1).boundingBox())!;
+  const caption = (await page.locator("#client-profile-narrow .ds-profile__caption").nth(1).boundingBox())!;
+  expect(caption.y).toBeGreaterThan(dot.y);
+});
+
+test("a day strip scrolls inside its container and hides the meter when there is no chance value", async ({ page }) => {
+  await page.goto("/compat/elements/");
+  const strip = page.locator("#client-days .ds-days");
+  await expect(strip.locator(".ds-day")).toHaveCount(5);
+  await expect(strip.locator(".ds-day__meter")).toHaveCount(4);
+  const sizes = await strip.evaluate((el) => ({ client: el.clientWidth, scroll: el.scrollWidth, page: document.documentElement.scrollWidth, view: window.innerWidth }));
+  expect(sizes.scroll).toBeGreaterThan(sizes.client);
+  expect(sizes.page).toBeLessThanOrEqual(sizes.view);
+  await expect(strip.locator(".ds-day").first()).toContainText("100% chance of precipitation");
+});

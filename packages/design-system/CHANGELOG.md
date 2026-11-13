@@ -25,6 +25,15 @@ and event browser. Each case is covered by browser fixtures.
   with its button, Escape or an empty-map click and fires `feature-clear`.
   Thin lines get a 14 px invisible hit area, and points win over lines
   under them.
+- `elevationProfile()`: a route seen from the side — stops at their elevation
+  on a slope (placed by distance when given), with levels such as the snow
+  level drawn across, a band for where a level is heading (`range`,
+  `rangeLabel`) and the ground above it tinted (`cover`). Every other
+  caption drops under its dot when narrow.
+- `dayStrip()`: days side by side with icon, high and low, a few words and
+  the chance of precipitation; scrolls inside its panel when narrow.
+- `GeoMap` feature `fill`: an area's fill opacity, apart from its outline's
+  `opacity`.
 - `corridor()`: a route as a straight strip — sections coloured by state
   with travel text (hatched with `partial` when the status covers an
   unknown part), named stops, and work-zone / sign / closure / incident /
