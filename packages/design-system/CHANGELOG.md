@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1
+
+- `corridor()` chain control markers draw as a snowflake in the light chart
+  blue (`--chart-glacier`), whatever `tone` is passed: it is a winter
+  condition, not a status.
+
 ## 0.9.0
 
 Record views and app composition guardrails, from a review of Grid's overview

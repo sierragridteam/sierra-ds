@@ -615,7 +615,7 @@ export interface CorridorProps {
   sections: CorridorSection[];
   markers?: CorridorMarker[];
 }
-const corridorGlyph: Record<CorridorMarker["kind"], string> = { work: "◆", closure: "■", sign: "", incident: "▲", camera: "●", chain: "✱" };
+const corridorGlyph: Record<CorridorMarker["kind"], string> = { work: "◆", closure: "■", sign: "", incident: "▲", camera: "●", chain: "❄\uFE0E" };
 const corridorKind: Record<CorridorMarker["kind"], string> = { work: "Work zone", closure: "Closure point", sign: "Highway sign", incident: "Incident", camera: "Camera", chain: "Chain control" };
 const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 /** Escape closes a marker's card (it is open while the marker has focus). */
