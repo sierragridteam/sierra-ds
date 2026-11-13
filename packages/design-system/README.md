@@ -79,9 +79,17 @@ full reference):
 5. **Panels group media and controls.** `Card variant="panel"`: kicker + title +
    `actions` slot (a `MoreLink`), full-bleed `media` slot (map, image), padded
    body, `source` line. Lay panels out with `.columns` or
-   `.columns.columns--wide-narrow`; they stretch to equal height.
-6. **Space with the system.** `.stack` between sections, `.columns` for side by
-   side, panel bodies space their children. No ad-hoc margins.
+   `.columns.columns--wide-narrow`; they stretch to equal height. A map in the
+   `media` slot takes the extra height, so a short panel beside a tall one has
+   no empty band.
+6. **A selected record** starts with `RecordHeader`: badges, title, place, source
+   and time, and a `closeLink()` in `actions` (not a "Back to results" link).
+   Its fields go in `PropertyList` (not boxed metrics); its history in `DataDiff`s
+   labelled "Update 3 · Mon 9 Nov, 09:59 PT" with `count: false`.
+7. **Space with the system.** `.stack` between sections, `.columns` for side by
+   side. Panel bodies and the banner aside space their blocks (`p`, lists,
+   `.field`, `.callout`, `section`, `figure`, `table`, `form`) even inside your
+   own wrappers or region hosts. No ad-hoc margins.
 
 Do not:
 
@@ -101,6 +109,7 @@ Do not:
 | Section link | `MoreLink` (text as content or `text`) | `moreLink()` |
 | Panel / card | `Card` (`variant="panel"`) | `card()` |
 | Feed of reports | `FeedItem` in `.feed` | `feedItem()` (`onSelect` for list-and-detail) |
+| Selected record (detail pane) | `RecordHeader` (`actions` slot) | `recordHeader()`, `closeLink()` |
 | Status | `Badge` (ok, elevated, alarm, muted, deep) | `badge()` |
 | Notice | `Callout` (orange = risk only) | `callout()` |
 | Buttons | `Button` | `button()`/`iconButton()` in `lib/controls`, or `.btn` classes |
@@ -111,10 +120,19 @@ Do not:
 | Dropdown | `Select` + `Field` | `createSelect()` |
 | Form fields | `Field`, `.input`, `.textarea` | `field()`, `input()` in `lib/controls` |
 | Tables | `.table` (`.table--cards` on phones), `DataTable`, `DataRow`, `ValueTable` | classes |
-| Numbers | `.stats`/`.stat`, `MetricGrid`, `Sparkline` | `sparkline()` |
+| Fleet patterns over time | — | `heatmap()` (rows × hourly columns, `lowColor` for a diverging ramp) inside a `.dashboard` panel grid |
+| Several measurements at once (sidebar) | — | `trendList()`: label, latest value, detail and a sparkline per row; one row on wide containers |
+| Numbers | `.stats` of `Stat` (`href` + `actionLabel`: arrow at top right, whole tile links), `MetricGrid`, `Sparkline` | `stat()`, `metricGrid()`, `sparkline()` |
+| Record details | `PropertyList` (label/value rows; `identifiers` for hashes/keys) | `propertyList()`, `identifierPills()` |
 | Charts | `LineChart`, `BarChart` | `createLineChart()`, `createBarChart()` |
 | Maps | `MapFrame`, `GeoJSONMap` (`labels`, `featureList`, `selected`) | `createGeoMap()` |
-| Record changes | `DataDiff`, `IdentifierList` | `createDataDiff()` |
+| Record changes | `DataDiff` (`count={false}`; lists diff as pills), `IdentifierList` | `createDataDiff()` |
+| Long lists (infinite scroll) | — | `<sierra-load-more>` / `createLoadMore()` (lib/load-more): fires `load-more` near the end of its scroll container, keeps a real button, stops on `error` |
+| Record timeline | `Timeline` (`state`, `kind: "system"` for the app's own events) | `timeline()` |
+| Progress through a window | — | `progress()` (in a `stat()` `extra`) |
+| Places by elevation against a level (snow level) | — | `elevationProfile()` |
+| A week of daily forecasts | — | `dayStrip()` |
+| Highway message sign | `MessageSign` | `messageSign()` |
 | Data freshness | `DataStatus` | classes |
 | Copy | `CopyButton` | `copyButton()` |
 | Empty / loading | `EmptyState`, `.skeleton` | `skeletonRows()`, `setBusy()` in `lib/dom` |
@@ -278,6 +296,11 @@ in the URL. `renderInto(container, template)` renders once without a store.
 An app-shell component (sidebar, top bar, mobile drawer) is not in the system
 yet; `shell.css` holds the classes members' layout uses (`.shell`, `.sidebar`,
 `.topbar`, `.main`, `data-drawer`). Ask before building a shell of your own.
+Put page content in `.main > .main__inner`: it starts beside the sidebar.
+`.main__inner--wide` (1480px) suits dashboards and list-and-detail views,
+`--narrow` forms. Do not centre your own column: on wide screens that opens an
+empty band between navigation and content. Plain `p`/`span` text in
+`.sidebar__footer` is styled as a caption.
 
 ## Times
 
@@ -308,6 +331,11 @@ properties: `label`, `shortLabel` (map label), `description`, `tone`
 same features and selecting there drives `map.selected` (a feed), so keyboard
 users have the same path. The basemap style and label fonts load from
 `tiles.openfreemap.org`; without it the map shows geometry on plain ground.
+Zoom controls follow the theme whether the map comes from `GeoJSONMap` or
+`createGeoMap()`. For a network or overview map, set feature `tone`,
+`weight`, `opacity`, `fill` (an area's fill opacity) and `z` to rank what matters, a point's `maxZoom` to let it give way to its area when zoomed in, `pulse`/`flow` for what is
+live now (animation stops under reduced motion), and `large` + `fitFocus` so
+the view frames the region while context reaches beyond it.
 
 ## Tokens and theme
 

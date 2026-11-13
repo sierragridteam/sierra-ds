@@ -1,5 +1,107 @@
 # Changelog
 
+## 0.9.0
+
+Record views and app composition guardrails, from a review of Grid's overview
+and event browser. Each case is covered by browser fixtures.
+
+### Added
+
+- `RecordHeader` / `recordHeader()`: the top of a selected record (badges,
+  tags, serif title, place, source/time, `actions`). `closeLink()` closes a
+  selection as a real link with a plain-click handler.
+- `metricGrid()` client template (parity with `MetricGrid`), `size="compact"`
+  for record details, and `identifiers` items rendered as pills.
+  `identifierPills()` / `shortIdentifier()`: long hex values show six
+  characters, with the full value as title and accessible name.
+- `GeoMap` feature styling and motion: `tone` takes chart colours and
+  `muted`; `weight`, `radius`, `opacity`, `z` per feature; `pulse` points
+  get an expanding ring and `flow` lines moving dashes (static under reduced
+  motion, `animate: false` to stop); `large` for a page-sized map;
+  `fitFocus` fits to `focus` features and keeps the rest as context.
+  Labelled maps fit with more edge room.
+- `GeoMap` `card`: a themed card over the map beside the selected feature
+  (at the click, or the point / line middle when chosen from a list); closes
+  with its button, Escape or an empty-map click and fires `feature-clear`.
+  Thin lines get a 14 px invisible hit area, and points win over lines
+  under them.
+- `elevationProfile()`: a route seen from the side — stops at their elevation
+  on a slope (placed by distance when given), with levels such as the snow
+  level drawn across, a band for where a level is heading (`range`,
+  `rangeLabel`) and the ground above it tinted (`cover`). Every other
+  caption drops under its dot when narrow.
+- `dayStrip()`: days side by side with icon, high and low, a few words and
+  the chance of precipitation; scrolls inside its panel when narrow.
+- `GeoMap` feature `fill`: an area's fill opacity, apart from its outline's
+  `opacity`.
+- `GeoMap` point `maxZoom`: the point is drawn up to that zoom and gives way
+  above it, e.g. to the area it stands for once the area is the bigger mark.
+- `corridor()`: a route as a straight strip — sections coloured by state
+  with travel text (hatched with `partial` when the status covers an
+  unknown part), named stops, and work-zone / sign / closure / incident /
+  camera markers. Vertical below about 34rem; an ordered list for screen
+  readers.
+- `corridor()` marker kind `chain`: a chain control checkpoint.
+- `corridor()` markers are buttons with a card on hover, click or focus
+  (`detail`, rich `card` content, `href` + `linkLabel`); Escape closes it.
+  Signs draw as a small sign board in the chart blue (`tone: "info"`), and
+  a marker on a stop's joint is nudged clear of it.
+- `schedule()` readability: shaded day columns labelled at the top, row
+  `group` headings, `planned` windows outlined so in-place ones stand out.
+- `schedule()` windows are buttons with a card (time, `label`, `detail`,
+  `href`).
+- `schedule()`: planned windows on a shared time axis — one row per job,
+  bars per window, local-midnight day ticks and a "now" line.
+- `heatmap()`: rows × time grid with a single or two-colour ramp
+  (`lowColor`), a 5th–95th percentile range by default, empty cells for
+  missing data, and day ticks. `.dashboard` 12-column panel grid (`--span`).
+- `.live-dot` indicator; `.ds-chart--quiet` hides a chart's caption visually
+  inside a titled panel; table body row headers read as data, not labels.
+- `trendList()`: small multiples, one row per measurement (label, latest
+  value, detail, sparkline), coloured from the chart palette in turn. Stacks in narrow containers (a sidebar), one row
+  from 30rem (container query).
+- `<sierra-load-more>` (`lib/load-more`, `createLoadMore`): infinite scroll
+  for paged lists. Fires `load-more` as its sentinel nears view inside the
+  nearest scrolling ancestor or the page, again while a short page leaves it
+  in view; `loading`/`hasMore`/`error` props drive it, an error stops
+  automatic loading, and a real button (`auto: false` for button only) is
+  always present.
+- `Timeline` / `timeline()`: a record's key moments in time order; `state`
+  past/now/future and `kind` source/system (the app's own record-keeping is
+  quieter). `progress()`: a bar for stat tiles. `.stats--compact` for a
+  record's callouts.
+- `PropertyList` / `propertyList()`: record details as label/value rows with
+  hairlines, in as many columns as fit; identifier lists as pills.
+- `MessageSign` / `messageSign()`: one sign face with a bezel and amber text
+  as drivers see it. Two- and three-page messages alternate every 3s with page
+  dots (stacked under reduced motion); blank and out-of-service states; a
+  location caption and `detail`. `--sign-face`, `--sign-text`,
+  `--sign-text-off` tokens.
+- `Stat` / `stat()`: a headline number tile; `href` + `actionLabel` put an
+  arrow action at the top right and make the whole tile the link target.
+- `DataDiff`: `count: false`; a small label; list values diff as removed/added
+  pills with an unchanged count, including lists added or removed whole.
+
+### Changed
+
+- Shell: `.main__inner` starts beside the sidebar instead of centring (visible
+  for members on wide screens). New `.main__inner--wide` (`--content-wide`,
+  1480px) for dashboards.
+- Map zoom controls are themed for `createGeoMap()` elements as well as the
+  Astro frame; dark mode no longer shows white MapLibre buttons.
+- A map in a panel's `media` slot grows to fill an equal-height row.
+- Flow spacing: blocks nested inside a panel body or banner aside (in an app's
+  wrapper or region host) keep the system rhythm.
+- Banner attention items: badges in one column and titles in the next, so
+  titles share a left edge and wrap beside their badge; a following
+  `MoreLink` gets block spacing.
+- `RecordHeader` titles size between h2 and h1, so long headlines stay calm.
+- `.sidebar__footer` plain text reads as a caption.
+- A panel body with nothing visible collapses instead of leaving padding.
+- Map: the selected label moves to the left of its point near the right edge
+  (it always draws, so MapLibre never flipped it).
+- Browser fixture `compat/composition` covers each case.
+
 ## 0.8.2
 
 Fixes from an adversarial review and a clean-room build of a page from the

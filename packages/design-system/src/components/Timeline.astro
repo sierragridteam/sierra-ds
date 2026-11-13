@@ -1,0 +1,11 @@
+---
+/**
+ * Timeline — key moments of a record in time order (past, now, planned).
+ * Client code uses `timeline()` from lib/ui.
+ */
+import { toHTML } from "../lib/ssr";
+import { timeline, type TimelineProps } from "../lib/ui";
+interface Props extends TimelineProps {}
+---
+
+<Fragment set:html={toHTML(timeline(Astro.props))} />

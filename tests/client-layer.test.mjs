@@ -99,3 +99,64 @@ test("a panel card renders the same element on server and client paths", () => {
   assert.match(toHTML(card({ variant: "panel", title: "T" }, "B")), /^<section/);
   assert.match(toHTML(card({ title: "T", as: "article", class: "x" }, "B")), /^<article[^>]*class="[^"]*\bx\b/);
 });
+
+test("list values in a diff render as identifier pills, not JSON", () => {
+  const changed = toHTML(dataDiffTemplate({ label: "Update 3", count: false, changes: [
+    { path: "Gateways", kind: "changed", before: ["0b0b037985e4980662d3", "aaaa11112222333344445555"], after: ["0b0b037985e4980662d3", "cccc11112222333344445555"] },
+    { path: "Tags", kind: "added", after: ["alpha", "beta"] },
+  ] }));
+  assert.doesNotMatch(changed, /\[&quot;|\["/);
+  assert.match(changed, /data-kind="removed"[^>]*>.*?aaaa11/s);
+  assert.match(changed, /data-kind="added"[^>]*>.*?cccc11/s);
+  assert.match(changed, /1 unchanged/);
+  assert.match(changed, /alpha/);
+  assert.doesNotMatch(changed, /changes<\/span>/);
+});
+
+test("record header, metric grid and message sign escape text", async () => {
+  const { recordHeader, metricGrid, messageSign } = await import("../packages/design-system/src/lib/ui.ts");
+  const header = toHTML(recordHeader({ title: "<b>x</b>", meta: "a & b" }));
+  assert.match(header, /&lt;b&gt;x&lt;\/b&gt;/);
+  const grid = toHTML(metricGrid({ label: "L", items: [{ label: "Keys", identifiers: ["55678f4147f9d04a32c89aa857a1fdb2"] }] }));
+  assert.match(grid, /title="55678f4147f9d04a32c89aa857a1fdb2"/);
+  assert.match(grid, />55678f</);
+  const blank = toHTML(messageSign({ location: "EB 88", pages: null }));
+  assert.match(blank, /Sign is blank/);
+});
+
+test("timeline marks now, planned and system moments; progress clamps", async () => {
+  const { timeline, progress } = await import("../packages/design-system/src/lib/ui.ts");
+  const out = toHTML(timeline({ label: "T", items: [{ time: "1", label: "a", kind: "system" }, { time: "2", label: "Now", state: "now" }, { time: "3", label: "b", state: "future" }] }));
+  assert.match(out, /is-past[^"]*is-system|is-system[^"]*is-past/);
+  assert.match(out, /aria-current="time"/);
+  assert.match(out, /is-future/);
+  assert.match(toHTML(progress({ value: 1.4, label: "P" })), /aria-valuenow="100"/);
+});
+
+test("trend list: one row per measurement with label, value, detail and sparkline", async () => {
+  const { trendList } = await import("../packages/design-system/src/lib/ui.ts");
+  const out = toHTML(trendList({ label: "Measurements", items: [
+    { label: "Battery <V>", value: "4.01 V", detail: "+0.02 over 24 h", values: [4, null, 4.01], unit: "V", decimals: 2 },
+    { label: "Noise floor", value: "-120 dBm", values: [-120, -118] },
+  ] }));
+  assert.equal((out.match(/class="ds-trend"/g) ?? []).length, 2);
+  assert.match(out, /Battery &lt;V&gt;/);
+  assert.match(out, /\+0\.02 over 24 h/);
+  assert.equal((out.match(/sierra-sparkline/g) ?? []).length >= 2, true);
+  // Rows take the palette in turn.
+  assert.match(out, /--spark: var\(--chart-lake\)[\s\S]*--spark: var\(--chart-ochre\)/);
+});
+
+test("heatmap: percentile range, empty cells for missing data, escaped labels", async () => {
+  const { heatmap } = await import("../packages/design-system/src/lib/ui.ts");
+  const values = [...Array(20).keys()].map((i) => i); // 0..19, plus an outlier
+  const out = toHTML(heatmap({ label: "Battery", summary: "2 nodes.", columns: values.concat(0, 0).map((_, i) => ({ label: `h${i}`, tick: i === 0 ? "Mon" : undefined })),
+    rows: [{ label: "Node <A>", values: [...values, 1000, null] }, { label: "B", values: values.concat(5, 5) }], unit: "V", decimals: 0, lowColor: "manzanita" }));
+  assert.match(out, /Node &lt;A&gt;/);
+  assert.match(out, /is-empty/);
+  assert.match(out, /no reading/);
+  assert.match(out, /--heat-low: var\(--chart-manzanita\)/);
+  // The 1000 outlier does not set the top of the range (95th percentile does).
+  assert.doesNotMatch(out, /1000 V high/);
+  assert.match(out, /role="img" aria-label="Battery\. 2 nodes\."/);
+});

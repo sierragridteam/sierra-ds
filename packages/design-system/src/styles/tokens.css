@@ -83,6 +83,7 @@
   --topbar-h: 56px;
   --content-max: 960px;
   --content-narrow: 560px;
+  --content-wide: 1480px; /* data apps: dashboards, list-and-detail */
   --dialog-w: 560px;
   --dialog-w-wide: 760px;
   --gutter: clamp(16px, 3vw, 32px);
@@ -192,6 +193,9 @@
   --map-place: #9a906f;
   --map-shield-text: #7d7459;
   --map-control-icon-filter: none; /* MapLibre ships dark raster icons */
+  --sign-face: #171b18; /* roadside message sign */
+  --sign-text: #f5b52e;
+  --sign-text-off: #a0916f;
 
   /* Chart series — a fixed categorical order (lake, ochre, manzanita, glacier,
      lupine, pine), validated for colour-vision deficiency and ≥ 3:1 on page
@@ -270,6 +274,9 @@
   --map-place: #a39c84;
   --map-shield-text: #b8b4a2;
   --map-control-icon-filter: invert(0.88);
+  --sign-face: #0b0e0c; /* roadside message sign */
+  --sign-text: #f0b23a;
+  --sign-text-off: #9c8e70;
 
   /* Chart series — the same hues stepped for night grounds */
   --chart-lake: #3e8cc9;
@@ -347,6 +354,9 @@
     --map-place: #a39c84;
     --map-shield-text: #b8b4a2;
     --map-control-icon-filter: invert(0.88);
+    --sign-face: #0b0e0c; /* roadside message sign */
+    --sign-text: #f0b23a;
+    --sign-text-off: #9c8e70;
 
     /* Chart series — the same hues stepped for night grounds */
     --chart-lake: #3e8cc9;

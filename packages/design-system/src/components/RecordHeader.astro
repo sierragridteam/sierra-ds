@@ -1,0 +1,29 @@
+---
+/**
+ * RecordHeader — the top of a selected record: badges and tags, a serif title,
+ * where (subtitle) and source/time (meta). Put a close link or other controls
+ * in the `actions` slot. Client code uses `recordHeader()` (and `closeLink()`).
+ */
+import Badge from "./Badge.astro";
+import type { RecordHeaderProps } from "../lib/ui";
+interface Props extends Omit<RecordHeaderProps, "actions" | "meta"> { meta?: string }
+const { title, level = 2, kicker, badges = [], tags = [], subtitle, meta } = Astro.props;
+const Heading = `h${level}` as "h1" | "h2" | "h3";
+const top = kicker || badges.length || tags.length || Astro.slots.has("actions");
+---
+
+<header class="record-header">
+  {top && (
+    <div class="record-header__top">
+      <div class="record-header__tags">
+        {kicker && <span class="kicker">{kicker}</span>}
+        {badges.map((b) => <Badge tone={b.tone} dot={b.dot}>{b.label}</Badge>)}
+        {tags.map((tag) => <span class="feed-item__tag">{tag}</span>)}
+      </div>
+      {Astro.slots.has("actions") && <div class="record-header__actions"><slot name="actions" /></div>}
+    </div>
+  )}
+  <Heading class="record-header__title" tabindex="-1">{title}</Heading>
+  {subtitle && <p class="record-header__subtitle">{subtitle}</p>}
+  {meta && <p class="record-header__meta">{meta}</p>}
+</header>

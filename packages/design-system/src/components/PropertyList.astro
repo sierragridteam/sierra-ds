@@ -1,0 +1,12 @@
+---
+/**
+ * PropertyList — record details as label/value rows with hairlines, in as many
+ * columns as fit. `identifiers` items show hashes or keys as pills. For headline
+ * numbers use MetricGrid. Client code uses `propertyList()` from lib/ui.
+ */
+import { toHTML } from "../lib/ssr";
+import { propertyList, type PropertyListProps } from "../lib/ui";
+interface Props extends PropertyListProps {}
+---
+
+<Fragment set:html={toHTML(propertyList(Astro.props))} />

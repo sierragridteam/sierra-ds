@@ -6,9 +6,11 @@
  *   map.data = await loadReports();     // updates sources in place; the map is not rebuilt
  *   map.selected = 2;                   // emphasise a feature
  *   map.addEventListener("feature-select", (e) => show(e.detail.feature));
+ *   map.props = { ...map.props, card: (f) => html`<strong>${f.properties.label}</strong>` };  // a card over the map
  *
  * Feature properties: `label`, `description`, and `tone` ("alarm" | "brass").
  */
+import { render } from "lit-html";
 import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -34,6 +36,12 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
   #fitted?: string;
   #shown?: GeoMapProps["data"];
   #build?: AbortController;
+  #frame = 0;
+  #popup?: maplibregl.Popup;
+  #cardBody?: HTMLElement;
+  /** Where the selection was clicked; cleared when it is chosen another way. */
+  #clickedAt?: maplibregl.LngLat;
+  #closing = false;
 
   protected template(p: GeoMapProps) {
     return geoMapTemplate(p);
@@ -59,10 +67,16 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
       "click",
       (event) => {
         const button = (event.target as Element).closest<HTMLElement>("[data-feature-index]");
-        if (button) this.select(Number(button.dataset.featureIndex));
+        if (button) {
+          this.#clickedAt = undefined;
+          this.select(Number(button.dataset.featureIndex));
+        }
       },
       { signal },
     );
+    this.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && this.#popup?.isOpen()) this.clear();
+    }, { signal });
     // MapLibre needs literal colours, so rebuild the map when the theme flips.
     let theme = getThemeState().theme;
     onThemeChange(
@@ -84,6 +98,7 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
   protected updated(p: GeoMapProps) {
     this.classList.add("ds-geo-map");
     this.classList.toggle("ds-map-compact", !!p.compact);
+    this.classList.toggle("ds-map-large", !!p.large);
     if (!this.map || !this.#loaded) return;
     // A selection change only restyles; new data replaces the source and refits.
     if (p.data !== this.#shown) {
@@ -93,6 +108,45 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
       this.fit(p.data);
     }
     this.emphasise(p.selected);
+    this.#syncCard();
+  }
+
+  /** Close the card and drop the selection (fires `feature-clear`). */
+  clear() {
+    if (this.props.selected === undefined) return;
+    this.#clickedAt = undefined;
+    this.selected = undefined;
+    this.dispatchEvent(new CustomEvent("feature-clear", { bubbles: true }));
+  }
+
+  /** Show, move, refresh or close the selection card to match props. */
+  #syncCard() {
+    const map = this.map, p = this.props;
+    const feature = p.selected !== undefined ? p.data.features[p.selected] : undefined;
+    const content = map && this.#loaded && feature?.geometry && p.card ? p.card(feature, p.selected!) : undefined;
+    if (!map || !feature?.geometry || content === undefined) {
+      if (this.#popup?.isOpen()) {
+        this.#closing = true;
+        this.#popup.remove();
+        this.#closing = false;
+      }
+      return;
+    }
+    if (!this.#popup) {
+      this.#cardBody = document.createElement("div");
+      this.#cardBody.className = "ds-map-card__body";
+      this.#popup = new maplibregl.Popup({ className: "ds-map-card", closeButton: true, closeOnClick: false, focusAfterOpen: false, maxWidth: "min(340px, 80vw)", offset: 12 })
+        .setDOMContent(this.#cardBody);
+      this.#popup.on("close", () => {
+        if (!this.#closing) this.clear();
+      });
+    }
+    render(content, this.#cardBody!);
+    this.#popup.setLngLat(this.#clickedAt ?? anchorOf(feature.geometry));
+    if (!this.#popup.isOpen()) {
+      this.#popup.addTo(map);
+      this.#popup.getElement()?.querySelector(".maplibregl-popup-close-button")?.setAttribute("aria-label", "Close details");
+    }
   }
 
   private select(index: number) {
@@ -106,11 +160,56 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
     const map = this.map;
     if (!map?.getLayer("ds-points")) return;
     const id = index ?? -1;
-    map.setPaintProperty("ds-points", "circle-radius", ["case", ["==", ["id"], id], 10, 6]);
+    const radius: maplibregl.ExpressionSpecification = ["coalesce", ["get", "radius"], 6];
+    map.setPaintProperty("ds-points", "circle-radius", ["case", ["==", ["id"], id], ["*", radius, 1.6], radius]);
     const points: maplibregl.FilterSpecification = ["==", ["geometry-type"], "Point"];
-    if (map.getLayer("ds-label-selected")) map.setFilter("ds-label-selected", ["all", points, ["==", ["id"], id]]);
+    if (map.getLayer("ds-label-selected")) {
+      map.setFilter("ds-label-selected", ["all", points, ["==", ["id"], id]]);
+      this.placeSelectedLabel();
+    }
     if (map.getLayer("ds-labels") && this.props.labels !== "selected")
       map.setFilter("ds-labels", ["all", points, ["!=", ["id"], id]]);
+  }
+
+  /**
+   * The selected label always draws (it may overlap), so MapLibre keeps it in
+   * its first anchor even at the map edge. Put it on the side with room.
+   */
+  private placeSelectedLabel() {
+    const map = this.map, feature = this.props.selected !== undefined ? this.props.data.features[this.props.selected] : undefined;
+    if (!map?.getLayer("ds-label-selected") || feature?.geometry?.type !== "Point") return;
+    const [lng, lat] = feature.geometry.coordinates as [number, number];
+    const x = map.project([lng, lat]).x, width = map.getCanvas().clientWidth;
+    map.setLayoutProperty("ds-label-selected", "text-variable-anchor", x > width * 0.55 ? ["right", "left"] : ["left", "right"]);
+  }
+
+  /**
+   * Pulse rings and moving dashes, ~30 fps, paused with the tab (rAF). Under
+   * reduced motion (or `animate: false`) the ring and dashes stay still.
+   */
+  #animate(map: maplibregl.Map, signal: AbortSignal) {
+    if (this.props.animate === false || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // The dash sequence that reads as travel along the line (MapLibre's ant path).
+    const dashes = [[0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5], [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0], [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5], [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5]];
+    let last = 0, step = -1;
+    const tick = (now: number) => {
+      if (signal.aborted || !this.map) return;
+      if (now - last > 33) {
+        last = now;
+        const t = (now % 2000) / 2000;
+        if (map.getLayer("ds-pulse")) {
+          map.setPaintProperty("ds-pulse", "circle-radius", ["+", ["coalesce", ["get", "radius"], 6], 2 + t * 14]);
+          map.setPaintProperty("ds-pulse", "circle-opacity", 0.45 * (1 - t));
+        }
+        const next = Math.floor(now / 60) % dashes.length;
+        if (next !== step && map.getLayer("ds-flow")) {
+          step = next;
+          map.setPaintProperty("ds-flow", "line-dasharray", dashes[step]);
+        }
+      }
+      this.#frame = requestAnimationFrame(tick);
+    };
+    this.#frame = requestAnimationFrame(tick);
   }
 
   private fit(data: FeatureCollection<Geometry | null>) {
@@ -128,11 +227,18 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
       if (g.type === "GeometryCollection") g.geometries.forEach(geometry);
       else positions(g.coordinates);
     };
-    data.features.forEach((f) => f.geometry && geometry(f.geometry));
-    if (!bounds.isEmpty()) this.map.fitBounds(bounds, { padding: 40, maxZoom: 12, duration: 0 });
+    const focused = this.props.fitFocus ? data.features.filter((f) => f.properties?.focus) : [];
+    (focused.length ? focused : data.features).forEach((f) => f.geometry && geometry(f.geometry));
+    // Labels draw beside points, so a labelled map keeps more room at the edges.
+    if (!bounds.isEmpty()) this.map.fitBounds(bounds, { padding: this.props.labels ? 72 : 40, maxZoom: 12, duration: 0 });
   }
 
   private teardown() {
+    cancelAnimationFrame(this.#frame);
+    this.#closing = true;
+    this.#popup?.remove();
+    this.#popup = undefined;
+    this.#closing = false;
     this.#build?.abort();
     this.#observer?.disconnect();
     this.map?.remove();
@@ -200,6 +306,7 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
         status.hidden = !fallback;
         this.#shown = this.props.data;
         map.addSource("features", { type: "geojson", data: located(this.props.data) as GeoJSON.FeatureCollection });
+        const chart = ["lake", "ochre", "manzanita", "glacier", "lupine", "pine"];
         const color: maplibregl.ExpressionSpecification = [
           "match",
           ["get", "tone"],
@@ -207,16 +314,46 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
           token("--signal-orange"),
           "brass",
           token("--brand-brass"),
+          "muted",
+          token("--ink-muted"),
+          ...chart.flatMap((name) => [name, token(`--chart-${name}`)]),
           token("--brand-green"),
         ];
-        map.addLayer({ id: "ds-areas", type: "fill", source: "features", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": color, "fill-opacity": 0.12 } });
-        map.addLayer({ id: "ds-lines", type: "line", source: "features", filter: ["!=", ["geometry-type"], "Point"], paint: { "line-color": color, "line-width": 2 } });
+        const opacity: maplibregl.ExpressionSpecification = ["coalesce", ["get", "opacity"], 1];
+        const z: maplibregl.ExpressionSpecification = ["coalesce", ["get", "z"], 0];
+        const lines: maplibregl.FilterSpecification = ["!=", ["geometry-type"], "Point"];
+        map.addLayer({ id: "ds-areas", type: "fill", source: "features", filter: ["==", ["geometry-type"], "Polygon"], paint: { "fill-color": color, "fill-opacity": ["coalesce", ["get", "fill"], ["*", 0.12, opacity]] } });
+        map.addLayer({
+          id: "ds-lines", type: "line", source: "features", filter: lines,
+          layout: { "line-cap": "round", "line-join": "round", "line-sort-key": z },
+          paint: { "line-color": color, "line-width": ["coalesce", ["get", "weight"], 2], "line-opacity": opacity },
+        });
+        // A wide invisible line under each line, so thin lines are easy to click.
+        map.addLayer({
+          id: "ds-lines-hit", type: "line", source: "features", filter: lines,
+          layout: { "line-cap": "round", "line-sort-key": z },
+          paint: { "line-color": "#000", "line-opacity": 0, "line-width": 14 },
+        });
+        // Moving dashes over lines carrying traffic now (animated in #animate).
+        map.addLayer({
+          id: "ds-flow", type: "line", source: "features", filter: ["all", lines, ["==", ["get", "flow"], true]],
+          layout: { "line-cap": "butt", "line-sort-key": z },
+          paint: { "line-color": token("--surface-raised"), "line-opacity": ["*", 0.75, opacity], "line-width": ["max", 1, ["*", 0.5, ["coalesce", ["get", "weight"], 2]]], "line-dasharray": [0, 4, 3] },
+        });
+        // A point with `maxZoom` gives way above that zoom, e.g. to the area it stands for once that is bigger than the dot.
+        const shownAtZoom: maplibregl.ExpressionSpecification = ["<=", ["zoom"], ["coalesce", ["get", "maxZoom"], 24]];
+        // An expanding ring under live points (animated in #animate).
+        map.addLayer({
+          id: "ds-pulse", type: "circle", source: "features", filter: ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "pulse"], true], shownAtZoom],
+          paint: { "circle-color": color, "circle-radius": ["+", ["coalesce", ["get", "radius"], 6], 6], "circle-opacity": 0.25, "circle-stroke-width": 0 },
+        });
         map.addLayer({
           id: "ds-points",
           type: "circle",
           source: "features",
-          filter: ["==", ["geometry-type"], "Point"],
-          paint: { "circle-color": color, "circle-radius": 6, "circle-stroke-color": token("--surface-raised"), "circle-stroke-width": 2 },
+          filter: ["all", ["==", ["geometry-type"], "Point"], shownAtZoom],
+          layout: { "circle-sort-key": z },
+          paint: { "circle-color": color, "circle-radius": ["coalesce", ["get", "radius"], 6], "circle-opacity": opacity, "circle-stroke-color": token("--surface-raised"), "circle-stroke-width": 2, "circle-stroke-opacity": opacity },
         });
         // Labels: the website's treatment — uppercase, letter-spaced, a halo in the
         // land colour, dropped where they would collide; the selection always shows.
@@ -231,7 +368,7 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
             "text-font": ["Noto Sans Bold"],
             "text-size": selected ? 11 : 10,
             "text-letter-spacing": 0.11,
-            // Right of the dot, or left of it when the right would run off the map.
+            // Right of the dot; the selected label moves left near the right edge (placeSelectedLabel).
             "text-variable-anchor": ["left", "right"],
             "text-radial-offset": selected ? 1.1 : 0.9,
             "text-padding": 2,
@@ -249,17 +386,28 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
         }
         this.#loaded = true;
         this.emphasise(this.props.selected);
-        if (this.props.selectable !== false)
-          for (const layer of ["ds-areas", "ds-lines", "ds-points", "ds-labels", "ds-label-selected"]) {
-            if (!map.getLayer(layer)) continue;
-            map.on("click", layer, (event) => {
-              const id = event.features?.[0]?.id;
-              if (typeof id === "number") this.select(id);
-            });
+        this.#syncCard();
+        if (this.props.selectable !== false) {
+          // Points and labels win over the lines under them; then the topmost line.
+          const layers = ["ds-points", "ds-label-selected", "ds-labels", "ds-lines-hit", "ds-areas"].filter((layer) => map.getLayer(layer));
+          map.on("click", (event) => {
+            const hits = map.queryRenderedFeatures(event.point, { layers });
+            const rank = (f: maplibregl.MapGeoJSONFeature) => layers.indexOf(f.layer.id) * 1000 - Number(f.properties?.z ?? 0);
+            const hit = hits.sort((a, b) => rank(a) - rank(b))[0];
+            if (typeof hit?.id === "number") {
+              this.#clickedAt = hit.geometry.type === "Point" ? undefined : event.lngLat;
+              this.select(hit.id);
+            } else this.clear();
+          });
+          for (const layer of layers) {
             map.on("mouseenter", layer, () => (map.getCanvas().style.cursor = "pointer"));
             map.on("mouseleave", layer, () => (map.getCanvas().style.cursor = ""));
           }
+        }
         this.fit(this.props.data);
+        this.#animate(map, signal);
+        map.on("moveend", () => this.placeSelectedLabel());
+        map.on("resize", () => this.placeSelectedLabel());
       });
       this.#observer = new ResizeObserver(() => map.resize());
       this.#observer.observe(this);
@@ -267,6 +415,21 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
       status.textContent = "Interactive map unavailable. Feature descriptions remain available.";
     }
   }
+}
+
+/** Where a card points for a feature chosen without a click: the point, the line's middle, the area's centre. */
+function anchorOf(g: Geometry): [number, number] {
+  const flat: [number, number][] = [];
+  const walk = (v: unknown): void => {
+    if (!Array.isArray(v)) return;
+    if (typeof v[0] === "number" && typeof v[1] === "number") flat.push([v[0], v[1]]);
+    else v.forEach(walk);
+  };
+  if (g.type === "GeometryCollection") g.geometries.forEach((x) => walk("coordinates" in x ? x.coordinates : []));
+  else walk(g.coordinates);
+  if (g.type === "Point" || g.type === "LineString" || g.type === "MultiLineString") return flat[Math.floor(flat.length / 2)] ?? [0, 0];
+  const sum = flat.reduce((a, c) => [a[0] + c[0], a[1] + c[1]], [0, 0]);
+  return flat.length ? [sum[0] / flat.length, sum[1] / flat.length] : [0, 0];
 }
 
 export const defineGeoMap = () => defineElement("sierra-geo-map", SierraGeoMap);
