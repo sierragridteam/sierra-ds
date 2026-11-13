@@ -3924,6 +3924,26 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   margin: 0;
   min-width: 0;
 }
+/* When narrow, level names move out of the plot, where captions would cover them. */
+.ds-profile__key {
+  display: none;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin: 0 0 var(--space-2);
+  font-size: var(--fs-small);
+  font-weight: var(--fw-semibold);
+}
+.ds-profile__key span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: color-mix(in oklab, var(--level) 70%, var(--ink-strong));
+}
+.ds-profile__key span::before {
+  content: "";
+  width: 1rem;
+  border-top: 2px solid var(--level);
+}
 .ds-profile__plot {
   position: relative;
   height: 16rem;
@@ -4034,7 +4054,8 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   .ds-profile__caption { font-size: var(--fs-label-lg); }
   /* Neighbours are close when narrow: every other caption goes under its dot, on the ground. */
   .ds-profile__stop.is-alt .ds-profile__caption { bottom: auto; top: 10px; }
-  .ds-profile__band-label { display: none; }
+  .ds-profile__band-label, .ds-profile__level-label { display: none; }
+  .ds-profile__key { display: flex; }
   .ds-profile__value { font-size: var(--fs-ui); }
 }
 @media (forced-colors: active) {

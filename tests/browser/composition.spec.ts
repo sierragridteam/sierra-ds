@@ -235,6 +235,10 @@ test("an elevation profile places stops by height and distance, and draws the le
   const dot = (await page.locator("#client-profile-narrow .ds-profile__dot").nth(1).boundingBox())!;
   const caption = (await page.locator("#client-profile-narrow .ds-profile__caption").nth(1).boundingBox())!;
   expect(caption.y).toBeGreaterThan(dot.y);
+  // And the level is named above the plot instead of on the line.
+  await expect(page.locator("#client-profile-narrow .ds-profile__key")).toBeVisible();
+  await expect(page.locator("#client-profile-narrow .ds-profile__level-label")).toBeHidden();
+  await expect(page.locator("#client-profile .ds-profile__key")).toBeHidden();
 });
 
 test("a day strip scrolls inside its container and hides the meter when there is no chance value", async ({ page }) => {

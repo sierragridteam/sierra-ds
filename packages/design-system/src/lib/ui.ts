@@ -818,7 +818,7 @@ export function elevationProfile(p: ElevationProfileProps) {
   const high = Math.max(...elevations, ...levels.flatMap((l) => [l.elevation, ...(l.range ?? [])]));
   const span = high - low || 1;
   // Ground under the lowest stop, and sky for the captions over the highest.
-  const floor = low - span * 0.22, ceiling = high + span * 0.34;
+  const floor = low - span * 0.22, ceiling = high + span * 0.6;
   const y = (elevation: number) => ((ceiling - elevation) / (ceiling - floor)) * 100;
   const placed = p.stops.every((s) => typeof s.at === "number");
   const first = placed ? p.stops[0].at! : 0, last = placed ? p.stops.at(-1)!.at! : Math.max(1, p.stops.length - 1);
@@ -830,6 +830,7 @@ export function elevationProfile(p: ElevationProfileProps) {
   const ground = svg`<polygon points=${`${path} 100,100 0,100`}></polygon>`;
   const cover = levels.find((l) => l.cover);
   return html`<figure class="ds-profile">
+    ${levels.length ? html`<p class="ds-profile__key" aria-hidden="true">${levels.map((l) => html`<span style=${`--level: var(${chartColorVar(l.color ?? "glacier")})`}>${l.label}</span>`)}</p>` : nothing}
     <div class="ds-profile__plot" role="img" aria-label=${`${p.label}. ${p.summary}`}>
       <svg class="ds-profile__ground" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${ground}</svg>
       ${cover ? html`<svg class="ds-profile__ground ds-profile__ground--cover" style=${`--level: var(${chartColorVar(cover.color ?? "glacier")}); clip-path: inset(0 0 ${(100 - y(cover.elevation)).toFixed(2)}% 0)`} viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${ground}</svg>` : nothing}
