@@ -3700,6 +3700,8 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
 .ds-corridor__marker--alarm { --tone: var(--c-alarm); }
 .ds-corridor__marker--info { --tone: var(--chart-lake); }
 .ds-corridor__marker:focus-visible { outline: 2px solid var(--brand-green); outline-offset: 2px; }
+/* Chain control: winter's own colour (the light chart blue), not a status tone. */
+.ds-corridor__marker--chain { --tone: var(--chart-glacier); font-size: 12px; }
 /* A sign is a small sign board: a rounded rectangle with two text lines. */
 .ds-corridor__marker--sign {
   width: 22px;
