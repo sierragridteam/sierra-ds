@@ -34,6 +34,8 @@ and event browser. Each case is covered by browser fixtures.
   the chance of precipitation; scrolls inside its panel when narrow.
 - `GeoMap` feature `fill`: an area's fill opacity, apart from its outline's
   `opacity`.
+- `GeoMap` point `maxZoom`: the point is drawn up to that zoom and gives way
+  above it, e.g. to the area it stands for once the area is the bigger mark.
 - `corridor()`: a route as a straight strip — sections coloured by state
   with travel text (hatched with `partial` when the status covers an
   unknown part), named stops, and work-zone / sign / closure / incident /

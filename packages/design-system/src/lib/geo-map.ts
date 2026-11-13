@@ -340,16 +340,18 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
           layout: { "line-cap": "butt", "line-sort-key": z },
           paint: { "line-color": token("--surface-raised"), "line-opacity": ["*", 0.75, opacity], "line-width": ["max", 1, ["*", 0.5, ["coalesce", ["get", "weight"], 2]]], "line-dasharray": [0, 4, 3] },
         });
+        // A point with `maxZoom` gives way above that zoom, e.g. to the area it stands for once that is bigger than the dot.
+        const shownAtZoom: maplibregl.ExpressionSpecification = ["<=", ["zoom"], ["coalesce", ["get", "maxZoom"], 24]];
         // An expanding ring under live points (animated in #animate).
         map.addLayer({
-          id: "ds-pulse", type: "circle", source: "features", filter: ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "pulse"], true]],
+          id: "ds-pulse", type: "circle", source: "features", filter: ["all", ["==", ["geometry-type"], "Point"], ["==", ["get", "pulse"], true], shownAtZoom],
           paint: { "circle-color": color, "circle-radius": ["+", ["coalesce", ["get", "radius"], 6], 6], "circle-opacity": 0.25, "circle-stroke-width": 0 },
         });
         map.addLayer({
           id: "ds-points",
           type: "circle",
           source: "features",
-          filter: ["==", ["geometry-type"], "Point"],
+          filter: ["all", ["==", ["geometry-type"], "Point"], shownAtZoom],
           layout: { "circle-sort-key": z },
           paint: { "circle-color": color, "circle-radius": ["coalesce", ["get", "radius"], 6], "circle-opacity": opacity, "circle-stroke-color": token("--surface-raised"), "circle-stroke-width": 2, "circle-stroke-opacity": opacity },
         });
