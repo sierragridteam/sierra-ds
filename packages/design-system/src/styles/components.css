@@ -4079,6 +4079,7 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   contain: inline-size;
   position: relative;
 }
+.ds-days:focus-visible { outline: 2px solid var(--brand-green); outline-offset: 2px; }
 .ds-day {
   display: grid;
   grid-template-rows: auto auto auto 1fr auto;

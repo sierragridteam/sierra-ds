@@ -879,7 +879,8 @@ export interface DayStripItem {
  * chance of precipitation. Scrolls sideways when the days do not fit.
  */
 export function dayStrip(p: { label: string; items: DayStripItem[] }) {
-  return html`<ol class="ds-days" aria-label=${p.label}>${p.items.map((d) => html`<li class="ds-day" title=${ifDefined(d.title)}>
+  // Focusable so a keyboard user can scroll the strip when the days do not fit.
+  return html`<ol class="ds-days" aria-label=${p.label} tabindex="0">${p.items.map((d) => html`<li class="ds-day" title=${ifDefined(d.title)}>
     <span class="ds-day__label">${d.label}</span>
     ${d.icon ? html`<span class="ds-day__icon">${icon(d.icon)}</span>` : html`<span class="ds-day__icon" aria-hidden="true"></span>`}
     <span class="ds-day__temps">${d.high !== undefined ? html`<strong class="ds-day__high">${d.high}</strong>` : nothing}${d.low !== undefined ? html`<span class="ds-day__low">${d.low}</span>` : nothing}</span>
