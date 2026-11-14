@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.9.5
+
+Phone layouts (below 600px), from a pass over Grid on a Pixel 9. Nothing
+changes at wider widths; nothing to migrate.
+
+- `.table--cards.table--fields`: a new opt-in for tables whose columns are all
+  facts about the row. Each row is a bordered card with the row header
+  (`th[scope="row"]` or `.is-primary`) on top and one line per `data-label`
+  cell, labels in a shared column. Without `.table--fields` the dense inline
+  flow is unchanged.
+- `segmented()` stays on one line and scrolls sideways when its options do not
+  fit, instead of wrapping; the chosen option is brought into view. In a panel
+  header the control moves under the title.
+- `heatmap()` puts each row's name above its strip, so the strip gets the
+  full width; the legend stays on one line.
+- `SummaryBanner` aside lists put the badge above its title.
+- `schedule()` in a narrow container: more room between rows, taller tracks,
+  and names wrap instead of being cut.
+
 ## 0.9.4
 
 - `SummaryBanner` in the light theme is a soft sage ground with ordinary ink,

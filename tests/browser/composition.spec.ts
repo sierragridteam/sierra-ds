@@ -60,13 +60,18 @@ test("blocks nested in a panel body or banner aside keep the system rhythm", asy
   }
 });
 
-test("a long attention title wraps beside its badge on a phone", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
+test("a long attention title sits beside its badge, and under it on a phone", async ({ page }) => {
   await page.goto("/compat/composition");
-  const badge = await box(page, "#long-item .badge");
-  const link = await box(page, "#long-item a");
+  let badge = await box(page, "#long-item .badge");
+  let link = await box(page, "#long-item a");
   expect(link.x).toBeGreaterThan(badge.x + badge.width);
   expect(link.y).toBeLessThan(badge.y + badge.height);
+  // On a phone two columns leave the title a few words a line: the badge goes above it.
+  await page.setViewportSize({ width: 390, height: 844 });
+  badge = await box(page, "#long-item .badge");
+  link = await box(page, "#long-item a");
+  expect(link.y).toBeGreaterThanOrEqual(badge.y + badge.height);
+  expect(Math.abs(link.x - badge.x)).toBeLessThan(2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
 });
 

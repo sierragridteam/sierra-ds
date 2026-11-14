@@ -2409,6 +2409,137 @@ a.stat:hover {
     flex: 0 0 auto;
   }
 
+  /*
+   * Field cards: `.table--cards.table--fields` for tables whose columns are
+   * all facts about the row (status, times, readings). Each row is a bordered
+   * card: the row header on top, then one line per labelled cell with the
+   * labels in a shared column, so values line up down the card.
+   */
+  .table--fields tbody {
+    display: grid;
+    gap: var(--space-2);
+  }
+  .table--fields tbody + tbody {
+    margin-top: var(--space-4);
+  }
+  .table--fields tr,
+  .table--fields tr:first-child {
+    display: grid;
+    gap: var(--space-1);
+    padding: var(--space-3);
+    border: var(--border-soft);
+    border-radius: var(--radius);
+    background: var(--surface-raised);
+  }
+  .table--fields th[scope="row"],
+  .table--fields td.is-primary {
+    display: block;
+    height: auto;
+    padding: 0 0 var(--space-1);
+    border: 0;
+    background: none;
+    font-size: var(--fs-ui);
+    font-weight: var(--fw-semibold);
+    color: var(--ink-strong);
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+  /* The label hangs in the left column whatever the cell holds (text, a badge, several nodes). */
+  .table--fields td[data-label] {
+    position: relative;
+    padding-left: 8.25rem;
+    color: var(--ink);
+    text-align: left;
+    white-space: normal;
+  }
+  .table--fields td[data-label]::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 7.5rem;
+    color: var(--ink-muted);
+  }
+  .table--fields td:empty {
+    display: none;
+  }
+  /* A group heading row (a th spanning the table) is a plain label, not a card. */
+  .table--fields tr:has(> th[colspan]),
+  .table--fields tr:has(> th[colspan]):first-child {
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+  .table--fields th[colspan] {
+    display: block;
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: left;
+  }
+
+  /* Banner list: the badge above its title, so the title gets the full width. */
+  .summary-banner__aside ul {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+  .summary-banner__aside li > :not(.badge) {
+    grid-column: 1;
+  }
+
+  /*
+   * Segmented controls stay on one line. Options that do not fit scroll
+   * sideways instead of wrapping into a ragged second row; in a panel header
+   * the control moves under the title to get the full width.
+   */
+  .card--panel > .card__header:has(.segmented) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .segmented {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .segmented::-webkit-scrollbar {
+    display: none;
+  }
+  .segmented fieldset {
+    display: flex;
+    flex-wrap: nowrap;
+    width: max-content;
+    min-width: 100%;
+  }
+  .segmented__option {
+    flex: 1 0 auto;
+    white-space: nowrap;
+  }
+
+  /* Heatmap: the row name above its strip, so the strip gets the full width. */
+  .ds-heatmap__grid {
+    gap: var(--space-2);
+  }
+  .ds-heatmap__row {
+    grid-template-columns: repeat(var(--cols), minmax(1px, 1fr));
+    row-gap: 2px;
+  }
+  .ds-heatmap__label {
+    grid-column: 1 / -1;
+    padding-right: 0;
+  }
+  .ds-heatmap__ticks > span:first-child {
+    display: none;
+  }
+  .ds-heatmap__legend {
+    justify-content: space-between;
+    white-space: nowrap;
+  }
+  .ds-heatmap__ramp {
+    flex: 1 1 3rem;
+    width: auto;
+  }
+
   .steps__label {
     display: none;
   }
@@ -3954,9 +4085,14 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   white-space: nowrap;
 }
 @container (max-width: 34rem) {
-  .ds-schedule__row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .ds-schedule__row { grid-template-columns: minmax(0, 1fr); gap: var(--space-1); }
+  .ds-schedule__row:not(.ds-schedule__axis) { padding-block: var(--space-2); }
   .ds-schedule__axis > span:first-child { display: none; }
-  .ds-schedule__track { min-height: 1.5rem; }
+  .ds-schedule__track { min-height: 1.75rem; }
+  /* Stacked, the name has the full width: let it wrap instead of cutting it. */
+  .ds-schedule__title { font-weight: var(--fw-medium); white-space: normal; }
+  .ds-schedule__detail { white-space: normal; }
+  .ds-schedule__group { padding-top: var(--space-4); }
 }
 @media (forced-colors: active) {
   .ds-schedule__bar { forced-color-adjust: none; }

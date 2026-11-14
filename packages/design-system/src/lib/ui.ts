@@ -10,6 +10,7 @@ import { html, nothing, svg, type TemplateResult } from "lit-html";
 import { classMap } from "lit-html/directives/class-map.js";
 import { ifDefined } from "lit-html/directives/if-defined.js";
 import { live } from "lit-html/directives/live.js";
+import { ref } from "lit-html/directives/ref.js";
 import { isServer } from "lit-html/is-server.js";
 import { buildSparkline, CHART_COLORS, chartColorVar, type SparklineOptions } from "./chart-model";
 
@@ -225,9 +226,27 @@ export interface SegmentedProps {
   onChange?: (value: string) => void;
 }
 
+/**
+ * On a phone a segmented control scrolls on one line. Bring the chosen option
+ * into view by moving the control's own scroll, never the page's.
+ */
+function revealChosen(box: Element | undefined) {
+  if (!(box instanceof HTMLElement) || box.scrollWidth <= box.clientWidth) return;
+  const option = box.querySelector(".segmented__option:has(:checked)");
+  if (!option) return;
+  const outer = box.getBoundingClientRect();
+  const inner = option.getBoundingClientRect();
+  if (inner.left >= outer.left && inner.right <= outer.right) return;
+  box.scrollLeft += inner.left - outer.left - (outer.width - inner.width) / 2;
+}
+
 export function segmented(p: SegmentedProps) {
   const value = p.value ?? p.options[0]?.value;
-  return html`<div class=${classMap({ segmented: true, "segmented--compact": !!p.compact })} @change=${(e: Event) => p.onChange?.((e.target as HTMLInputElement).value)}>
+  return html`<div class=${classMap({ segmented: true, "segmented--compact": !!p.compact })} ${isServer ? nothing : ref((box) => box && requestAnimationFrame(() => revealChosen(box)))} @change=${(e: Event) => {
+    const input = e.target as HTMLInputElement;
+    revealChosen(input.closest(".segmented") ?? undefined);
+    p.onChange?.(input.value);
+  }}>
     <fieldset>
       <legend class="sr-only">${p.label}</legend>
       ${p.options.map(

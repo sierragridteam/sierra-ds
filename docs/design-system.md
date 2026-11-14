@@ -115,6 +115,9 @@ Client code builds nodes with `el()` and `icon()` from `src/lib/dom.ts` and the 
   it (`.is-blank` cells hide, a `data-label` prefixes the value, e.g. "Joined"), and the
   `.is-actions` buttons share a full-width row of tap targets. A lone action sits beside the
   primary cell instead.
+  When every column is a fact about the row (status, times, readings), add `.table--fields`
+  as well: each row is a bordered card with the row header on top and one labelled line per
+  `data-label` cell, so values line up instead of running together.
 - Badges carry a status dot (ok / elevated / alarm / muted). The deep badge (dark ground, brass
   dot) marks roles, not states.
 - Nothing is ever blank: the boot screen (mark and a thin sweeping bar on the hero grid, faded
