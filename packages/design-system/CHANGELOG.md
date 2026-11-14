@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.6
+
+- `.filter-bar` gives its filter selects equal columns across the row, so a
+  button keeps its size and place whatever is chosen (before, each was as wide
+  as its choice and the row reflowed on every change).
+- `SelectOption.short`: shorter text for the trigger when that option is
+  chosen; the list still shows `label`. Use it where the full text does not
+  fit an equal column.
+- Reset is `.filter-reset`, a quiet text button for a line that is always
+  there (the result count), not the filter row. `.filter-bar__reset` keeps the
+  same look for 0.9.5 markup but no longer pushes itself to the row's end.
+
 ## 0.9.5
 
 Search and filters above a list, and phone layouts from a pass over Grid on a

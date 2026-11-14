@@ -98,7 +98,7 @@ test.describe("elements built in client code", () => {
     await expect(search).toHaveAccessibleName("Search towns");
     await expect(town).toHaveAccessibleName("Town: Any town");
     await expect(town).not.toHaveClass(/is-applied/);
-    await expect(page.locator(".filter-bar__reset")).toHaveCount(0);
+    await expect(page.locator(".filter-reset")).toHaveCount(0);
     // "/" focuses the search from the page, and is an ordinary character inside it.
     await page.locator("h1").click();
     await page.keyboard.press("/");
@@ -111,17 +111,25 @@ test.describe("elements built in client code", () => {
     await page.keyboard.type("creek");
     await page.keyboard.press("Escape");
     await expect(page.locator("#filter-state")).toHaveText("|all");
-    // The pill is as wide as its choice; the list is as wide as its longest option.
+    // The filters share the row in equal columns, and keep their size and place whatever is chosen.
+    const boxes = async () => Promise.all([town.boundingBox(), page.locator("#filter-kind").boundingBox(), page.locator(".filter-bar").boundingBox()]);
+    const [before, kind, bar] = await boxes();
+    expect(Math.abs(before!.width - kind!.width)).toBeLessThan(1);
+    expect(Math.abs(kind!.x + kind!.width - (bar!.x + bar!.width))).toBeLessThan(1);
     await town.click();
-    const [button, list] = await Promise.all([town.boundingBox(), page.locator("#filter-town-options").boundingBox()]);
-    expect(list!.width).toBeGreaterThan(button!.width);
-    await page.getByRole("option", { name: "Arnold" }).click();
-    await expect(town).toHaveText("Town:Arnold");
-    await expect(town).toHaveAccessibleName("Town: Arnold");
+    await expect(page.getByRole("option", { name: "Murphys, by the creek" })).toBeVisible();
+    await page.getByRole("option", { name: "Murphys, by the creek" }).click();
+    // The trigger shows the option's short text; the name it announces carries the filter.
+    await expect(town).toHaveText("Murphys");
+    await expect(town).toHaveAccessibleName("Town: Murphys");
     await expect(town).toHaveClass(/is-applied/);
-    await page.locator(".filter-bar__reset").click();
+    const [after, kindAfter] = await boxes();
+    expect(after).toEqual(before);
+    expect(kindAfter).toEqual(kind);
+    await page.locator(".filter-reset").click();
     await expect(town).toHaveText("Any town");
     await expect(page.locator("#filter-state")).toHaveText("|all");
+    expect((await boxes())[0]).toEqual(before);
   });
 
   test("server-rendered Select upgrades to the same API", async ({ page }) => {

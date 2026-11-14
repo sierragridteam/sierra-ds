@@ -2658,55 +2658,52 @@ sierra-select {
     display: none;
   }
 }
+/* The filters share the row in equal columns, so a button keeps its size
+   and place whatever is chosen in it or beside it. */
 .filter-bar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   gap: var(--space-2);
   min-width: 0;
 }
 .filter-bar sierra-select {
   display: block;
-  flex: 0 1 auto;
+  min-width: 0;
 }
+/* Reset: a quiet text button. Put it on a line that is always there (the
+   result count), not in the filter row, so nothing moves when it appears. */
+.filter-reset,
 .filter-bar__reset {
-  margin-left: auto;
-  padding: var(--space-2) 0 var(--space-2) var(--space-2);
+  padding: 0;
   border: 0;
   background: none;
   font: inherit;
-  font-size: var(--fs-ui);
   color: var(--ink-secondary);
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
 }
+.filter-reset:hover,
 .filter-bar__reset:hover {
   color: var(--ink-strong);
 }
+.filter-reset:focus-visible,
 .filter-bar__reset:focus-visible {
   outline: 2px solid var(--brand-green);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 .select-trigger--filter {
-  width: auto;
-  max-width: 100%;
+  width: 100%;
   min-height: 40px;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: 0 var(--space-2) 0 var(--space-3);
   font-size: var(--fs-ui);
 }
-.select-trigger--filter [data-select-label] {
-  flex: 0 1 auto;
-}
 .select-trigger__prefix {
   flex: none;
-  margin-right: calc(-1 * var(--space-1));
   color: var(--ink-secondary);
-}
-.select-trigger--filter .select-chevron {
-  margin-left: 0;
 }
 /* Applied: this filter is narrowing the list. */
 .select-trigger--filter.is-applied {

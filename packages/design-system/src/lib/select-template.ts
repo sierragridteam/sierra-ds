@@ -8,6 +8,8 @@ import { icon } from "./ui";
 export interface SelectOption {
   value: string;
   label: string;
+  /** Shorter text for the trigger when this option is chosen; the list still shows `label`. */
+  short?: string;
   disabled?: boolean;
 }
 export interface SelectProps {
@@ -20,8 +22,8 @@ export interface SelectProps {
   disabled?: boolean;
   describedBy?: string;
   /**
-   * "filter": a compact button sized to its choice, for a `.filter-bar` above
-   * a list. There is no label above it: `label` names it for assistive tech,
+   * "filter": a compact button for a `.filter-bar` above a list; the bar
+   * gives its filters equal columns. There is no label above it: `label` names it for assistive tech,
    * and `prefix` shows the name inline when the choice alone would not
    * explain itself ("Type: Mesh").
    */
@@ -45,7 +47,7 @@ export function selectTemplate(p: SelectProps) {
       type="button"
       class=${classMap({ select: true, "select-trigger": true, "select-trigger--filter": p.variant === "filter", "is-applied": p.variant === "filter" && !!p.applied })}
       role="combobox"
-      aria-label=${ifDefined(p.label ? `${p.label}: ${selected?.label ?? ""}` : undefined)}
+      aria-label=${ifDefined(p.label ? `${p.label}: ${selected?.short ?? selected?.label ?? ""}` : undefined)}
       aria-haspopup="listbox"
       aria-expanded="false"
       aria-controls=${`${p.id}-options`}
@@ -53,7 +55,7 @@ export function selectTemplate(p: SelectProps) {
       value=${value}
       ?disabled=${!!p.disabled}
     >
-      ${p.variant === "filter" && p.prefix ? html`<span class="select-trigger__prefix">${p.prefix}:</span>` : nothing}<span data-select-label>${selected?.label ?? ""}</span>${icon("chevron-down", { cls: "select-chevron" })}
+      ${p.variant === "filter" && p.prefix ? html`<span class="select-trigger__prefix">${p.prefix}:</span>` : nothing}<span data-select-label>${selected?.short ?? selected?.label ?? ""}</span>${icon("chevron-down", { cls: "select-chevron" })}
     </button>
     ${p.name !== undefined
       ? html`<input type="hidden" name=${p.name} .value=${isServer ? nothing : value} value=${value} ?disabled=${!!p.disabled} />`

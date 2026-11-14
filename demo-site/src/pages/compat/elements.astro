@@ -115,15 +115,17 @@ import { PARITY } from "../../fixtures/parity";
   const filters = document.createElement("div");
   filters.id = "client-filters";
   filters.style.cssText = "display: grid; gap: var(--space-3); max-width: 420px";
-  const filterStore = createStore({ query: "", town: "all" });
-  const towns = [{ value: "all", label: "Any town" }, { value: "arnold", label: "Arnold" }, { value: "murphys", label: "Murphys, by the creek" }];
+  const filterStore = createStore({ query: "", town: "all", kind: "all" });
+  const towns = [{ value: "all", label: "Any town" }, { value: "arnold", label: "Arnold" }, { value: "murphys", label: "Murphys, by the creek", short: "Murphys" }];
+  const kinds = [{ value: "all", label: "Any kind" }, { value: "road", label: "Roads" }];
+  const pick = (key: "town" | "kind") => (e: Event) => filterStore.set({ [key]: (e.currentTarget as HTMLElement & { value: string }).value });
   region(filters, filterStore, (f) => html`
     ${searchField({ id: "filter-search", label: "Search towns", value: f.query, placeholder: "Search towns…", shortcut: "/", onInput: (query) => filterStore.set({ query }) })}
     <div class="filter-bar">
-      <sierra-select .props=${{ id: "filter-town", variant: "filter", label: "Town", prefix: f.town !== "all" ? "Town" : undefined, applied: f.town !== "all", value: f.town, options: towns }}
-        @change=${(e: Event) => filterStore.set({ town: (e.currentTarget as HTMLElement & { value: string }).value })}></sierra-select>
-      ${f.query || f.town !== "all" ? html`<button type="button" class="filter-bar__reset" @click=${() => filterStore.set({ query: "", town: "all" })}>Reset</button>` : ""}
+      <sierra-select .props=${{ id: "filter-town", variant: "filter", label: "Town", applied: f.town !== "all", value: f.town, options: towns }} @change=${pick("town")}></sierra-select>
+      <sierra-select .props=${{ id: "filter-kind", variant: "filter", label: "Kind", applied: f.kind !== "all", value: f.kind, options: kinds }} @change=${pick("kind")}></sierra-select>
     </div>
+    <p id="filter-count">3 towns ${f.query || f.town !== "all" || f.kind !== "all" ? html`<button type="button" class="filter-reset" @click=${() => filterStore.set({ query: "", town: "all", kind: "all" })}>Reset</button>` : ""}</p>
     <p id="filter-state">${f.query}|${f.town}</p>`);
   client.append(filters);
   focusOnKey("/", () => document.getElementById("filter-search"));
