@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.2
+
+- `GeoMap` zooms with a pinch or Ctrl/⌘ + wheel (MapLibre's cooperative
+  gestures); before, the wheel was off and a trackpad pinch zoomed the whole
+  page. A plain wheel or a one-finger drag still scrolls the page, and the
+  map says so when you try.
+
 ## 0.9.1
 
 - `corridor()` chain control markers draw as a snowflake in the light chart

@@ -293,7 +293,9 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
         style,
         center: [-120.4, 38.1],
         zoom: 8,
-        scrollZoom: false,
+        // Pinch (or Ctrl/⌘ + wheel) zooms the map; a plain wheel or one finger still
+        // scrolls the page, so a page-sized map never traps the scroll.
+        cooperativeGestures: true,
         attributionControl: false,
       }));
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");

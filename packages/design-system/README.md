@@ -331,6 +331,7 @@ properties: `label`, `shortLabel` (map label), `description`, `tone`
 same features and selecting there drives `map.selected` (a feed), so keyboard
 users have the same path. The basemap style and label fonts load from
 `tiles.openfreemap.org`; without it the map shows geometry on plain ground.
+A pinch or Ctrl/⌘ + wheel zooms the map; a plain wheel scrolls the page.
 Zoom controls follow the theme whether the map comes from `GeoJSONMap` or
 `createGeoMap()`. For a network or overview map, set feature `tone`,
 `weight`, `opacity`, `fill` (an area's fill opacity) and `z` to rank what matters, a point's `maxZoom` to let it give way to its area when zoomed in, `pulse`/`flow` for what is
