@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.9.3
+
+- `dayStrip()` is keyboard-focusable, so its sideways scroll is reachable
+  without a pointer (axe `scrollable-region-focusable`).
+
 ## 0.9.2
 
 - `GeoMap` zooms with a pinch or Ctrl/⌘ + wheel (MapLibre's cooperative
