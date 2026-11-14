@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.7
+
+- Form controls are slightly rounder: inputs, selects, text areas, buttons,
+  the Markdown editor and the select list use the new `--radius-control`
+  token (4px, was `--radius-sm` at 2px). Badges and other small marks keep
+  2px. Nothing to migrate; override the token to change it.
+
 ## 0.9.6
 
 - `.filter-bar` gives its filter selects equal columns across the row, so a

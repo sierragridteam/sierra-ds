@@ -55,7 +55,8 @@
   /* ---------------------------------------------------------------------- */
   /* Geometry — the app diverges here: soft corners, 4px spacing grid         */
   /* ---------------------------------------------------------------------- */
-  --radius-sm: 2px; /* controls, badges */
+  --radius-sm: 2px; /* badges, chips, small marks */
+  --radius-control: 4px; /* inputs, selects, buttons */
   --radius: 4px; /* cards, panels, rows */
   --radius-pill: 999px;
 

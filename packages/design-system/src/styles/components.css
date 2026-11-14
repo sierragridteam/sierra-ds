@@ -223,7 +223,7 @@
   min-height: var(--control-h);
   padding: 0 var(--space-4);
   border: var(--border-w) solid transparent;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: transparent;
   font-family: var(--font-ui);
   font-size: var(--fs-label-lg);
@@ -1294,7 +1294,7 @@ button.row:hover .row__icon {
   padding: 0 var(--space-3);
   background: var(--surface-raised);
   border: var(--border-w) solid var(--line-control);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   font-family: var(--font-ui);
   font-size: var(--fs-body);
   color: var(--ink-strong);
@@ -1737,7 +1737,7 @@ button.steps__btn:hover .steps__label {
   display: flex;
   flex-direction: column;
   border: var(--border-w) solid var(--line-control);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   background: var(--surface-raised);
 }
 
@@ -2721,7 +2721,7 @@ sierra-select {
   background: var(--surface-raised);
   color: var(--ink-strong);
   border: var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-control);
   font-family: var(--font-ui);
   font-size: var(--fs-body);
 }
