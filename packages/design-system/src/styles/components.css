@@ -693,15 +693,28 @@
   background: var(--brand-green-tint);
 }
 
-/* Summary banner: the one dark headline block on an overview. */
+/* Summary banner: the headline block on an overview. In the light theme it is a
+   soft sage ground with ordinary ink (a dark band there outweighed the page);
+   in the dark theme it is the deep ground, where that reads as a lift, not a block. */
 .summary-banner {
+  --sb-ground: var(--brand-green-tint);
+  --sb-line: color-mix(in srgb, var(--brand-green) 22%, var(--line));
+  --sb-ink: var(--ink-strong);
+  --sb-muted: var(--ink-secondary);
+  --sb-kicker: var(--brand-brass-text);
+  --sb-link: var(--brand-green);
+  --sb-badge: var(--surface-raised);
+  --sb-ok: var(--state-ok);
+  --sb-elevated: var(--state-elevated);
+  --sb-alarm: var(--state-alarm);
+  border: var(--border-w) solid var(--sb-line);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
   padding: var(--space-6) var(--space-6) var(--space-5);
   border-radius: var(--radius);
-  background: var(--surface-deep);
-  color: var(--ink-on-deep);
+  background: var(--sb-ground);
+  color: var(--sb-ink);
 }
 @media (min-width: 860px) {
   .summary-banner:has(.summary-banner__aside) {
@@ -709,11 +722,11 @@
   }
   .summary-banner__aside {
     padding-left: var(--space-6);
-    border-left: var(--border-w) solid var(--surface-deep-line);
+    border-left: var(--border-w) solid var(--sb-line);
   }
 }
 .summary-banner .kicker {
-  color: var(--ink-on-deep-muted);
+  color: var(--sb-kicker);
 }
 .summary-banner__main {
   display: grid;
@@ -722,7 +735,7 @@
 }
 .summary-banner__headline {
   margin: 0;
-  color: var(--ink-on-deep);
+  color: var(--sb-ink);
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
   font-weight: var(--fw-regular);
@@ -731,11 +744,11 @@
 .summary-banner__meta,
 .summary-banner__aside-title {
   margin: 0;
-  color: var(--ink-on-deep-muted);
+  color: var(--sb-muted);
   font-size: var(--fs-small);
 }
 .summary-banner__aside-title {
-  color: var(--ink-on-deep);
+  color: var(--sb-ink);
   font-size: var(--fs-ui);
   font-weight: var(--fw-semibold);
   margin-bottom: var(--space-3);
@@ -768,19 +781,48 @@
 .summary-banner__aside .link-more {
   margin-top: var(--space-4);
 }
-/* Badges on the deep ground: a quiet outline, light text, lifted status dot. */
+/* Badges on the banner: a quiet outline in the banner's ink, with its status dot. */
 .summary-banner .badge {
-  border-color: var(--surface-deep-line);
-  background: color-mix(in srgb, var(--ink-on-deep) 7%, transparent);
-  color: var(--ink-on-deep);
+  border-color: var(--sb-line);
+  background: var(--sb-badge);
+  color: var(--sb-ink);
 }
-.summary-banner .badge--ok::before { background: var(--state-ok-on-deep); }
-.summary-banner .badge--elevated::before { background: var(--state-elevated-on-deep); }
-.summary-banner .badge--alarm::before { background: var(--state-alarm-on-deep); }
+.summary-banner .badge--ok::before { background: var(--sb-ok); }
+.summary-banner .badge--elevated::before { background: var(--sb-elevated); }
+.summary-banner .badge--alarm::before { background: var(--sb-alarm); }
 .summary-banner a {
   overflow-wrap: anywhere;
-  color: var(--ink-on-deep);
+  color: var(--sb-link);
   text-underline-offset: 3px;
+}
+/* Dark theme: the deep ground, as before. */
+[data-theme="dark"] .summary-banner {
+  --sb-ground: var(--surface-deep);
+  --sb-line: var(--surface-deep-line);
+  --sb-ink: var(--ink-on-deep);
+  --sb-muted: var(--ink-on-deep-muted);
+  --sb-kicker: var(--ink-on-deep-muted);
+  --sb-link: var(--ink-on-deep);
+  --sb-badge: color-mix(in srgb, var(--ink-on-deep) 7%, transparent);
+  --sb-ok: var(--state-ok-on-deep);
+  --sb-elevated: var(--state-elevated-on-deep);
+  --sb-alarm: var(--state-alarm-on-deep);
+  border-color: transparent;
+}
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] .summary-banner {
+    --sb-ground: var(--surface-deep);
+    --sb-line: var(--surface-deep-line);
+    --sb-ink: var(--ink-on-deep);
+    --sb-muted: var(--ink-on-deep-muted);
+    --sb-kicker: var(--ink-on-deep-muted);
+    --sb-link: var(--ink-on-deep);
+    --sb-badge: color-mix(in srgb, var(--ink-on-deep) 7%, transparent);
+    --sb-ok: var(--state-ok-on-deep);
+    --sb-elevated: var(--state-elevated-on-deep);
+    --sb-alarm: var(--state-alarm-on-deep);
+    border-color: transparent;
+  }
 }
 
 /* Choice groups: tiles as native radios; `.choices--tiles` packs small tiles

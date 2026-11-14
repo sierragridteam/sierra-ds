@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.9.4
+
+- `SummaryBanner` in the light theme is a soft sage ground with ordinary ink,
+  a brass kicker and green links, instead of the dark green band, which
+  outweighed a light page. The dark theme is unchanged. Layout and markup are
+  the same; nothing to migrate.
+
 ## 0.9.3
 
 - `dayStrip()` is keyboard-focusable, so its sideways scroll is reachable
