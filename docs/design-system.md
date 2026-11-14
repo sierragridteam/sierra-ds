@@ -118,6 +118,12 @@ Client code builds nodes with `el()` and `icon()` from `src/lib/dom.ts` and the 
   When every column is a fact about the row (status, times, readings), add `.table--fields`
   as well: each row is a bordered card with the row header on top and one labelled line per
   `data-label` cell, so values line up instead of running together.
+- Search and filters above a list: `searchField()` on top, then one `.filter-bar` row of
+  `Select`s with `variant: "filter"`. No labels above the controls: word the options so the
+  choice explains itself ("Any type", "Active & scheduled"), pass `label` for the accessible
+  name, and show it inline with `prefix` where the value alone would not ("Type: Mesh"). Mark
+  only non-default choices `applied`, and show `.filter-bar__reset` only when a filter or the
+  search differs from the default. Filters keep the system input radius; no pills.
 - Badges carry a status dot (ok / elevated / alarm / muted). The deep badge (dark ground, brass
   dot) marks roles, not states.
 - Nothing is ever blank: the boot screen (mark and a thin sweeping bar on the hero grid, faded

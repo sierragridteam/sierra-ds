@@ -2600,6 +2600,120 @@ sierra-select {
   opacity: 0.5;
   cursor: not-allowed;
 }
+/*
+ * Search and filters above a list: `searchField()` on top, then a `.filter-bar`
+ * of filter selects (`variant: "filter"`) with a Reset at the right end.
+ */
+.search-field {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.search-field__input {
+  min-height: 44px;
+  padding-inline: calc(var(--space-3) + 1.25rem + var(--space-2)) 2.75rem;
+  /* 16px or more: iOS zooms the page on focus below that. */
+  font-size: max(1rem, var(--fs-body));
+  appearance: none;
+}
+.search-field__input::-webkit-search-cancel-button {
+  display: none;
+}
+.search-field__icon {
+  position: absolute;
+  top: 50%;
+  left: var(--space-3);
+  width: 1.25rem;
+  height: 1.25rem;
+  translate: 0 -50%;
+  color: var(--ink-secondary);
+  pointer-events: none;
+}
+.search-field__clear,
+.search-field__hint {
+  position: absolute;
+  top: 50%;
+  right: var(--space-2);
+  translate: 0 -50%;
+}
+.search-field__hint {
+  right: var(--space-3);
+  min-width: 1.5rem;
+  padding: 0 var(--space-1);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  font-size: var(--fs-label);
+  line-height: 1.5rem;
+  text-align: center;
+  color: var(--ink-secondary);
+  pointer-events: none;
+}
+/* The "/" hint is for keyboards: not on touch, not while typing. */
+.search-field:focus-within .search-field__hint {
+  display: none;
+}
+@media (hover: none) {
+  .search-field__hint {
+    display: none;
+  }
+}
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.filter-bar sierra-select {
+  display: block;
+  flex: 0 1 auto;
+}
+.filter-bar__reset {
+  margin-left: auto;
+  padding: var(--space-2) 0 var(--space-2) var(--space-2);
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-ui);
+  color: var(--ink-secondary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.filter-bar__reset:hover {
+  color: var(--ink-strong);
+}
+.filter-bar__reset:focus-visible {
+  outline: 2px solid var(--brand-green);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.select-trigger--filter {
+  width: auto;
+  max-width: 100%;
+  min-height: 40px;
+  gap: var(--space-2);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  font-size: var(--fs-ui);
+}
+.select-trigger--filter [data-select-label] {
+  flex: 0 1 auto;
+}
+.select-trigger__prefix {
+  flex: none;
+  margin-right: calc(-1 * var(--space-1));
+  color: var(--ink-secondary);
+}
+.select-trigger--filter .select-chevron {
+  margin-left: 0;
+}
+/* Applied: this filter is narrowing the list. */
+.select-trigger--filter.is-applied {
+  border-color: var(--ink-strong);
+  background: color-mix(in oklab, var(--ink-strong) 7%, var(--surface-raised));
+  font-weight: var(--fw-medium);
+}
 .select-popover {
   position: fixed;
   inset: auto;

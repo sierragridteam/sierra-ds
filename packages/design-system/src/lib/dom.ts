@@ -66,3 +66,20 @@ export function setBusy(button: HTMLButtonElement, busy: boolean): void {
 export function skeletonRows(count = 3): HTMLElement[] {
   return Array.from({ length: count }, () => el('div', { class: 'skeleton skeleton--row' }));
 }
+
+/**
+ * A page shortcut that focuses a field, e.g. "/" for search. Ignored while
+ * the user is typing somewhere or holding a modifier. Pass the page's abort
+ * signal so the listener leaves with the page.
+ */
+export function focusOnKey(key: string, target: () => HTMLElement | null, signal?: AbortSignal): void {
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== key || e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    const at = e.target as HTMLElement | null;
+    if (at?.closest('input, textarea, select, [contenteditable], [role="combobox"], [role="listbox"]')) return;
+    const field = target();
+    if (!field) return;
+    e.preventDefault();
+    field.focus();
+  }, { signal });
+}

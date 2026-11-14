@@ -35,7 +35,8 @@ import { PARITY } from "../../fixtures/parity";
 <script>
   import { createStore, region, renderInto } from "@sierragridteam/design-system/lib/region";
   import { html, repeat } from "@sierragridteam/design-system/lib/template";
-  import { choiceTiles, feedItem, segmented, metricGrid, messageSign, recordHeader, stat, propertyList, timeline, corridor, schedule, elevationProfile, dayStrip } from "@sierragridteam/design-system/lib/ui";
+  import { choiceTiles, feedItem, segmented, metricGrid, messageSign, recordHeader, stat, propertyList, timeline, corridor, schedule, elevationProfile, dayStrip, searchField } from "@sierragridteam/design-system/lib/ui";
+  import { focusOnKey } from "@sierragridteam/design-system/lib/dom";
   import { createSelect } from "@sierragridteam/design-system/lib/select";
   import { createDataDiff } from "@sierragridteam/design-system/lib/data-diff";
   import { createLineChart } from "@sierragridteam/design-system/lib/charts";
@@ -109,6 +110,23 @@ import { PARITY } from "../../fixtures/parity";
     { id: "client-chart" },
   );
   client.append(select, diff, chart);
+
+  // Search and filters above a list.
+  const filters = document.createElement("div");
+  filters.id = "client-filters";
+  filters.style.cssText = "display: grid; gap: var(--space-3); max-width: 420px";
+  const filterStore = createStore({ query: "", town: "all" });
+  const towns = [{ value: "all", label: "Any town" }, { value: "arnold", label: "Arnold" }, { value: "murphys", label: "Murphys, by the creek" }];
+  region(filters, filterStore, (f) => html`
+    ${searchField({ id: "filter-search", label: "Search towns", value: f.query, placeholder: "Search towns…", shortcut: "/", onInput: (query) => filterStore.set({ query }) })}
+    <div class="filter-bar">
+      <sierra-select .props=${{ id: "filter-town", variant: "filter", label: "Town", prefix: f.town !== "all" ? "Town" : undefined, applied: f.town !== "all", value: f.town, options: towns }}
+        @change=${(e: Event) => filterStore.set({ town: (e.currentTarget as HTMLElement & { value: string }).value })}></sierra-select>
+      ${f.query || f.town !== "all" ? html`<button type="button" class="filter-bar__reset" @click=${() => filterStore.set({ query: "", town: "all" })}>Reset</button>` : ""}
+    </div>
+    <p id="filter-state">${f.query}|${f.town}</p>`);
+  client.append(filters);
+  focusOnKey("/", () => document.getElementById("filter-search"));
 
   // Regression fixtures from the 0.8 review.
   const T0 = Date.UTC(2026, 10, 9, 20);

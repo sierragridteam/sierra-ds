@@ -92,6 +92,38 @@ test.describe("elements built in client code", () => {
     await expect(page.getByRole("option")).toHaveText(["Sonora", "Arnold (updated)"]);
   });
 
+  test("search and filter selects: shortcut, clear, applied state and reset", async ({ page }) => {
+    const search = page.locator("#filter-search");
+    const town = page.locator("#filter-town");
+    await expect(search).toHaveAccessibleName("Search towns");
+    await expect(town).toHaveAccessibleName("Town: Any town");
+    await expect(town).not.toHaveClass(/is-applied/);
+    await expect(page.locator(".filter-bar__reset")).toHaveCount(0);
+    // "/" focuses the search from the page, and is an ordinary character inside it.
+    await page.locator("h1").click();
+    await page.keyboard.press("/");
+    await expect(search).toBeFocused();
+    await page.keyboard.type("a/b");
+    await expect(page.locator("#filter-state")).toHaveText("a/b|all");
+    await page.getByRole("button", { name: "Clear search" }).click();
+    await expect(search).toHaveValue("");
+    await expect(search).toBeFocused();
+    await page.keyboard.type("creek");
+    await page.keyboard.press("Escape");
+    await expect(page.locator("#filter-state")).toHaveText("|all");
+    // The pill is as wide as its choice; the list is as wide as its longest option.
+    await town.click();
+    const [button, list] = await Promise.all([town.boundingBox(), page.locator("#filter-town-options").boundingBox()]);
+    expect(list!.width).toBeGreaterThan(button!.width);
+    await page.getByRole("option", { name: "Arnold" }).click();
+    await expect(town).toHaveText("Town:Arnold");
+    await expect(town).toHaveAccessibleName("Town: Arnold");
+    await expect(town).toHaveClass(/is-applied/);
+    await page.locator(".filter-bar__reset").click();
+    await expect(town).toHaveText("Any town");
+    await expect(page.locator("#filter-state")).toHaveText("|all");
+  });
+
   test("server-rendered Select upgrades to the same API", async ({ page }) => {
     const select = page.locator("sierra-select:has(#server-select)");
     await select.evaluate(async (el: HTMLElement & { value: string }) => {

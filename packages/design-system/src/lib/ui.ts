@@ -226,6 +226,44 @@ export interface SegmentedProps {
   onChange?: (value: string) => void;
 }
 
+export interface SearchFieldProps {
+  /** Id of the input. Unique per page. */
+  id: string;
+  /** Accessible name; not shown. */
+  label: string;
+  value?: string;
+  placeholder?: string;
+  /** A key shown as a hint at the right, e.g. "/". Wire it with `focusOnKey()` from lib/dom. */
+  shortcut?: string;
+  /** Every change, including clearing. Debounce in the caller if the search is costly. */
+  onInput?: (value: string) => void;
+}
+
+/**
+ * Search above a list: a full-width field with a magnifier, a clear button
+ * while it holds text, and Escape to clear.
+ */
+export function searchField(p: SearchFieldProps) {
+  const value = p.value ?? "";
+  const clear = (e: Event) => {
+    const input = (e.currentTarget as HTMLElement).closest(".search-field")!.querySelector("input")!;
+    input.value = "";
+    input.focus();
+    p.onInput?.("");
+  };
+  return html`<div class="search-field">
+    <label class="sr-only" for=${p.id}>${p.label}</label>
+    ${icon("search", { cls: "search-field__icon" })}
+    <input id=${p.id} class="input search-field__input" type="search" autocomplete="off" spellcheck="false" enterkeyhint="search"
+      placeholder=${ifDefined(p.placeholder)} value=${value} .value=${isServer ? nothing : live(value)}
+      @input=${(e: Event) => p.onInput?.((e.currentTarget as HTMLInputElement).value)}
+      @keydown=${(e: KeyboardEvent) => { if (e.key === "Escape" && (e.currentTarget as HTMLInputElement).value) { e.preventDefault(); clear(e); } }} />
+    ${value
+      ? html`<button type="button" class="btn btn--ghost btn--sm btn--icon search-field__clear" aria-label="Clear search" @click=${clear}>${icon("x")}</button>`
+      : p.shortcut ? html`<kbd class="search-field__hint" aria-hidden="true">${p.shortcut}</kbd>` : nothing}
+  </div>`;
+}
+
 /**
  * On a phone a segmented control scrolls on one line. Bring the chosen option
  * into view by moving the control's own scroll, never the page's.

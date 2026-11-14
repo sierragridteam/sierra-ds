@@ -2,8 +2,21 @@
 
 ## 0.9.5
 
-Phone layouts (below 600px), from a pass over Grid on a Pixel 9. Nothing
-changes at wider widths; nothing to migrate.
+Search and filters above a list, and phone layouts from a pass over Grid on a
+Pixel 9. Existing markup renders as before at wider widths; nothing to migrate.
+
+- `searchField()` (lib/ui): a full-width search input with a magnifier, a
+  clear button while it holds text, Escape to clear, and an optional key hint.
+  `focusOnKey("/", …)` (lib/dom) wires the hint: it focuses the field unless
+  the reader is already typing somewhere.
+- `Select` / `createSelect` take `variant: "filter"`: a compact button sized
+  to its choice, for a `.filter-bar` row. `label` names it for assistive tech
+  ("Type: Mesh"), `prefix` shows that name inline, and `applied` marks a
+  choice that narrows the list (stronger border, tinted fill). Its list is as
+  wide as its longest option. `.filter-bar__reset` is the text button at the
+  right end; render it only when something differs from the default.
+
+Phone layouts (below 600px):
 
 - `.table--cards.table--fields`: a new opt-in for tables whose columns are all
   facts about the row. Each row is a bordered card with the row header

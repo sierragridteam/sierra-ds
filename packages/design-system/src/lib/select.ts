@@ -74,7 +74,11 @@ export class SierraSelect extends SierraElement<SelectProps> {
   private position() {
     const { trigger, panel } = this;
     const box = trigger.getBoundingClientRect();
-    panel.style.width = `${Math.min(box.width, innerWidth - 16)}px`;
+    // A filter pill is as narrow as its choice: the list takes the width of its longest option instead.
+    const fit = trigger.classList.contains("select-trigger--filter");
+    panel.style.width = fit ? "max-content" : `${Math.min(box.width, innerWidth - 16)}px`;
+    panel.style.minWidth = fit ? `${Math.min(box.width, innerWidth - 16)}px` : "";
+    panel.style.maxWidth = `${innerWidth - 16}px`;
     panel.style.left = `${Math.max(8, Math.min(box.left, innerWidth - panel.offsetWidth - 8))}px`;
     const below = innerHeight - box.bottom - 8;
     const above = box.top - 8;
