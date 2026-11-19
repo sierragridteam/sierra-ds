@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.9.8
+
+- Line and bar charts follow their container when it changes size as the
+  opening animation ends. Chart.js holds a resize back while it animates and
+  applies it on its next draw; a resize handled on the animation's last frame
+  had no draw after it. The canvas kept its old width until a hover or new
+  data, or a later resize was undone, and a canvas wider than its panel made
+  the page scroll sideways (seen on a phone-width page whose chart had just
+  appeared). The charts now draw once more when an animation ends. Nothing
+  to migrate.
+
 ## 0.9.7
 
 - Form controls are slightly rounder: inputs, selects, text areas, buttons,

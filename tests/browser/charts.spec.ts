@@ -170,3 +170,68 @@ test("open data tables scroll inside the chart, not the page, on a phone", async
     await details.evaluate((d: HTMLDetailsElement) => (d.open = true));
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
+
+// Chart.js parks a resize that arrives while it animates and applies it on its next draw.
+// The frame that takes the last animation step is followed by no draw, so a resize handled
+// in that frame stayed parked: either the canvas kept its old width, or a later resize was
+// undone when its own draw replayed the parked one. Both need one exact frame order, so the
+// clock is held and the frames are stepped by hand.
+const FRAME = 16;
+const resized = (page: Page, width?: number) =>
+  page.evaluate(
+    (width) =>
+      new Promise<void>((resolve) => {
+        if (width) document.getElementById("resize-host")!.style.width = `${width}px`;
+        // Chart.js observes the same box and was there first, so it has been told by now.
+        const observer = new ResizeObserver(() => (observer.disconnect(), resolve()));
+        observer.observe(document.querySelector("#resize-host [data-chart-frame]")!);
+      }),
+    width,
+  );
+
+for (const order of ["on the last animated frame", "after a resize parked on the last animated frame"] as const) {
+  test(`a chart follows its container when it narrows ${order}`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.clock.install({ time: new Date("2026-01-01T08:00:00Z") });
+    await page.goto("/charts");
+    await expect.poll(() => page.evaluate(() => !!customElements.get("sierra-bar-chart"))).toBe(true);
+    await page.clock.pauseAt(new Date("2026-01-01T08:10:00Z"));
+    // Built inside a frame, so the opening animation starts on the frame grid.
+    await page.evaluate(() => {
+      const host = document.createElement("div");
+      host.id = "resize-host";
+      host.style.width = "640px";
+      document.querySelector("main")!.append(host);
+      const chart = document.createElement("sierra-bar-chart") as HTMLElement & { options: unknown };
+      chart.options = {
+        label: "Customers affected, by week",
+        categories: ["1 Nov", "8 Nov", "15 Nov"],
+        series: [{ id: "outages", label: "Outages", values: [120, 40, 310] }],
+      };
+      requestAnimationFrame(() => host.append(chart));
+    });
+    await page.clock.runFor(FRAME);
+    const canvas = page.locator("#resize-host canvas");
+    await expect(canvas).toHaveCSS("width", "640px");
+    const duration = await page
+      .locator("#resize-host sierra-bar-chart")
+      .evaluate((el: HTMLElement & { chart: { options: { animation: { duration: number } } } }) => el.chart.options.animation.duration);
+    expect(duration).toBeGreaterThan(FRAME);
+    // The observer's first report (the size the chart already has) is queued for the next frame.
+    await resized(page);
+    if (order === "on the last animated frame") {
+      // Every frame but the last, then the container narrows: the resize runs after the last step.
+      await page.clock.runFor((Math.ceil(duration / FRAME) - 1) * FRAME);
+      await resized(page, 320);
+      await page.clock.runFor(FRAME);
+    } else {
+      // A busy page: the next frame comes after the animation's end, takes its last step and
+      // parks the first report. The container narrows afterwards.
+      await page.clock.fastForward(duration + 150);
+      await resized(page, 320);
+    }
+    await page.clock.runFor(1000);
+    await expect(page.locator("#resize-host [data-chart-frame]")).toHaveCSS("width", "320px");
+    await expect(canvas).toHaveCSS("width", "320px");
+  });
+}

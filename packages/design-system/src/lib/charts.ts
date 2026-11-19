@@ -17,6 +17,7 @@ import {
   LineElement,
   PointElement,
   Tooltip,
+  type AnimationEvent,
   type ChartConfiguration,
   type ChartDataset,
   type Plugin,
@@ -128,6 +129,24 @@ export function withAlpha(color: string, alpha: number): string {
 
 const reducedMotion = () =>
   globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+
+/**
+ * Chart.js does not resize while it animates: it parks the new size and applies
+ * it on its next draw. The frame that takes the last animation step is followed
+ * by no draw, so a resize handled in that frame stays parked. The canvas then
+ * keeps its old size until something else draws (a hover, new data), and a
+ * resize that comes later is undone when its own draw replays the parked one.
+ * A canvas wider than its box makes the page scroll sideways. So draw once more
+ * when an animation ends: that applies whatever is parked.
+ */
+function drawParkedResize({ chart, numSteps }: AnimationEvent) {
+  // Chart.js also reports a plain render here, without steps: it has just drawn.
+  if (!numSteps || !chart.canvas?.isConnected) return;
+  chart.draw();
+}
+
+const animation = () =>
+  reducedMotion() ? (false as const) : { duration: 250, onComplete: drawParkedResize };
 
 interface SierraPluginOptions {
   palette: ChartPalette;
@@ -328,7 +347,7 @@ export function lineChartConfig(
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: reducedMotion() ? false : { duration: 250 },
+      animation: animation(),
       interaction: { mode: "nearest", axis: "x", intersect: false },
       layout: { padding: { top: 8, right: 8 } },
       scales: {
@@ -477,7 +496,7 @@ export function barChartConfig(
       indexAxis: horizontal ? "y" : "x",
       responsive: true,
       maintainAspectRatio: false,
-      animation: reducedMotion() ? false : { duration: 250 },
+      animation: animation(),
       interaction: { mode: "index", axis: horizontal ? "y" : "x", intersect: false },
       layout: { padding: { top: 8, right: 8 } },
       scales: horizontal
