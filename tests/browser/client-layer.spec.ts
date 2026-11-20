@@ -165,7 +165,16 @@ test.describe("elements built in client code", () => {
     await page.keyboard.press("Escape");
     await expect(page.locator("#filter-state")).toHaveText("|all");
     // The filters share the row in equal columns, and keep their size and place whatever is chosen.
-    const boxes = async () => Promise.all([town.boundingBox(), page.locator("#filter-kind").boundingBox(), page.locator(".filter-bar").boundingBox()]);
+    // Places are measured on the page, not in the viewport: focusing the search and clicking a
+    // trigger each scroll the page (smoothly, so for a while), and a box read in the viewport
+    // mid-scroll is the same control somewhere else.
+    const boxes = async () =>
+      page.evaluate(() =>
+        ["#filter-town", "#filter-kind", ".filter-bar"].map((selector) => {
+          const rect = document.querySelector(selector)!.getBoundingClientRect();
+          return { x: rect.x + window.scrollX, y: rect.y + window.scrollY, width: rect.width, height: rect.height };
+        }),
+      );
     const [before, kind, bar] = await boxes();
     expect(Math.abs(before!.width - kind!.width)).toBeLessThan(1);
     expect(Math.abs(kind!.x + kind!.width - (bar!.x + bar!.width))).toBeLessThan(1);
