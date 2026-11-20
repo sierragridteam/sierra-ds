@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.9.11
+
+- A map no longer changes height while it loads. `<sierra-geo-map>` showed
+  its status ("Loading map.") in a line of its own under the canvas from
+  the moment it was on the page until MapLibre had loaded, so a map was a
+  line (49px) taller for that time and everything under it dropped and came
+  back. The status is now a small note over the canvas's top-left corner,
+  on its own surface so it reads over any ground in both themes; it takes
+  no pointer events, the zoom controls stay bottom-right and the selection
+  card draws above it. The lasting notices use the same note in the same
+  place, so they do not move the page when they appear either: "Geometry
+  only" when the basemap style fails or takes over five seconds, "Some map
+  resources are unavailable" and "Interactive map unavailable". A map that
+  loads with a notice showing fits its features below it.
+
+  Migration: the status element is now `p.ds-map-status[role=status]`; it
+  was `p.ds-map-fallback[role=status]`. Select it by role
+  (`sierra-geo-map [role=status]`), which has not changed, as have its
+  texts and its `hidden` state once the map has loaded. `.ds-map-fallback`
+  remains the class of the selection line under the feature list.
+  `sierra-geo-map` is now `position: relative`. A page that kept room for
+  the status line under a map (a fixed or minimum height that included it)
+  can drop that room: the element's height is the canvas plus the feature
+  list, selection line and attribution it renders, in every state.
+
 ## 0.9.9
 
 - An open `Select` list follows its trigger when the page (or a scrolling

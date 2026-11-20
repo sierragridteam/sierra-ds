@@ -837,6 +837,10 @@ sierra-geo-map {
   display: block;
   min-width: 0;
 }
+/* The status note (.ds-map-status) is placed against the map's top-left corner. */
+sierra-geo-map {
+  position: relative;
+}
 
 .choice-group {
   min-width: 0;
@@ -2828,6 +2832,30 @@ sierra-select {
 }
 .ds-map-fallback {
   padding: var(--space-3);
+}
+/* The map's status ("Loading map.", then a lasting notice when the basemap or
+   a resource is missing): a note over the canvas's top-left corner, never a
+   line under it, so the map is the same height in every state and the page
+   below does not move. Its own surface keeps it readable over any ground in
+   both themes; zoom controls are bottom-right and the selection card draws
+   above it. It takes no pointer events: the map under it still drags. */
+.ds-map-status {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  z-index: 1;
+  box-sizing: border-box;
+  max-width: min(calc(100% - 2 * var(--space-3)), 26rem);
+  margin: 0;
+  padding: var(--space-1) var(--space-2);
+  background: var(--surface-raised);
+  color: var(--ink-body);
+  border: var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  line-height: 1.4;
+  pointer-events: none;
 }
 /* The selection card (GeoMap `card`): a themed MapLibre popup. */
 .ds-map-card {

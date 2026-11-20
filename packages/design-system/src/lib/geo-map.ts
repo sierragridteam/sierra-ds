@@ -230,7 +230,11 @@ export class SierraGeoMap extends SierraElement<GeoMapProps> {
     const focused = this.props.fitFocus ? data.features.filter((f) => f.properties?.focus) : [];
     (focused.length ? focused : data.features).forEach((f) => f.geometry && geometry(f.geometry));
     // Labels draw beside points, so a labelled map keeps more room at the edges.
-    if (!bounds.isEmpty()) this.map.fitBounds(bounds, { padding: this.props.labels ? 72 : 40, maxZoom: 12, duration: 0 });
+    const pad = this.props.labels ? 72 : 40;
+    // A notice over the top-left corner ("Geometry only") must not sit on a feature: fit below it.
+    const status = this.querySelector<HTMLElement>("[role=status]");
+    const notice = status && !status.hidden ? status.offsetTop + status.offsetHeight : 0;
+    if (!bounds.isEmpty()) this.map.fitBounds(bounds, { padding: { top: pad + notice, right: pad, bottom: pad, left: pad }, maxZoom: 12, duration: 0 });
   }
 
   private teardown() {

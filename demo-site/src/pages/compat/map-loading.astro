@@ -1,0 +1,45 @@
+---
+// Test fixture: a map's status line ("Loading map.", "Geometry only", errors)
+// must not change the map's height. A page-sized client-built map with the
+// page continuing under it, and a framed server-rendered one. Not linked from the demo.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import MapFrame from "@sierragridteam/design-system/components/MapFrame.astro";
+import GeoJSONMap from "@sierragridteam/design-system/components/GeoJSONMap.astro";
+import type { FeatureCollection } from "geojson";
+
+const towns: FeatureCollection = { type: "FeatureCollection", features: [
+  { type: "Feature", properties: { label: "Arnold", description: "Town" }, geometry: { type: "Point", coordinates: [-120.35, 38.25] } },
+  { type: "Feature", properties: { label: "Murphys", description: "Town" }, geometry: { type: "Point", coordinates: [-120.46, 38.14] } },
+] };
+---
+
+<BaseLayout title="Map loading fixtures">
+  <main id="main" class="stack" style="padding: var(--space-4)">
+    <h1>Map loading</h1>
+    <div id="page-map-slot"></div>
+    <p id="after-map">The page continues under the map and must not move while the map loads.</p>
+    <div style="max-width: 420px">
+      <MapFrame label="Framed map" caption="A compact map in a frame.">
+        <GeoJSONMap id="framed-map" label="Towns" data={towns} compact basemap />
+      </MapFrame>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { createGeoMap } from "@sierragridteam/design-system/lib/geo-map";
+  const map = createGeoMap({
+    label: "Page-sized fixture map",
+    large: true,
+    basemap: true,
+    labels: true,
+    featureList: false,
+    data: { type: "FeatureCollection", features: [
+      { type: "Feature", properties: { label: "Angels Camp ↔ Arnold", weight: 3 }, geometry: { type: "LineString", coordinates: [[-120.55, 38.07], [-120.46, 38.14], [-120.35, 38.25]] } },
+      { type: "Feature", properties: { label: "Arnold" }, geometry: { type: "Point", coordinates: [-120.35, 38.25] } },
+      { type: "Feature", properties: { label: "Murphys" }, geometry: { type: "Point", coordinates: [-120.46, 38.14] } },
+    ] },
+  });
+  map.id = "page-map";
+  document.querySelector("#page-map-slot")!.append(map);
+</script>

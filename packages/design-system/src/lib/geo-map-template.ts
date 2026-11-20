@@ -70,7 +70,7 @@ export function geoMapTemplate(p: GeoMapProps) {
   const unlocated = features.filter((f) => !f.geometry);
   const chosen = p.selected !== undefined ? features[p.selected] : undefined;
   return html`<div class="ds-map-canvas" role="region" aria-label=${p.label}></div>
-    <p class="ds-map-fallback" role="status">Loading map.</p>
+    <p class="ds-map-status" role="status">Loading map.</p>
     ${list
       ? html`<div class="ds-map-feature-list" aria-label="Map features">
           ${repeat(
