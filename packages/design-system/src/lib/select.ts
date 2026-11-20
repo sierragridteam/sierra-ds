@@ -16,6 +16,7 @@ export class SierraSelect extends SierraElement<SelectProps> {
   #active = -1;
   #search = "";
   #searchedAt = 0;
+  #inView = false;
 
   protected validate(p: SelectProps) {
     if (!p.id) throw new Error("Select needs an id");
@@ -86,9 +87,21 @@ export class SierraSelect extends SierraElement<SelectProps> {
     panel.style.maxHeight = `${Math.max(0, Math.min(240, up ? above : below))}px`;
     panel.style.top = `${up ? box.top - panel.offsetHeight - 4 : box.bottom + 4}px`;
   }
+  /** The trigger shows in the viewport, and inside `clip` when a scrolling ancestor is given. */
+  private inView(clip?: Element) {
+    const box = this.trigger.getBoundingClientRect();
+    const c = clip?.getBoundingClientRect();
+    return (
+      box.bottom > Math.max(0, c?.top ?? 0) &&
+      box.top < Math.min(innerHeight, c?.bottom ?? innerHeight) &&
+      box.right > Math.max(0, c?.left ?? 0) &&
+      box.left < Math.min(innerWidth, c?.right ?? innerWidth)
+    );
+  }
   private open() {
     this.panel.showPopover();
     this.position();
+    this.#inView = this.inView();
     this.trigger.setAttribute("aria-expanded", "true");
     this.highlight(this.enabled.findIndex((o) => o.dataset.value === this.value));
   }
@@ -131,7 +144,17 @@ export class SierraSelect extends SierraElement<SelectProps> {
     document.addEventListener(
       "scroll",
       (event) => {
-        if (!this.panel.contains(event.target as Node)) this.close();
+        // The list follows its trigger. Closing on every scroll lost the list to
+        // scrolls nobody asked for: the smooth scroll that brings a focused
+        // trigger into view was still running when an arrow key opened it, and a
+        // scroll event is delivered a frame late, after the click it preceded.
+        // It closes once the trigger has been scrolled out of sight.
+        const scrolled = event.target as Node;
+        if (!this.isOpen() || !scrolled.contains(this)) return;
+        const inView = this.inView(scrolled instanceof Element ? scrolled : undefined);
+        if (this.#inView && !inView) this.close();
+        else this.position();
+        this.#inView = inView;
       },
       { capture: true, signal },
     );

@@ -92,6 +92,59 @@ test.describe("elements built in client code", () => {
     await expect(page.getByRole("option")).toHaveText(["Sonora", "Arnold (updated)"]);
   });
 
+  /** The open list sits against its trigger: 4px below it, or above when there is no room. */
+  const listAttached = (page: Page) =>
+    page.evaluate(() => {
+      const panel = document.querySelector<HTMLElement>("#client-select-options")!;
+      if (!panel.matches(":popover-open")) return "closed";
+      const list = panel.getBoundingClientRect();
+      const box = document.querySelector("#client-select")!.getBoundingClientRect();
+      const near = (a: number, b: number) => Math.abs(a - b) < 1;
+      return near(list.top, box.bottom + 4) || near(list.bottom, box.top - 4) ? "attached" : "adrift";
+    });
+  /** Scroll the page at once and return after the scroll event has been delivered. */
+  const scrollPage = (page: Page, to: "nudge" | "top") =>
+    page.evaluate(async (to) => {
+      const box = document.querySelector("#client-select")!.getBoundingClientRect();
+      const top = to === "top" ? 0 : scrollY + (box.top > innerHeight / 2 ? 60 : -60);
+      await new Promise((done) => {
+        addEventListener("scroll", done, { once: true });
+        scrollTo({ top, behavior: "instant" });
+      });
+      await new Promise(requestAnimationFrame);
+    }, to);
+
+  test("an open select follows its trigger when the page scrolls, and closes once the trigger is out of sight", async ({ page }) => {
+    const trigger = page.locator("#client-select");
+    await trigger.click();
+    await expect(page.getByRole("option")).toHaveCount(3);
+    expect(await listAttached(page)).toBe("attached");
+
+    await scrollPage(page, "nudge");
+    await expect(trigger).toBeInViewport();
+    expect(await listAttached(page)).toBe("attached");
+    await expect(trigger).toHaveAttribute("aria-expanded", "true");
+
+    await scrollPage(page, "top");
+    await expect(trigger).not.toBeInViewport();
+    expect(await listAttached(page)).toBe("closed");
+    await expect(trigger).toHaveAttribute("aria-expanded", "false");
+  });
+
+  test("a select opened by keyboard while its trigger is still scrolling into view stays open", async ({ page }) => {
+    // Focus on a trigger below the fold starts a smooth scroll (about a second);
+    // the arrow key lands long before it ends.
+    const trigger = page.locator("#client-select");
+    await expect(trigger).not.toBeInViewport();
+    await trigger.focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(trigger).toBeInViewport({ ratio: 1 });
+    await expect.poll(() => listAttached(page)).toBe("attached");
+    await page.keyboard.press("ArrowUp");
+    await page.keyboard.press("Enter");
+    await expect(trigger).toHaveText("Arnold");
+  });
+
   test("search and filter selects: shortcut, clear, applied state and reset", async ({ page }) => {
     const search = page.locator("#filter-search");
     const town = page.locator("#filter-town");
