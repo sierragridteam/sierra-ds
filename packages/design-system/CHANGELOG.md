@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.9.9
+
+- An open `Select` list follows its trigger when the page (or a scrolling
+  ancestor) scrolls, and closes once the trigger has been scrolled out of
+  sight. Before, any scroll closed it, including ones the reader did not
+  make: with the system's smooth scrolling, tabbing to a select below the
+  fold scrolls it into view for about a second, and an arrow key pressed
+  in that time opened the list only for the next scroll frame to close it
+  (a second arrow key then reopened it, and Enter chose the current
+  option instead of the one meant); a click that landed in the same frame
+  as a scroll did the same. A scroll in an unrelated container no longer
+  closes the list either. Nothing to migrate.
+
 ## 0.9.8
 
 - Line and bar charts follow their container when it changes size as the
