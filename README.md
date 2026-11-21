@@ -19,10 +19,14 @@ The initial API preserves members' class names and appearance. App routing, auth
 
 ## Releases and first consumer
 
-Every push to `main` publishes to npm after tests, type checks, and the demo
-build pass, including documentation-only merges. `publish.yml` queues releases
-without cancelling earlier merges. GitHub authenticates using npm trusted
-publishing (OIDC); no npm token is stored in GitHub.
+A push to `main` publishes to npm only after CI passes on it, browser tests
+included: `publish.yml` runs when CI completes successfully for a push to
+`main`, on the commit CI tested. It publishes nothing when nothing under
+`packages/design-system/` changed since the latest npm version's commit (a
+test, demo or documentation merge), and nothing for a commit older than that
+one (CI for an earlier merge finishing after a later release). `publish.yml`
+queues releases without cancelling earlier merges. GitHub authenticates using
+npm trusted publishing (OIDC); no npm token is stored in GitHub.
 
 The package version in source is the minimum release version. CI selects the
 next unused patch above the highest stable npm version, or uses the source

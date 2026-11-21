@@ -1,6 +1,12 @@
 name: Publish
+# Publishes only what CI passed: it runs when CI completes on a push to main,
+# for the commit CI tested. A merge that changes nothing under
+# packages/design-system (tests, demo, docs) publishes nothing; see
+# scripts/prepare-release.mjs. workflow_dispatch on main retries a release.
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches: [main]
   workflow_dispatch:
 
@@ -14,7 +20,11 @@ concurrency:
 
 jobs:
   publish:
-    if: github.ref == 'refs/heads/main'
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -22,6 +32,11 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          # The whole history: the release compares this commit with the last
+          # published one.
+          fetch-depth: 0
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -36,6 +51,8 @@ jobs:
       # The first publication must exist before automatic releases can start.
       - run: node scripts/wait-for-registry.mjs
       - id: release
+        env:
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: node scripts/prepare-release.mjs
       - if: steps.release.outputs.publish == 'true'
         run: npm publish --access public --provenance --ignore-scripts
