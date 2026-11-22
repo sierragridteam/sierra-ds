@@ -4136,8 +4136,11 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   /* .is-first keeps translate 0 0 from the base rule (higher specificity). */
   .ds-corridor__stop { left: auto; right: 0; top: var(--at); translate: 0 -50%; text-align: right; }
   .ds-corridor__stop.is-last { translate: 0 -100%; }
-  /* Bands: a lane of their own between the track and the section labels, each label beside its bar's middle. */
-  .has-bands .ds-corridor__strip { grid-template-columns: 6.5rem 10px 3.5rem minmax(0, 1fr); gap: 0 var(--space-2); }
+  /*
+   * Bands: a lane of their own between the track and the section labels, each label beside its bar's middle.
+   * The lane is 5.5rem ("Chains R2" fits); a page with longer labels can set --ds-corridor-band-lane.
+   */
+  .has-bands .ds-corridor__strip { grid-template-columns: 6.5rem 10px var(--ds-corridor-band-lane, 5.5rem) minmax(0, 1fr); gap: 0 var(--space-2); }
   .has-bands .ds-corridor__labels { order: 2; }
   .ds-corridor__bands, .has-several-bands .ds-corridor__bands { order: 1; height: auto; }
   .ds-corridor__band, .has-several-bands .ds-corridor__band, .has-several-bands .ds-corridor__band:nth-child(even) {

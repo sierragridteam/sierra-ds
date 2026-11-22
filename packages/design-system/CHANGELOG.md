@@ -12,8 +12,9 @@
   stop names, and with several bands every other label goes above its bar
   so short neighbours do not collide. Below about 34rem, where the strip
   turns vertical, the lane runs down beside the track, between it and the
-  section labels, each label beside the middle of its bar; before, a page
-  could only say it in words there. The lane is a list named by
+  section labels, each label beside the middle of its bar (the lane is
+  5.5rem, room for "Chains R2"; `--ds-corridor-band-lane` widens it);
+  before, a page could only say it in words there. The lane is a list named by
   `bandsLabel` (default "Along <name>"). Nothing to migrate: a corridor
   without `bands` is unchanged.
 

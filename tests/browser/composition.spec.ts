@@ -216,6 +216,8 @@ test("a corridor's bands run along the strip on its scale, under it when wide an
   expect(Math.abs(v2.y - (vtrack.y + vtrack.height * 40 / 71))).toBeLessThan(5);
   expect(Math.abs(v2.y + v2.height - (vtrack.y + vtrack.height))).toBeLessThan(5);
   const vlabel = (await narrow.locator(".ds-corridor__band-label").nth(1).boundingBox())!;
+  // A label like "Chains R2" fits the lane whole.
+  expect(await narrow.locator(".ds-corridor__band-label").nth(1).evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
   expect(vlabel.x).toBeGreaterThan(v2.x + v2.width);
   const section = (await narrow.locator(".ds-corridor__label").nth(1).boundingBox())!;
   expect(section.x).toBeGreaterThanOrEqual(vlabel.x + vlabel.width);
