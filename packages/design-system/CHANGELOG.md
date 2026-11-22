@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.13
+
+- A corridor band takes `short`, the text beside its bar where the strip
+  runs down the page (e.g. "R2" for a band labelled "Chains R2"). The
+  vertical lane is now as wide as the longest text it shows: 0.9.12 gave it
+  a fixed 5.5rem, which on a phone took most of the section labels' room
+  (on a 390px screen they had about 90px left, and Grid cut "Seasonal
+  closure"). With "R2" the lane is about 2rem. The long `label` stays for
+  screen readers and is still what shows where the strip is horizontal.
+  `--ds-corridor-band-lane` still sets the width outright. Nothing to
+  migrate; a band without `short` shows its label in a lane as wide as it.
+
 ## 0.9.12
 
 - `corridor()` takes `bands`: stretches of the route that something covers,

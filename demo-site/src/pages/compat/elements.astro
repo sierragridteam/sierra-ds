@@ -82,7 +82,13 @@ import { PARITY } from "../../fixtures/parity";
       stops: [{ at: 0, label: "Angels Camp" }, { at: 33, label: "Arnold" }, { at: 71, label: "Bear Valley" }],
       sections: [{ from: 0, to: 33, tone: "ok", label: "Open · 27 min" }, { from: 33, to: 71, tone: "elevated", label: "Chains required" }],
       bandsLabel: "Chain control on Hwy 4",
-      bands: [{ from: 28, to: 40, label: "Chains R1", approximate: true }, { from: 40, to: 71, label: "Chains R2", detail: "Cottage Springs to Bear Valley" }],
+      bands: [{ from: 28, to: 40, label: "Chains R1", short: "R1", approximate: true }, { from: 40, to: 71, label: "Chains R2", short: "R2", detail: "Cottage Springs to Bear Valley" }],
+    })}</div>
+    <div id="client-corridor-narrow-long" style="max-width: 360px">${corridor({
+      name: "Hwy 88", length: 40,
+      stops: [{ at: 0, label: "Pioneer" }, { at: 40, label: "Kirkwood" }],
+      sections: [{ from: 0, to: 40, tone: "ok", label: "Open" }],
+      bands: [{ from: 20, to: 40, label: "Chains R2" }],
     })}</div>
     <div id="client-profile" style="max-width: 900px">${elevationProfile({
       label: "Hwy 4 towns by elevation with the snow level", summary: "Snow level 2,400 m now, as low as 1,600 m overnight.",

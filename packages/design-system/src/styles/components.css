@@ -4105,6 +4105,7 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+.ds-corridor__band-short { display: none; }
 .ds-corridor__band--start { justify-items: start; }
 .ds-corridor__band--end { justify-items: end; }
 /* Several stretches: every other label goes above its band, so short neighbours do not collide. */
@@ -4137,10 +4138,11 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
   .ds-corridor__stop { left: auto; right: 0; top: var(--at); translate: 0 -50%; text-align: right; }
   .ds-corridor__stop.is-last { translate: 0 -100%; }
   /*
-   * Bands: a lane of their own between the track and the section labels, each label beside its bar's middle.
-   * The lane is 5.5rem ("Chains R2" fits); a page with longer labels can set --ds-corridor-band-lane.
+   * Bands: a lane of their own between the track and the section labels, each band's short text beside its bar's
+   * middle. The lane is as wide as the longest short text (--ds-corridor-band-chars, set by corridor()): about
+   * 2rem for "R2", so the section labels keep their room. --ds-corridor-band-lane sets it outright.
    */
-  .has-bands .ds-corridor__strip { grid-template-columns: 6.5rem 10px var(--ds-corridor-band-lane, 5.5rem) minmax(0, 1fr); gap: 0 var(--space-2); }
+  .has-bands .ds-corridor__strip { grid-template-columns: 6.5rem 10px var(--ds-corridor-band-lane, calc(12px + var(--ds-corridor-band-chars, 4) * 0.62em)) minmax(0, 1fr); gap: 0 var(--space-2); }
   .has-bands .ds-corridor__labels { order: 2; }
   .ds-corridor__bands, .has-several-bands .ds-corridor__bands { order: 1; height: auto; }
   .ds-corridor__band, .has-several-bands .ds-corridor__band, .has-several-bands .ds-corridor__band:nth-child(even) {
@@ -4160,6 +4162,11 @@ sierra-sparkline { display: inline-block; vertical-align: middle; line-height: 0
     background: repeating-linear-gradient(180deg, var(--band) 0 6px, color-mix(in oklab, var(--band) 35%, transparent) 6px 10px);
   }
   .ds-corridor__band-label { width: auto; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+  /* The short text replaces the long one on screen; the long one stays for screen readers. */
+  .ds-corridor__band-label:has(.ds-corridor__band-short) .ds-corridor__band-text {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  .ds-corridor__band-short { display: inline; }
 }
 @media (forced-colors: active) {
   .ds-corridor__section, .ds-corridor__marker, .ds-corridor__band-bar { forced-color-adjust: none; }
