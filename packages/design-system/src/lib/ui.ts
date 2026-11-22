@@ -668,8 +668,14 @@ export interface CorridorBand {
   /** Distance along the route where it starts and ends (same unit as `length`). */
   from: number;
   to: number;
-  /** Short text by the band, e.g. "R2". Keep it short: it may sit beside a narrow strip. */
+  /** Text by the band, e.g. "Chains R2". */
   label: string;
+  /**
+   * The text beside the bar where the strip runs down the page (below about
+   * 34rem), e.g. "R2"; the lane there is as wide as the longest of these, so
+   * the section labels keep their room on a phone. Default: `label`.
+   */
+  short?: string;
   /** Longer text for its tooltip and screen readers, e.g. "Arnold to Bear Valley". */
   detail?: string;
   /** Draw dashed: the ends are estimated, not stated by the source. */
@@ -714,7 +720,9 @@ export function corridor(p: CorridorProps) {
   const markers = [...(p.markers ?? [])].sort((a, b) => a.at - b.at);
   const id = `ds-corridor-${slug(p.name)}`;
   const bands = [...(p.bands ?? [])].sort((a, b) => a.from - b.from);
-  return html`<figure class=${classMap({ "ds-corridor": true, "has-bands": bands.length > 0, "has-several-bands": bands.length > 1 })}>
+  // The vertical lane's width, in characters of its longest text.
+  const laneChars = Math.max(0, ...bands.map((b) => [...(b.short ?? b.label)].length));
+  return html`<figure class=${classMap({ "ds-corridor": true, "has-bands": bands.length > 0, "has-several-bands": bands.length > 1 })} style=${bands.length ? `--ds-corridor-band-chars: ${laneChars}` : nothing}>
     <figcaption class="ds-corridor__head">
       <strong class="ds-corridor__name">${p.name}</strong>
       ${p.summary ? html`<span class=${`ds-corridor__summary ds-corridor__summary--${p.summaryTone ?? "muted"}`}>${p.summary}</span>` : nothing}
@@ -752,7 +760,7 @@ export function corridor(p: CorridorProps) {
         const side = pct(b.from) < 12 ? "start" : pct(b.to) > 88 ? "end" : "middle";
         return html`<li class=${classMap({ "ds-corridor__band": true, [`ds-corridor__band--${side}`]: true, "is-approximate": !!b.approximate })} style=${`--from: ${at(b.from)}; --to: ${at(b.to)}`} title=${b.detail ? `${b.label} · ${b.detail}` : b.label}>
           <span class="ds-corridor__band-bar" aria-hidden="true"></span>
-          <span class="ds-corridor__band-label">${b.label}${b.detail ? html`<span class="sr-only"> · ${b.detail}</span>` : nothing}</span>
+          <span class="ds-corridor__band-label"><span class="ds-corridor__band-text">${b.label}</span>${b.short && b.short !== b.label ? html`<span class="ds-corridor__band-short" aria-hidden="true">${b.short}</span>` : nothing}${b.detail ? html`<span class="sr-only"> · ${b.detail}</span>` : nothing}</span>
         </li>`;
       })}</ul>` : nothing}
     </div>

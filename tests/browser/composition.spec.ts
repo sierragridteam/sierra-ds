@@ -216,8 +216,18 @@ test("a corridor's bands run along the strip on its scale, under it when wide an
   expect(Math.abs(v2.y - (vtrack.y + vtrack.height * 40 / 71))).toBeLessThan(5);
   expect(Math.abs(v2.y + v2.height - (vtrack.y + vtrack.height))).toBeLessThan(5);
   const vlabel = (await narrow.locator(".ds-corridor__band-label").nth(1).boundingBox())!;
-  // A label like "Chains R2" fits the lane whole.
-  expect(await narrow.locator(".ds-corridor__band-label").nth(1).evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  // Vertical, a band with a short text shows it, in a lane only as wide as it needs; the long text stays for screen readers.
+  await expect(narrow.locator(".ds-corridor__band-short").nth(1)).toBeVisible();
+  await expect(narrow.locator(".ds-corridor__band-short").nth(1)).toHaveText("R2");
+  expect(vlabel.width).toBeLessThan(30);
+  const vlane = (await narrow.locator(".ds-corridor__bands").boundingBox())!;
+  expect(vlane.width).toBeLessThan(40);
+  expect(await narrow.locator(".ds-corridor__band-text").nth(1).evaluate((el) => el.getBoundingClientRect().width)).toBeLessThanOrEqual(1);
+  // Without a short text, the lane is as wide as the label, whole.
+  const long = page.locator("#client-corridor-narrow-long .ds-corridor__band-label");
+  await expect(long).toHaveText("Chains R2");
+  expect(await long.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  await expect(page.locator("#client-corridor-narrow-long .ds-corridor__band-short")).toHaveCount(0);
   expect(vlabel.x).toBeGreaterThan(v2.x + v2.width);
   const section = (await narrow.locator(".ds-corridor__label").nth(1).boundingBox())!;
   expect(section.x).toBeGreaterThanOrEqual(vlabel.x + vlabel.width);
