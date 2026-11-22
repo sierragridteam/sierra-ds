@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.9.12
+
+- `corridor()` takes `bands`: stretches of the route that something covers,
+  such as chain control from its first checkpoint to its last, drawn in
+  winter's colour in a lane of their own along the strip, on the strip's
+  scale. Each band is `{ from, to, label, detail?, approximate? }`: the
+  label (keep it short, e.g. "R2") sits by the bar, `detail` goes to its
+  tooltip and screen readers, and `approximate` dashes the bar when the
+  ends are estimated. Where the strip is horizontal the lane runs under the
+  stop names, and with several bands every other label goes above its bar
+  so short neighbours do not collide. Below about 34rem, where the strip
+  turns vertical, the lane runs down beside the track, between it and the
+  section labels, each label beside the middle of its bar (the lane is
+  5.5rem, room for "Chains R2"; `--ds-corridor-band-lane` widens it);
+  before, a page could only say it in words there. The lane is a list named by
+  `bandsLabel` (default "Along <name>"). Nothing to migrate: a corridor
+  without `bands` is unchanged.
+
 ## 0.9.11
 
 - A map no longer changes height while it loads. `<sierra-geo-map>` showed

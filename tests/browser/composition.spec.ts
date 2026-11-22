@@ -182,6 +182,48 @@ test("a corridor strip places sections, stops and markers along the route, and t
   expect(narrow.height).toBeGreaterThan(narrow.width * 5);
 });
 
+test("a corridor's bands run along the strip on its scale, under it when wide and beside it when narrow", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto("/compat/elements");
+  const wide = page.locator("#client-corridor");
+  const track = (await wide.locator(".ds-corridor__track").boundingBox())!;
+  const lane = wide.getByRole("list", { name: "Chain control on Hwy 4" });
+  // In route order, each with its detail for screen readers.
+  await expect(lane.getByRole("listitem")).toHaveText(["R1 · Arnold to Cottage Springs", "R2 · Cottage Springs to Bear Valley"]);
+  const bars = lane.locator(".ds-corridor__band-bar");
+  const r1 = (await bars.nth(0).boundingBox())!, r2 = (await bars.nth(1).boundingBox())!;
+  // 40..71 of 71 km, under the track (2px of air at each end).
+  expect(Math.abs(r2.x - (track.x + track.width * 40 / 71))).toBeLessThan(4);
+  expect(Math.abs(r2.x + r2.width - (track.x + track.width))).toBeLessThan(4);
+  expect(r2.y).toBeGreaterThan(track.y + track.height);
+  expect(r1.x + r1.width).toBeLessThanOrEqual(r2.x);
+  // Neighbours' labels do not collide; an estimated stretch is dashed.
+  const l1 = (await lane.locator(".ds-corridor__band-label").nth(0).boundingBox())!, l2 = (await lane.locator(".ds-corridor__band-label").nth(1).boundingBox())!;
+  expect(l1.y + l1.height <= l2.y || l2.y + l2.height <= l1.y || l1.x + l1.width <= l2.x).toBe(true);
+  await expect(lane.locator(".ds-corridor__band").nth(0)).toHaveClass(/is-approximate/);
+  expect(await bars.nth(0).evaluate((el) => getComputedStyle(el).backgroundImage)).toContain("repeating-linear-gradient");
+  // A corridor without bands has no lane.
+  await expect(page.locator("#client-corridor-narrow .ds-corridor__bands")).toHaveCount(0);
+
+  // Narrow: the lane runs down beside the vertical track, between it and the section labels.
+  const narrow = page.locator("#client-corridor-narrow-bands");
+  const vtrack = (await narrow.locator(".ds-corridor__track").boundingBox())!;
+  expect(vtrack.height).toBeGreaterThan(vtrack.width * 5);
+  const vbars = narrow.locator(".ds-corridor__band-bar");
+  const v2 = (await vbars.nth(1).boundingBox())!;
+  expect(v2.height).toBeGreaterThan(v2.width * 3);
+  expect(v2.x).toBeGreaterThan(vtrack.x + vtrack.width);
+  expect(Math.abs(v2.y - (vtrack.y + vtrack.height * 40 / 71))).toBeLessThan(5);
+  expect(Math.abs(v2.y + v2.height - (vtrack.y + vtrack.height))).toBeLessThan(5);
+  const vlabel = (await narrow.locator(".ds-corridor__band-label").nth(1).boundingBox())!;
+  // A label like "Chains R2" fits the lane whole.
+  expect(await narrow.locator(".ds-corridor__band-label").nth(1).evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+  expect(vlabel.x).toBeGreaterThan(v2.x + v2.width);
+  const section = (await narrow.locator(".ds-corridor__label").nth(1).boundingBox())!;
+  expect(section.x).toBeGreaterThanOrEqual(vlabel.x + vlabel.width);
+  expect(Math.abs(vlabel.y + vlabel.height / 2 - (v2.y + v2.height / 2))).toBeLessThan(4);
+});
+
 test("a schedule draws windows on a shared time axis with day ticks and a now line", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/compat/elements");

@@ -659,6 +659,22 @@ export interface CorridorMarker {
   /** Link text (default "Details"). */
   linkLabel?: string;
 }
+/**
+ * A stretch of the route that something covers, drawn as a band in a lane
+ * along the strip, e.g. chain control from its first checkpoint to its last.
+ * Drawn in winter's colour (the light chart blue).
+ */
+export interface CorridorBand {
+  /** Distance along the route where it starts and ends (same unit as `length`). */
+  from: number;
+  to: number;
+  /** Short text by the band, e.g. "R2". Keep it short: it may sit beside a narrow strip. */
+  label: string;
+  /** Longer text for its tooltip and screen readers, e.g. "Arnold to Bear Valley". */
+  detail?: string;
+  /** Draw dashed: the ends are estimated, not stated by the source. */
+  approximate?: boolean;
+}
 export interface CorridorProps {
   /** The route, e.g. "Hwy 4". */
   name: string;
@@ -671,6 +687,10 @@ export interface CorridorProps {
   stops: { at: number; label: string }[];
   sections: CorridorSection[];
   markers?: CorridorMarker[];
+  /** Stretches drawn in a lane along the strip (beside it when it turns vertical). */
+  bands?: CorridorBand[];
+  /** The lane's accessible name (default "Along <name>"), e.g. "Chain control on Hwy 4". */
+  bandsLabel?: string;
 }
 const corridorGlyph: Record<CorridorMarker["kind"], string> = { work: "◆", closure: "■", sign: "", incident: "▲", camera: "●", chain: "❄\uFE0E" };
 const corridorKind: Record<CorridorMarker["kind"], string> = { work: "Work zone", closure: "Closure point", sign: "Highway sign", incident: "Incident", camera: "Camera", chain: "Chain control" };
@@ -683,8 +703,9 @@ const blurOnEscape = (event: KeyboardEvent) => {
  * A route as a straight strip: sections coloured by status with their travel
  * text, the places between them, and what sits along it (work zones, signs,
  * closure points). Answers "can I get from A to B" faster than a map. Each
- * marker opens a card on hover, click or keyboard focus. Below about 34rem the
- * strip turns vertical.
+ * marker opens a card on hover, click or keyboard focus. Bands (e.g. chain
+ * control) run in a lane under the strip. Below about 34rem the strip turns
+ * vertical and the lane runs beside it.
  */
 export function corridor(p: CorridorProps) {
   const pct = (v: number) => Math.max(0, Math.min(100, (v / (p.length || 1)) * 100));
@@ -692,7 +713,8 @@ export function corridor(p: CorridorProps) {
   const unit = p.unit ?? "km";
   const markers = [...(p.markers ?? [])].sort((a, b) => a.at - b.at);
   const id = `ds-corridor-${slug(p.name)}`;
-  return html`<figure class="ds-corridor">
+  const bands = [...(p.bands ?? [])].sort((a, b) => a.from - b.from);
+  return html`<figure class=${classMap({ "ds-corridor": true, "has-bands": bands.length > 0, "has-several-bands": bands.length > 1 })}>
     <figcaption class="ds-corridor__head">
       <strong class="ds-corridor__name">${p.name}</strong>
       ${p.summary ? html`<span class=${`ds-corridor__summary ds-corridor__summary--${p.summaryTone ?? "muted"}`}>${p.summary}</span>` : nothing}
@@ -725,6 +747,14 @@ export function corridor(p: CorridorProps) {
       <div class="ds-corridor__stops" aria-hidden="true">
         ${p.stops.map((s, i) => html`<span class=${classMap({ "ds-corridor__stop": true, "is-first": i === 0, "is-last": i === p.stops.length - 1 })} style=${`--at: ${at(s.at)}`}>${s.label}</span>`)}
       </div>
+      ${bands.length ? html`<ul class="ds-corridor__bands" aria-label=${p.bandsLabel ?? `Along ${p.name}`}>${bands.map((b) => {
+        // A label wider than its band spills inward from the strip's ends.
+        const side = pct(b.from) < 12 ? "start" : pct(b.to) > 88 ? "end" : "middle";
+        return html`<li class=${classMap({ "ds-corridor__band": true, [`ds-corridor__band--${side}`]: true, "is-approximate": !!b.approximate })} style=${`--from: ${at(b.from)}; --to: ${at(b.to)}`} title=${b.detail ? `${b.label} · ${b.detail}` : b.label}>
+          <span class="ds-corridor__band-bar" aria-hidden="true"></span>
+          <span class="ds-corridor__band-label">${b.label}${b.detail ? html`<span class="sr-only"> · ${b.detail}</span>` : nothing}</span>
+        </li>`;
+      })}</ul>` : nothing}
     </div>
     <ol class="sr-only">
       ${p.sections.map((s) => html`<li>${p.stops.find((x) => x.at === s.from)?.label ?? `${s.from} ${unit}`} to ${p.stops.find((x) => x.at === s.to)?.label ?? `${s.to} ${unit}`}: ${s.label}${s.detail ? `. ${s.detail}` : ""}</li>`)}

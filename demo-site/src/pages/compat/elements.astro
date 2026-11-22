@@ -66,11 +66,23 @@ import { PARITY } from "../../fixtures/parity";
         { at: 70, kind: "closure", tone: "alarm", label: "Road closed eastbound" },
         { at: 13.8, kind: "sign", label: "EB 4 W/O Murphys", detail: "EBBETTS PASS CLOSED" },
       ],
+      bandsLabel: "Chain control on Hwy 4",
+      bands: [
+        { from: 40, to: 71, label: "R2", detail: "Cottage Springs to Bear Valley" },
+        { from: 28, to: 40, label: "R1", detail: "Arnold to Cottage Springs", approximate: true },
+      ],
     })}</div>
     <div id="client-corridor-narrow" style="max-width: 360px">${corridor({
       name: "Hwy 49", length: 25,
       stops: [{ at: 0, label: "Angels Camp" }, { at: 25, label: "Sonora" }],
       sections: [{ from: 0, to: 25, tone: "ok", label: "Open · 24 min" }],
+    })}</div>
+    <div id="client-corridor-narrow-bands" style="max-width: 360px">${corridor({
+      name: "Hwy 4", length: 71,
+      stops: [{ at: 0, label: "Angels Camp" }, { at: 33, label: "Arnold" }, { at: 71, label: "Bear Valley" }],
+      sections: [{ from: 0, to: 33, tone: "ok", label: "Open · 27 min" }, { from: 33, to: 71, tone: "elevated", label: "Chains required" }],
+      bandsLabel: "Chain control on Hwy 4",
+      bands: [{ from: 28, to: 40, label: "Chains R1", approximate: true }, { from: 40, to: 71, label: "Chains R2", detail: "Cottage Springs to Bear Valley" }],
     })}</div>
     <div id="client-profile" style="max-width: 900px">${elevationProfile({
       label: "Hwy 4 towns by elevation with the snow level", summary: "Snow level 2,400 m now, as low as 1,600 m overnight.",
